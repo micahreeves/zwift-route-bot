@@ -275,10 +275,12 @@ async def route(interaction: discord.Interaction, name: str):
         return
         
     try:
-        # Rate limit checking
+        logger.info(f"Route command started for: {name}")
+        
         try:
             await client.check_rate_limit(interaction.user.id)
         except HTTPException as e:
+            logger.warning(f"Rate limit hit: {e}")
             if not interaction.response.is_done():
                 await interaction.response.send_message(
                     embed=discord.Embed(
@@ -291,12 +293,15 @@ async def route(interaction: discord.Interaction, name: str):
             return
 
         result, alternatives = find_route(name)
+        logger.info(f"Route search result: {result['Route'] if result else 'Not found'}")
         
         if not interaction.response.is_done():
-            await interaction.response.defer()
+            await interaction.response.defer(thinking=True)
+            logger.info("Interaction deferred")
         
         if result:
             stats, zwift_img_url = await fetch_route_info(result["URL"])
+            logger.info(f"ZwiftInsider image URL: {zwift_img_url}")
             
             embed = discord.Embed(
                 title=f"🚲 {result['Route']}",
@@ -304,6 +309,7 @@ async def route(interaction: discord.Interaction, name: str):
                 description="\n".join(stats) if stats else "View full route details on ZwiftInsider",
                 color=0xFC6719
             )
+            logger.info("Basic embed created")
             
             if alternatives:
                 similar_routes = "\n\n**Similar routes:**\n" + "\n".join(f"• {r['Route']}" for r in alternatives)
@@ -311,148 +317,87 @@ async def route(interaction: discord.Interaction, name: str):
                     embed.description += similar_routes
                 else:
                     embed.description = similar_routes
+                logger.info("Added alternatives to embed")
             
-            # Fetch and set images with improved error handling
-            cyccal_url = await get_cyccal_url(result["Route"])
-            cyccal_img_url = await get_cyccal_image(result["Route"])
-            
+            # Attempt to get Cyccal image
             try:
+                cyccal_url = await get_cyccal_url(result["Route"])
+                cyccal_img_url = await get_cyccal_image(result["Route"])
+                logger.info(f"Cyccal image URL: {cyccal_img_url}")
+                
                 async with aiohttp.ClientSession() as session:
-                    # Try to fetch Cyccal image with timeout
                     try:
                         async with session.head(cyccal_img_url, timeout=5) as response:
+                            logger.info(f"Cyccal image status code: {response.status}")
                             if response.status == 200:
                                 embed.set_image(url=cyccal_img_url)
-                                logger.info(f"Successfully loaded Cyccal image for {result['Route']}")
-                            elif zwift_img_url:
-                                logger.info(f"Cyccal image not found for {result['Route']}, using ZwiftInsider image")
-                                embed.set_image(url=zwift_img_url)
+                                logger.info("Successfully set Cyccal image")
+                            else:
+                                logger.warning(f"Cyccal image not found, status: {response.status}")
+                                if zwift_img_url:
+                                    embed.set_image(url=zwift_img_url)
+                                    logger.info("Fallback to ZwiftInsider image")
                     except asyncio.TimeoutError:
-                        logger.warning(f"Timeout fetching Cyccal image for {result['Route']}")
+                        logger.warning("Timeout fetching Cyccal image")
                         if zwift_img_url:
                             embed.set_image(url=zwift_img_url)
                     except Exception as e:
-                        logger.error(f"Error fetching Cyccal image for {result['Route']}: {e}")
+                        logger.error(f"Error checking Cyccal image: {e}")
                         if zwift_img_url:
                             embed.set_image(url=zwift_img_url)
-                    
-                    # Check Cyccal route page
-                    try:
-                        async with session.head(cyccal_url, timeout=5) as response:
-                            if response.status == 200:
-                                embed.add_field(
-                                    name="Additional Resources",
-                                    value=f"[View on Cyccal]({cyccal_url})",
-                                    inline=False
-                                )
-                    except Exception as e:
-                        logger.warning(f"Could not verify Cyccal route page for {result['Route']}: {e}")
-                        
             except Exception as e:
-                logger.error(f"Session error for {result['Route']}: {e}")
+                logger.error(f"Error in Cyccal image processing: {e}")
                 if zwift_img_url:
                     embed.set_image(url=zwift_img_url)
             
+            # Ensure URL is properly encoded
+            if embed.image:
+                embed.set_image(url=quote(embed.image.url, safe=':/?=&'))
+                logger.info(f"Final image URL: {embed.image.url}")
+            
             embed.set_thumbnail(url="https://zwiftinsider.com/wp-content/uploads/2022/12/zwift-logo.png")
             embed.set_footer(text="ZwiftGuy • Use /route to find routes")
+            
+            # Add length checks
+            if len(embed.description) > 4096:
+                embed.description = embed.description[:4093] + "..."
+            
+            # Log embed details before sending
+            logger.info(f"Embed title: {embed.title}")
+            logger.info(f"Embed description length: {len(embed.description)}")
+            logger.info(f"Embed has image: {embed.image is not None}")
             
         else:
             suggestions = random.sample(zwift_routes, min(3, len(zwift_routes)))
             embed = discord.Embed(
                 title="❌ Route Not Found",
-                description=f"Could not find a route matching `{name}`.\n\n**Try these routes instead:**\n" + 
+                description=f"Could not find a route matching `{name}`.\n\n**Try these routes:**\n" + 
                            "\n".join(f"• {r['Route']}" for r in suggestions),
                 color=discord.Color.red()
             )
+            logger.info("Created 'not found' embed")
 
-        await interaction.followup.send(embed=embed)
+        # Try to send the embed with error handling
+        try:
+            await interaction.followup.send(embed=embed)
+            logger.info("Successfully sent embed")
+        except discord.HTTPException as e:
+            logger.error(f"Discord HTTP error when sending embed: {e}")
+            # Try without image as fallback
+            embed.set_image(url=None)
+            await interaction.followup.send(embed=embed)
+        except Exception as e:
+            logger.error(f"Unknown error when sending embed: {e}")
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    title="❌ Error",
+                    description="An error occurred while sending the route information.",
+                    color=discord.Color.red()
+                )
+            )
             
     except Exception as e:
         logger.error(f"Error in route command: {e}")
-        try:
-            if not interaction.response.is_done():
-                await interaction.response.send_message(
-                    embed=discord.Embed(
-                        title="❌ Error",
-                        description="An error occurred while processing your request.",
-                        color=discord.Color.red()
-                    ),
-                    ephemeral=True
-                )
-        except:
-            pass
-
-@client.tree.command(name="kom", description="Get information about a Zwift KOM segment")
-async def kom(interaction: discord.Interaction, name: str):
-    if not interaction.user:
-        return
-    try:
-        try:
-            await client.check_rate_limit(interaction.user.id)
-        except HTTPException as e:
-            if not interaction.response.is_done():
-                await interaction.response.send_message(
-                    embed=discord.Embed(
-                        title="⏳ Rate Limited",
-                        description=str(e),
-                        color=discord.Color.orange()
-                    ),
-                    ephemeral=True
-                )
-            return
-
-        result, alternatives = find_kom(name)
-        
-        if not interaction.response.is_done():
-            await interaction.response.defer()
-        
-        if result:
-            embed = discord.Embed(
-                title=f"⛰️ {result['Segment']}",
-                url=result['URL'],
-                description=f"Location: {result['Location']}",
-                color=0xFF0000
-            )
-            
-            embed.add_field(
-                name="Distance", 
-                value=f"{result['Length_km']}km ({result['Length_miles']} miles)", 
-                inline=True
-            )
-            embed.add_field(
-                name="Elevation", 
-                value=f"{result['Elev_Gain_m']}m ({result['Elev_Gain_ft']} ft)", 
-                inline=True
-            )
-            embed.add_field(
-                name="Average Grade", 
-                value=f"{result['Grade']}%", 
-                inline=True
-            )
-
-            if alternatives:
-                similar_koms = "\n\n**Similar segments:**\n" + "\n".join(
-                    f"• {k['Segment']} ({k['Length_km']}km, {k['Grade']}%)" 
-                    for k in alternatives
-                )
-                embed.add_field(name="", value=similar_koms, inline=False)
-            
-            embed.set_thumbnail(url="https://zwiftinsider.com/wp-content/uploads/2022/12/zwift-logo.png")
-            embed.set_footer(text="ZwiftGuy • Use /kom to find segments")
-        else:
-            suggestions = random.sample(zwift_koms, min(3, len(zwift_koms)))
-            embed = discord.Embed(
-                title="❌ KOM Not Found",
-                description=f"Could not find a KOM segment matching `{name}`.\n\n**Try these segments:**\n" + 
-                           "\n".join(f"• {s['Segment']} ({s['Length_km']}km, {s['Grade']}%)" 
-                                   for s in suggestions),
-                color=discord.Color.red()
-            )
-
-        await interaction.followup.send(embed=embed)
-            
-    except Exception as e:
-        logger.error(f"Error in KOM command: {e}")
         try:
             if not interaction.response.is_done():
                 await interaction.response.send_message(
