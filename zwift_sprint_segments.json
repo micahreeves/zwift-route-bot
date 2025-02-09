@@ -1,0 +1,324 @@
+[
+    {
+        "Segment": "Acropolis Sprint",
+        "Location": "Watopia",
+        "Length_m": 450,
+        "Grade": 0.67,
+        "URL": "https://zwiftinsider.com/segment/acropolis-sprint/"
+    },
+    {
+        "Segment": "Acropolis Sprint Reverse",
+        "Location": "Watopia",
+        "Length_m": 450,
+        "Grade": -1.1,
+        "URL": "https://zwiftinsider.com/segment/acropolis-sprint-reverse/"
+    },
+    {
+        "Segment": "Alley Sprint",
+        "Location": "Makuri Islands",
+        "Length_m": 480,
+        "Grade": 0,
+        "URL": "https://zwiftinsider.com/segment/alley-sprint/"
+    },
+    {
+        "Segment": "Alley Sprint Reverse",
+        "Location": "Makuri Islands",
+        "Length_m": 380,
+        "Grade": -1.2,
+        "URL": "https://zwiftinsider.com/segment/alley-sprint-reverse/"
+    },
+    {
+        "Segment": "Ballon Sprint",
+        "Location": "France",
+        "Length_m": 210,
+        "Grade": 0,
+        "URL": "https://zwiftinsider.com/segment/ballon-sprint/"
+    },
+    {
+        "Segment": "Ballon Sprint Reverse",
+        "Location": "France",
+        "Length_m": 320,
+        "Grade": 0,
+        "URL": "https://zwiftinsider.com/segment/ballon-sprint-reverse/"
+    },
+    {
+        "Segment": "Bell Lap Prime Sprint",
+        "Location": "Crit City",
+        "Length_m": 290,
+        "Grade": 0.6,
+        "URL": "https://zwiftinsider.com/segment/bell-lap-prime-sprint/"
+    },
+    {
+        "Segment": "Boardwalk Sprint",
+        "Location": "Makuri Islands",
+        "Length_m": 240,
+        "Grade": 0,
+        "URL": "https://zwiftinsider.com/segment/boardwalk-sprint/"
+    },
+    {
+        "Segment": "Boardwalk Sprint Reverse",
+        "Location": "Makuri Islands",
+        "Length_m": 310,
+        "Grade": 0,
+        "URL": "https://zwiftinsider.com/segment/boardwalk-sprint-reverse/"
+    },
+    {
+        "Segment": "Broad St. Sprint",
+        "Location": "Richmond",
+        "Length_m": 280,
+        "Grade": -0.1,
+        "URL": "https://zwiftinsider.com/segment/broad-st-sprint/"
+    },
+    {
+        "Segment": "Broad St. Sprint Reverse",
+        "Location": "Richmond",
+        "Length_m": 60,
+        "Grade": 0,
+        "URL": "https://zwiftinsider.com/segment/broad-st-sprint-reverse/"
+    },
+    {
+        "Segment": "Castle Park Sprint",
+        "Location": "Makuri Islands",
+        "Length_m": 220,
+        "Grade": -0.7,
+        "URL": "https://zwiftinsider.com/segment/castle-park-sprint/"
+    },
+    {
+        "Segment": "Castle Park Sprint Reverse",
+        "Location": "Makuri Islands",
+        "Length_m": 210,
+        "Grade": 0.3,
+        "URL": "https://zwiftinsider.com/segment/castle-park-sprint-reverse/"
+    },
+    {
+        "Segment": "Champion's Sprint",
+        "Location": "Scotland",
+        "Length_m": 200,
+        "Grade": -0.4,
+        "URL": "https://zwiftinsider.com/segment/champions-sprint/"
+    },
+    {
+        "Segment": "Champs-\u00c9lys\u00e9es Sprint",
+        "Location": "Paris",
+        "Length_m": 150,
+        "Grade": 3.5,
+        "URL": "https://zwiftinsider.com/segment/champs-\u00e9lys\u00e9es-sprint/"
+    },
+    {
+        "Segment": "Country Sprint",
+        "Location": "Makuri Islands",
+        "Length_m": 130,
+        "Grade": 0,
+        "URL": "https://zwiftinsider.com/segment/country-sprint/"
+    },
+    {
+        "Segment": "Country Sprint Reverse",
+        "Location": "Makuri Islands",
+        "Length_m": 150,
+        "Grade": 0,
+        "URL": "https://zwiftinsider.com/segment/country-sprint-reverse/"
+    },
+    {
+        "Segment": "Downtown Dolphin Prime Sprint",
+        "Location": "Crit City",
+        "Length_m": 200,
+        "Grade": 3.5,
+        "URL": "https://zwiftinsider.com/segment/downtown-dolphin-prime-sprint/"
+    },
+    {
+        "Segment": "Fuego Flats Reverse",
+        "Location": "Watopia",
+        "Length_m": 7100,
+        "Grade": 0,
+        "URL": "https://zwiftinsider.com/segment/fuego-flats-reverse/"
+    },
+    {
+        "Segment": "Fuego Flats Sprint",
+        "Location": "Watopia",
+        "Length_m": 500,
+        "Grade": 0.2,
+        "URL": "https://zwiftinsider.com/segment/fuego-flats-sprint/"
+    },
+    {
+        "Segment": "Innsbruck Sprint",
+        "Location": "Innsbruck",
+        "Length_m": 300,
+        "Grade": 0.07,
+        "URL": "https://zwiftinsider.com/segment/innsbruck-sprint/"
+    },
+    {
+        "Segment": "Innsbruck Sprint Reverse",
+        "Location": "Innsbruck",
+        "Length_m": 200,
+        "Grade": 0,
+        "URL": "https://zwiftinsider.com/segment/innsbruck-sprint-reverse/"
+    },
+    {
+        "Segment": "Jarvis Sprint",
+        "Location": "Watopia",
+        "Length_m": 200,
+        "Grade": -0.1,
+        "URL": "https://zwiftinsider.com/segment/jarvis-sprint/"
+    },
+    {
+        "Segment": "Jarvis Sprint Reverse",
+        "Location": "Watopia",
+        "Length_m": 200,
+        "Grade": 0.2,
+        "URL": "https://zwiftinsider.com/segment/jarvis-sprint-reverse/"
+    },
+    {
+        "Segment": "JWB Sprint",
+        "Location": "Watopia",
+        "Length_m": 360,
+        "Grade": -0.1,
+        "URL": "https://zwiftinsider.com/segment/jwb-sprint/"
+    },
+    {
+        "Segment": "JWB Sprint Reverse",
+        "Location": "Watopia",
+        "Length_m": 200,
+        "Grade": 0,
+        "URL": "https://zwiftinsider.com/segment/jwb-sprint-reverse/"
+    },
+    {
+        "Segment": "Lutece Express Sprint",
+        "Location": "Paris",
+        "Length_m": 220,
+        "Grade": -1,
+        "URL": "https://zwiftinsider.com/segment/lutece-express-sprint/"
+    },
+    {
+        "Segment": "Marina Sprint",
+        "Location": "France",
+        "Length_m": 340,
+        "Grade": 0,
+        "URL": "https://zwiftinsider.com/segment/marina-sprint/"
+    },
+    {
+        "Segment": "Marina Sprint Reverse",
+        "Location": "France",
+        "Length_m": 190,
+        "Grade": 0,
+        "URL": "https://zwiftinsider.com/segment/marina-sprint-reverse/"
+    },
+    {
+        "Segment": "Monument Ave Sprint",
+        "Location": "Richmond",
+        "Length_m": 220,
+        "Grade": -0.4,
+        "URL": "https://zwiftinsider.com/segment/monument-ave-sprint/"
+    },
+    {
+        "Segment": "Monument Ave Sprint Reverse",
+        "Location": "Richmond",
+        "Length_m": 200,
+        "Grade": 0,
+        "URL": "https://zwiftinsider.com/segment/monument-ave-sprint-reverse/"
+    },
+    {
+        "Segment": "NY Sprint",
+        "Location": "New York",
+        "Length_m": 150,
+        "Grade": -4.3,
+        "URL": "https://zwiftinsider.com/segment/ny-sprint/"
+    },
+    {
+        "Segment": "NY Sprint Reverse",
+        "Location": "New York",
+        "Length_m": 230,
+        "Grade": 0,
+        "URL": "https://zwiftinsider.com/segment/ny-sprint-reverse/"
+    },
+    {
+        "Segment": "Pav\u00e9 Sprint",
+        "Location": "France",
+        "Length_m": 330,
+        "Grade": 0,
+        "URL": "https://zwiftinsider.com/segment/pav\u00e9-sprint/"
+    },
+    {
+        "Segment": "Pav\u00e9 Sprint Reverse",
+        "Location": "France",
+        "Length_m": 330,
+        "Grade": 0,
+        "URL": "https://zwiftinsider.com/segment/pav\u00e9-sprint-reverse/"
+    },
+    {
+        "Segment": "Railway Sprint",
+        "Location": "Makuri Islands",
+        "Length_m": 640,
+        "Grade": -1.1,
+        "URL": "https://zwiftinsider.com/segment/railway-sprint/"
+    },
+    {
+        "Segment": "Sasquatch Sprint",
+        "Location": "Watopia",
+        "Length_m": 350,
+        "Grade": 0.2,
+        "URL": "https://zwiftinsider.com/segment/sasquatch-sprint/"
+    },
+    {
+        "Segment": "Sasquatch Sprint Reverse",
+        "Location": "Watopia",
+        "Length_m": 350,
+        "Grade": 0.1,
+        "URL": "https://zwiftinsider.com/segment/sasquatch-sprint-reverse/"
+    },
+    {
+        "Segment": "Shisa Sprint",
+        "Location": "Makuri Islands",
+        "Length_m": 290,
+        "Grade": 0.7,
+        "URL": "https://zwiftinsider.com/segment/shisa-sprint/"
+    },
+    {
+        "Segment": "Shisa Sprint Reverse",
+        "Location": "Makuri Islands",
+        "Length_m": 280,
+        "Grade": 0,
+        "URL": "https://zwiftinsider.com/segment/shisa-sprint-reverse/"
+    },
+    {
+        "Segment": "Stoneway Sprint",
+        "Location": "Watopia",
+        "Length_m": 400,
+        "Grade": 0.75,
+        "URL": "https://zwiftinsider.com/segment/stoneway-sprint/"
+    },
+    {
+        "Segment": "Stoneway Sprint Reverse",
+        "Location": "Watopia",
+        "Length_m": 400,
+        "Grade": 0.75,
+        "URL": "https://zwiftinsider.com/segment/stoneway-sprint-reverse/"
+    },
+    {
+        "Segment": "The Mall Sprint",
+        "Location": "London",
+        "Length_m": 200,
+        "Grade": -1.4,
+        "URL": "https://zwiftinsider.com/segment/the-mall-sprint/"
+    },
+    {
+        "Segment": "The Mall Sprint Reverse",
+        "Location": "London",
+        "Length_m": 200,
+        "Grade": 1.1,
+        "URL": "https://zwiftinsider.com/segment/the-mall-sprint-reverse/"
+    },
+    {
+        "Segment": "Yorkshire Sprint",
+        "Location": "Yorkshire",
+        "Length_m": 250,
+        "Grade": 0.8,
+        "URL": "https://zwiftinsider.com/segment/yorkshire-sprint/"
+    },
+    {
+        "Segment": "Yorkshire Sprint Reverse",
+        "Location": "Yorkshire",
+        "Length_m": 400,
+        "Grade": 2.4,
+        "URL": "https://zwiftinsider.com/segment/yorkshire-sprint-reverse/"
+    }
+]

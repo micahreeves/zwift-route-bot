@@ -1,0 +1,432 @@
+[
+    {
+        "Segment": "Ventoux KOM",
+        "Location": "France",
+        "Length_km": 19,
+        "Length_miles": 11.8,
+        "Elev_Gain_m": 1481,
+        "Elev_Gain_ft": 4859,
+        "Grade": 7.8,
+        "URL": "https://zwiftinsider.com/segment/ventoux-kom/"
+    },
+    {
+        "Segment": "Alpe du Zwift KOM",
+        "Location": "Watopia",
+        "Length_km": 12.2,
+        "Length_miles": 7.6,
+        "Elev_Gain_m": 1036,
+        "Elev_Gain_ft": 3399,
+        "Grade": 8.5,
+        "URL": "https://zwiftinsider.com/segment/alpe-du-zwift-kom/"
+    },
+    {
+        "Segment": "Epic KOM",
+        "Location": "Watopia",
+        "Length_km": 9.5,
+        "Length_miles": 5.9,
+        "Elev_Gain_m": 415.7,
+        "Elev_Gain_ft": 1364,
+        "Grade": 3.9,
+        "URL": "https://zwiftinsider.com/segment/epic-kom/"
+    },
+    {
+        "Segment": "Epic KOM Reverse",
+        "Location": "Watopia",
+        "Length_km": 6.3,
+        "Length_miles": 3.9,
+        "Elev_Gain_m": 402.6,
+        "Elev_Gain_ft": 1321,
+        "Grade": 5.9,
+        "URL": "https://zwiftinsider.com/segment/epic-kom-reverse/"
+    },
+    {
+        "Segment": "Innsbruck KOM",
+        "Location": "Innsbruck",
+        "Length_km": 7.4,
+        "Length_miles": 4.6,
+        "Elev_Gain_m": 399.9,
+        "Elev_Gain_ft": 1312,
+        "Grade": 5.4,
+        "URL": "https://zwiftinsider.com/segment/innsbruck-kom/"
+    },
+    {
+        "Segment": "Innsbruck KOM Reverse",
+        "Location": "Innsbruck",
+        "Length_km": 5.8,
+        "Length_miles": 3.6,
+        "Elev_Gain_m": 396.8,
+        "Elev_Gain_ft": 1302,
+        "Grade": 6.9,
+        "URL": "https://zwiftinsider.com/segment/innsbruck-kom-reverse/"
+    },
+    {
+        "Segment": "The Grade KOM",
+        "Location": "Watopia",
+        "Length_km": 3.52,
+        "Length_miles": 2.2,
+        "Elev_Gain_m": 305,
+        "Elev_Gain_ft": 1001,
+        "Grade": 8.6,
+        "URL": "https://zwiftinsider.com/segment/the-grade-kom/"
+    },
+    {
+        "Segment": "Keith Hill KOM",
+        "Location": "London",
+        "Length_km": 4.3,
+        "Length_miles": 2.7,
+        "Elev_Gain_m": 225.2,
+        "Elev_Gain_ft": 739,
+        "Grade": 5,
+        "URL": "https://zwiftinsider.com/segment/keith-hill-kom/"
+    },
+    {
+        "Segment": "Radio Tower KOM",
+        "Location": "Watopia",
+        "Length_km": 1.16,
+        "Length_miles": 0.7,
+        "Elev_Gain_m": 150,
+        "Elev_Gain_ft": 492,
+        "Grade": 12.8,
+        "URL": "https://zwiftinsider.com/segment/radio-tower-kom/"
+    },
+    {
+        "Segment": "Box Hill KOM",
+        "Location": "London",
+        "Length_km": 3,
+        "Length_miles": 1.9,
+        "Elev_Gain_m": 134.7,
+        "Elev_Gain_ft": 442,
+        "Grade": 4.4,
+        "URL": "https://zwiftinsider.com/segment/box-hill-kom/"
+    },
+    {
+        "Segment": "Leith Hill KOM",
+        "Location": "London",
+        "Length_km": 1.9,
+        "Length_miles": 1.2,
+        "Elev_Gain_m": 132.6,
+        "Elev_Gain_ft": 435,
+        "Grade": 7,
+        "URL": "https://zwiftinsider.com/segment/leith-hill-kom/"
+    },
+    {
+        "Segment": "Volcano KOM",
+        "Location": "Watopia",
+        "Length_km": 3.8,
+        "Length_miles": 2.4,
+        "Elev_Gain_m": 128.6,
+        "Elev_Gain_ft": 422,
+        "Grade": 3.2,
+        "URL": "https://zwiftinsider.com/segment/volcano-kom/"
+    },
+    {
+        "Segment": "Fox Hill KOM",
+        "Location": "London",
+        "Length_km": 2.4,
+        "Length_miles": 1.5,
+        "Elev_Gain_m": 120.7,
+        "Elev_Gain_ft": 396,
+        "Grade": 4.3,
+        "URL": "https://zwiftinsider.com/segment/fox-hill-kom/"
+    },
+    {
+        "Segment": "Petit KOM",
+        "Location": "France",
+        "Length_km": 2.7,
+        "Length_miles": 1.7,
+        "Elev_Gain_m": 105.2,
+        "Elev_Gain_ft": 345,
+        "Grade": 3.9,
+        "URL": "https://zwiftinsider.com/segment/petit-kom/"
+    },
+    {
+        "Segment": "Temple KOM",
+        "Location": "Makuri Islands",
+        "Length_km": 2.5,
+        "Length_miles": 1.6,
+        "Elev_Gain_m": 99.4,
+        "Elev_Gain_ft": 326,
+        "Grade": 3.6,
+        "URL": "https://zwiftinsider.com/segment/temple-kom/"
+    },
+    {
+        "Segment": "Itza KOM",
+        "Location": "Watopia",
+        "Length_km": 3.75,
+        "Length_miles": 2.3,
+        "Elev_Gain_m": 95,
+        "Elev_Gain_ft": 312,
+        "Grade": 2,
+        "URL": "https://zwiftinsider.com/segment/itza-kom/"
+    },
+    {
+        "Segment": "New York KOM Reverse",
+        "Location": "New York",
+        "Length_km": 1.1,
+        "Length_miles": 0.7,
+        "Elev_Gain_m": 89,
+        "Elev_Gain_ft": 292,
+        "Grade": 8.1,
+        "URL": "https://zwiftinsider.com/segment/new-york-kom-reverse/"
+    },
+    {
+        "Segment": "New York KOM",
+        "Location": "New York",
+        "Length_km": 1.4,
+        "Length_miles": 0.9,
+        "Elev_Gain_m": 88.7,
+        "Elev_Gain_ft": 291,
+        "Grade": 6.3,
+        "URL": "https://zwiftinsider.com/segment/new-york-kom/"
+    },
+    {
+        "Segment": "Temple KOM Reverse",
+        "Location": "Makuri Islands",
+        "Length_km": 1.9,
+        "Length_miles": 1.2,
+        "Elev_Gain_m": 68,
+        "Elev_Gain_ft": 223,
+        "Grade": 3.5,
+        "URL": "https://zwiftinsider.com/segment/temple-kom-reverse/"
+    },
+    {
+        "Segment": "Yorkshire KOM",
+        "Location": "Yorkshire",
+        "Length_km": 1.2,
+        "Length_miles": 0.7,
+        "Elev_Gain_m": 65.8,
+        "Elev_Gain_ft": 216,
+        "Grade": 5.5,
+        "URL": "https://zwiftinsider.com/segment/yorkshire-kom/"
+    },
+    {
+        "Segment": "Sgurr Summit North",
+        "Location": "Scotland",
+        "Length_km": 1.6,
+        "Length_miles": 1.0,
+        "Elev_Gain_m": 59,
+        "Elev_Gain_ft": 194,
+        "Grade": 3.7,
+        "URL": "https://zwiftinsider.com/segment/sgurr-summit-north/"
+    },
+    {
+        "Segment": "Rooftop KOM",
+        "Location": "Makuri Islands",
+        "Length_km": 1.9,
+        "Length_miles": 1.2,
+        "Elev_Gain_m": 53.6,
+        "Elev_Gain_ft": 176,
+        "Grade": 2.7,
+        "URL": "https://zwiftinsider.com/segment/rooftop-kom/"
+    },
+    {
+        "Segment": "Breakaway Brae",
+        "Location": "Scotland",
+        "Length_km": 0.62,
+        "Length_miles": 0.4,
+        "Elev_Gain_m": 14.6,
+        "Elev_Gain_ft": 48,
+        "Grade": 2.4,
+        "URL": "https://zwiftinsider.com/segment/breakaway-brae/"
+    },
+    {
+        "Segment": "The Clyde Kicker",
+        "Location": "Scotland",
+        "Length_km": 0.3,
+        "Length_miles": 0.2,
+        "Elev_Gain_m": 10.7,
+        "Elev_Gain_ft": 35,
+        "Grade": 3.6,
+        "URL": "https://zwiftinsider.com/segment/the-clyde-kicker/"
+    },
+    {
+        "Segment": "23rd St KOM Reverse",
+        "Location": "Richmond",
+        "Length_km": 1.1,
+        "Length_miles": 0.7,
+        "Elev_Gain_m": 38.1,
+        "Elev_Gain_ft": 125,
+        "Grade": 3.5,
+        "URL": "https://zwiftinsider.com/segment/23rd-st-kom-reverse/"
+    },
+    {
+        "Segment": "23rd St. KOM",
+        "Location": "Richmond",
+        "Length_km": 0.26,
+        "Length_miles": 0.2,
+        "Elev_Gain_m": 24.1,
+        "Elev_Gain_ft": 79,
+        "Grade": 9.3,
+        "URL": "https://zwiftinsider.com/segment/23rd-st-kom/"
+    },
+    {
+        "Segment": "Aqueduc KOM",
+        "Location": "France",
+        "Length_km": 0.42,
+        "Length_miles": 0.3,
+        "Elev_Gain_m": 4.9,
+        "Elev_Gain_ft": 16,
+        "Grade": 0.9,
+        "URL": "https://zwiftinsider.com/segment/aqueduc-kom/"
+    },
+    {
+        "Segment": "Aqueduc KOM Reverse",
+        "Location": "France",
+        "Length_km": 0.4,
+        "Length_miles": 0.2,
+        "Elev_Gain_m": 9.4,
+        "Elev_Gain_ft": 31,
+        "Grade": 2.3,
+        "URL": "https://zwiftinsider.com/segment/aqueduc-kom-reverse/"
+    },
+    {
+        "Segment": "Breakaway Brae Reverse",
+        "Location": "Scotland",
+        "Length_km": 0.4,
+        "Length_miles": 0.2,
+        "Elev_Gain_m": 8.5,
+        "Elev_Gain_ft": 28,
+        "Grade": 2.0,
+        "URL": "https://zwiftinsider.com/segment/breakaway-brae-reverse/"
+    },
+    {
+        "Segment": "Castle KOM",
+        "Location": "Makuri Islands",
+        "Length_km": 2.5,
+        "Length_miles": 1.6,
+        "Elev_Gain_m": 66.4,
+        "Elev_Gain_ft": 218,
+        "Grade": 2.1,
+        "URL": "https://zwiftinsider.com/segment/castle-kom/"
+    },
+    {
+        "Segment": "Hilly KOM",
+        "Location": "Watopia",
+        "Length_km": 0.9,
+        "Length_miles": 0.6,
+        "Elev_Gain_m": 50.9,
+        "Elev_Gain_ft": 167,
+        "Grade": 5.5,
+        "URL": "https://zwiftinsider.com/segment/hilly-kom/"
+    },
+    {
+        "Segment": "Hilly KOM Reverse",
+        "Location": "Watopia",
+        "Length_km": 2.4,
+        "Length_miles": 1.5,
+        "Elev_Gain_m": 55.8,
+        "Elev_Gain_ft": 183,
+        "Grade": 2.0,
+        "URL": "https://zwiftinsider.com/segment/hilly-kom-reverse/"
+    },
+    {
+        "Segment": "Jarvis KOM",
+        "Location": "Watopia",
+        "Length_km": 1.8,
+        "Length_miles": 1.1,
+        "Elev_Gain_m": 38,
+        "Elev_Gain_ft": 125,
+        "Grade": 1.8,
+        "URL": "https://zwiftinsider.com/segment/jarvis-kom/"
+    },
+    {
+        "Segment": "Jarvis KOM Reverse",
+        "Location": "Watopia",
+        "Length_km": 1.3,
+        "Length_miles": 0.8,
+        "Elev_Gain_m": 41,
+        "Elev_Gain_ft": 135,
+        "Grade": 3.1,
+        "URL": "https://zwiftinsider.com/segment/jarvis-kom-reverse/"
+    },
+    {
+        "Segment": "Leg Snapper KOM",
+        "Location": "Innsbruck",
+        "Length_km": 0.43,
+        "Length_miles": 0.3,
+        "Elev_Gain_m": 29.6,
+        "Elev_Gain_ft": 97,
+        "Grade": 6.9,
+        "URL": "https://zwiftinsider.com/segment/leg-snapper-kom/"
+    },
+    {
+        "Segment": "Libby Hill",
+        "Location": "Richmond",
+        "Length_km": 0.64,
+        "Length_miles": 0.4,
+        "Elev_Gain_m": 38.1,
+        "Elev_Gain_ft": 125,
+        "Grade": 6.0,
+        "URL": "https://zwiftinsider.com/segment/libby-hill/"
+    },
+    {
+        "Segment": "Libby Hill KOM Reverse",
+        "Location": "Richmond",
+        "Length_km": 0.7,
+        "Length_miles": 0.4,
+        "Elev_Gain_m": 26.2,
+        "Elev_Gain_ft": 86,
+        "Grade": 3.6,
+        "URL": "https://zwiftinsider.com/segment/libby-hill-kom-reverse/"
+    },
+    {
+        "Segment": "Mayan Mountainside KOM",
+        "Location": "Watopia",
+        "Length_km": 1.99,
+        "Length_miles": 1.2,
+        "Elev_Gain_m": 62,
+        "Elev_Gain_ft": 203,
+        "Grade": 3.1,
+        "URL": "https://zwiftinsider.com/segment/mayan-mountainside-kom/"
+    },
+    {
+        "Segment": "Sgurr Summit South",
+        "Location": "Scotland",
+        "Length_km": 1.0,
+        "Length_miles": 0.6,
+        "Elev_Gain_m": 34,
+        "Elev_Gain_ft": 112,
+        "Grade": 3.3,
+        "URL": "https://zwiftinsider.com/segment/sgurr-summit-south/"
+    },
+    {
+        "Segment": "The Clyde Kicker Reverse",
+        "Location": "Scotland",
+        "Length_km": 0.6,
+        "Length_miles": 0.4,
+        "Elev_Gain_m": 12,
+        "Elev_Gain_ft": 39,
+        "Grade": 0.7,
+        "URL": "https://zwiftinsider.com/segment/the-clyde-kicker-reverse/"
+    },
+    {
+        "Segment": "Titans Grove KOM",
+        "Location": "Watopia",
+        "Length_km": 2.6,
+        "Length_miles": 1.6,
+        "Elev_Gain_m": 59.4,
+        "Elev_Gain_ft": 195,
+        "Grade": 2.2,
+        "URL": "https://zwiftinsider.com/segment/titans-grove-kom/"
+    },
+    {
+        "Segment": "Titans Grove KOM Reverse",
+        "Location": "Watopia",
+        "Length_km": 0.89,
+        "Length_miles": 0.6,
+        "Elev_Gain_m": 39,
+        "Elev_Gain_ft": 128,
+        "Grade": 4.4,
+        "URL": "https://zwiftinsider.com/segment/titans-grove-kom-reverse/"
+    },
+    {
+        "Segment": "Yorkshire KOM Reverse",
+        "Location": "Yorkshire",
+        "Length_km": 1.2,
+        "Length_miles": 0.7,
+        "Elev_Gain_m": 47.9,
+        "Elev_Gain_ft": 157,
+        "Grade": 4.0,
+        "URL": "https://zwiftinsider.com/segment/yorkshire-kom-reverse/"
+    }
+]

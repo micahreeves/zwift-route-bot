@@ -1,0 +1,6 @@
+discord.py
+python-dotenv
+flask
+aiohttp
+beautifulsoup4
+typing-extensions
