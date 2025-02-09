@@ -217,6 +217,7 @@ async def fetch_route_info(url):
         logger.error(f"Error fetching route info: {e}")
     return [], None
 
+# Updated helper functions for URL handling
 async def get_cyccal_url(route_name):
     """Convert route name to Cyccal URL format"""
     formatted_name = route_name.lower().replace(' ', '-')
@@ -225,62 +226,56 @@ async def get_cyccal_url(route_name):
     return f"https://cyccal.com/{formatted_name}/"
 
 async def get_cyccal_image(route_name):
-    """Get the elevation profile image URL"""
+    """Get the elevation profile image URL using the correct Cyccal format"""
     world = get_world_for_route(route_name)
     words = route_name.split()
     formatted_words = []
+    
+    # Words that should remain lowercase in the URL
+    lowercase_words = {'and', 'of', 'the', 'to', 'in', 'on', 'at', 'by'}
+    
     for word in words:
-        if word.lower() == 'and':
-            formatted_words.append('and')
+        if word.lower() in lowercase_words:
+            formatted_words.append(word.lower())
         else:
             formatted_words.append(word.title())
+    
     route_formatted = '_'.join(formatted_words)
     return f"https://cyccal.com/wp-content/uploads/2024/11/{world}_{route_formatted}_profile.png"
 
-class ZwiftBot(discord.Client):
-    def __init__(self):
-        super().__init__(intents=discord.Intents.default())
-        self.tree = app_commands.CommandTree(self)
-        self.command_cooldowns = {}
-        self.global_command_times = deque(maxlen=50)
-        self.rate_limit_lock = asyncio.Lock()
-        self.USER_COOLDOWN = 5.0
-        self.GLOBAL_RATE_LIMIT = 20
+def get_world_for_route(route_name):
+    """Determine the Zwift world for a given route with improved accuracy"""
+    route_lower = route_name.lower()
+    
+    # Define world mappings with more specific patterns
+    world_patterns = {
+        'Makuri': ['makuri', 'neokyo', 'urukazi', 'castle', 'temple', 'rooftop'],
+        'France': ['france', 'ven-top', 'casse-pattes', 'petit', 'ventoux'],
+        'London': ['london', 'greater london', 'london loop', 'leith', 'box hill', 'surrey'],
+        'Yorkshire': ['yorkshire', 'harrogate', 'royal pump'],
+        'Innsbruck': ['innsbruck', 'lutscher'],
+        'Richmond': ['richmond'],
+        'Paris': ['paris', 'champs', 'lutece'],
+        'Scotland': ['glasgow', 'scotland', 'sgurr', 'loch'],
+        'New York': ['new york', 'ny', 'central park', 'astoria'],
+    }
+    
+    # Check each world's patterns
+    for world, patterns in world_patterns.items():
+        if any(pattern in route_lower for pattern in patterns):
+            return world
+            
+    # Default to Watopia if no other world matches
+    return 'Watopia'
 
-    async def setup_hook(self):
-        await self.tree.sync()
-
-    async def check_rate_limit(self, user_id):
-        """Check and enforce rate limits"""
-        async with self.rate_limit_lock:
-            now = time.time()
-            if user_id in self.command_cooldowns:
-                time_since_last = now - self.command_cooldowns[user_id]
-                if time_since_last < self.USER_COOLDOWN:
-                    wait_time = self.USER_COOLDOWN - time_since_last
-                    raise HTTPException(response=discord.WebhookMessage, 
-                                     message=f"Please wait {wait_time:.1f} seconds before trying again.")
-            minute_ago = now - 60
-            self.global_command_times = deque(
-                (t for t in self.global_command_times if t > minute_ago),
-                maxlen=50
-            )
-            if len(self.global_command_times) >= self.GLOBAL_RATE_LIMIT:
-                raise HTTPException(response=discord.WebhookMessage, 
-                                 message="Bot is currently rate limited. Please try again in a few seconds.")
-            self.command_cooldowns[user_id] = now
-            self.global_command_times.append(now)
-
-client = ZwiftBot()
-
-@client.event
-async def on_ready():
-    logger.info(f'Bot logged in as {client.user}!')
+# Updated route command with improved error handling and logging
 @client.tree.command(name="route", description="Get a Zwift route URL by name")
 async def route(interaction: discord.Interaction, name: str):
     if not interaction.user:
         return
+        
     try:
+        # Rate limit checking
         try:
             await client.check_rate_limit(interaction.user.id)
         except HTTPException as e:
@@ -317,30 +312,50 @@ async def route(interaction: discord.Interaction, name: str):
                 else:
                     embed.description = similar_routes
             
+            # Fetch and set images with improved error handling
             cyccal_url = await get_cyccal_url(result["Route"])
             cyccal_img_url = await get_cyccal_image(result["Route"])
             
             try:
                 async with aiohttp.ClientSession() as session:
-                    async with session.head(cyccal_img_url) as response:
-                        if response.status == 200:
-                            embed.set_image(url=cyccal_img_url)
-                        elif zwift_img_url:
+                    # Try to fetch Cyccal image with timeout
+                    try:
+                        async with session.head(cyccal_img_url, timeout=5) as response:
+                            if response.status == 200:
+                                embed.set_image(url=cyccal_img_url)
+                                logger.info(f"Successfully loaded Cyccal image for {result['Route']}")
+                            elif zwift_img_url:
+                                logger.info(f"Cyccal image not found for {result['Route']}, using ZwiftInsider image")
+                                embed.set_image(url=zwift_img_url)
+                    except asyncio.TimeoutError:
+                        logger.warning(f"Timeout fetching Cyccal image for {result['Route']}")
+                        if zwift_img_url:
+                            embed.set_image(url=zwift_img_url)
+                    except Exception as e:
+                        logger.error(f"Error fetching Cyccal image for {result['Route']}: {e}")
+                        if zwift_img_url:
                             embed.set_image(url=zwift_img_url)
                     
-                    async with session.head(cyccal_url) as response:
-                        if response.status == 200:
-                            embed.add_field(
-                                name="Additional Resources",
-                                value=f"[View on Cyccal]({cyccal_url})",
-                                inline=False
-                            )
-            except:
+                    # Check Cyccal route page
+                    try:
+                        async with session.head(cyccal_url, timeout=5) as response:
+                            if response.status == 200:
+                                embed.add_field(
+                                    name="Additional Resources",
+                                    value=f"[View on Cyccal]({cyccal_url})",
+                                    inline=False
+                                )
+                    except Exception as e:
+                        logger.warning(f"Could not verify Cyccal route page for {result['Route']}: {e}")
+                        
+            except Exception as e:
+                logger.error(f"Session error for {result['Route']}: {e}")
                 if zwift_img_url:
                     embed.set_image(url=zwift_img_url)
             
             embed.set_thumbnail(url="https://zwiftinsider.com/wp-content/uploads/2022/12/zwift-logo.png")
             embed.set_footer(text="ZwiftGuy • Use /route to find routes")
+            
         else:
             suggestions = random.sample(zwift_routes, min(3, len(zwift_routes)))
             embed = discord.Embed(
