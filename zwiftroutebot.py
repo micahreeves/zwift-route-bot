@@ -332,8 +332,7 @@ class ZwiftBot(discord.Client):
                         await loading_message.delete()
                         logger.info("Deleted loading animation message")
                     except Exception as e:
-                        logger.error(f"Error deleting loading animation: {e}")
-                        
+                        logger.error(f"Error deleting loading animation: {e}")  
             except discord.HTTPException as e:
                 logger.error(f"Discord HTTP error when sending embed: {e}")
                 # Try without image as fallback
@@ -347,7 +346,7 @@ class ZwiftBot(discord.Client):
                     except:
                         pass
                         
-    except Exception as e:
+            except Exception as e:
         logger.error(f"Error in route command: {e}")
         try:
             if not interaction.response.is_done():
