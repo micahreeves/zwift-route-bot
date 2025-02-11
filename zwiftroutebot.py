@@ -342,11 +342,11 @@ class ZwiftBot(discord.Client):
                 await interaction.followup.send(embed=embed)
                 
                 # Still try to delete loading message if it exists
-               if loading_message:
-                    try:
-                        await loading_message.delete()
-                    except:
-                        pass
+    if loading_message:
+        try:
+            await loading_message.delete()
+        except:
+            pass
                         
     except Exception as e:
         logger.error(f"Error in route command: {e}")
