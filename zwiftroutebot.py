@@ -321,7 +321,6 @@ class ZwiftBot(discord.Client):
                     color=discord.Color.red()
                 )
                 logger.info("Created 'not found' embed")
-
             try:
                 # Send the actual response
                 await interaction.followup.send(embed=embed)
