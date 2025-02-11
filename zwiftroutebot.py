@@ -341,24 +341,66 @@ class ZwiftBot(discord.Client):
                 
 # Still try to delete loading message if it exists
 if loading_message:
-                    try:
-                        await loading_message.delete()
-                    except:
-                        pass
-                        
-            except Exception as        logger.error(f"Error in route command: {e}")
+    try:
+        await loading_message.delete()
+    except:
+        pass  # Silently ignore errors
+
+try:
+    # Main command processing logic here
+    result, alternatives = find_route(name)
+
+    if not interaction.response.is_done():
+        await interaction.response.defer(thinking=True)
+
+    loading_message = await bike_loading_animation(interaction)
+
+    if result:
+        stats, zwift_img_url = await fetch_route_info(result["URL"])
+        embed = discord.Embed(
+            title=f"🚲 {result['Route']}",
+            url=result["URL"],
+            description="\n".join(stats) if stats else "View full route details on ZwiftInsider",
+            color=0xFC6719
+        )
+
+        if result.get("ImageURL"):
+            embed.set_image(url=result["ImageURL"])
+
+        await interaction.followup.send(embed=embed)
+
+    else:
+        await interaction.followup.send(
+            embed=discord.Embed(
+                title="❌ Route Not Found",
+                description=f"Could not find a route matching `{name}`.",
+                color=discord.Color.red()
+            )
+        )
+
+    # Delete loading animation message if it exists
+    if loading_message:
         try:
-            if not interaction.response.is_done():
-                await interaction.response.send_message(
-                    embed=discord.Embed(
-                        title="❌ Error",
-                        description="An error occurred while processing your request.",
-                        color=discord.Color.red()
-                    ),
-                    ephemeral=True
-                )
-        except:
-            pass
+            await loading_message.delete()
+        except Exception as e:
+            logger.error(f"Error deleting loading animation: {e}")
+
+except Exception as e:
+    logger.error(f"Error in route command: {e}")
+
+    try:
+        if not interaction.response.is_done():
+            await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="❌ Error",
+                    description="An error occurred while processing your request.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+    except Exception as e:
+        logger.error(f"Failed to send error message: {e}")
+
 
     async def sprint(self, interaction: discord.Interaction, name: str):
         if not interaction.user:
