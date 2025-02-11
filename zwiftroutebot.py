@@ -245,7 +245,9 @@ class ZwiftBot(discord.Client):
                 return
 
             result, alternatives = find_route(name)
-            logger.info(f"Route search result: {result['Route'] if result else 'Not found'}")
+            logger.info(f"Route search result: {result['Route'] 
+            if result 
+            else 'Not found'}")
             
             if not interaction.response.is_done():
                 await interaction.response.defer(thinking=True)
