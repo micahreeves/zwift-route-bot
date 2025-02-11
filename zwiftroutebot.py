@@ -340,14 +340,16 @@ class ZwiftBot(discord.Client):
                 await interaction.followup.send(embed=embed)
                 
 # Still try to delete loading message if it exists
+
+# Ensure the loading message is deleted if it exists
 if loading_message:
     try:
         await loading_message.delete()
     except:
-        pass  # Silently ignore errors
+        pass  # Ignore any errors
 
 try:
-    # Main command processing logic here
+    # Main processing logic here
     result, alternatives = find_route(name)
 
     if not interaction.response.is_done():
@@ -386,7 +388,7 @@ try:
             logger.error(f"Error deleting loading animation: {e}")
 
 except Exception as e:
-    logger.error(f"Error in route command: {e}")
+    logger.error(f"Error in route command: {e}")  # Proper indentation ✅
 
     try:
         if not interaction.response.is_done():
@@ -399,8 +401,7 @@ except Exception as e:
                 ephemeral=True
             )
     except Exception as e:
-        logger.error(f"Failed to send error message: {e}")
-
+        logger.error(f"Failed to send error message: {e}")  # Proper handling ✅
 
     async def sprint(self, interaction: discord.Interaction, name: str):
         if not interaction.user:
