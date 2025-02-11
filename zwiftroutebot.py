@@ -189,25 +189,19 @@ def find_sprint(search_term):
     return None, []
     
 def find_kom(search_term):
-    """Find a KOM segment using fuzzy matching"""
+    """Find a KOM using fuzzy matching"""
     if not search_term or not zwift_koms:
         return None, []
     normalized_search = normalize_route_name(search_term)
-    
-    # Check for exact match first
     for kom in zwift_koms:
         if normalize_route_name(kom["Segment"]) == normalized_search:
             return kom, []
-            
-    # Check for partial matches
     matches = []
     for kom in zwift_koms:
         if normalized_search in normalize_route_name(kom["Segment"]):
             matches.append(kom)
     if matches:
         return matches[0], matches[1:3]
-        
-    # Try fuzzy matching if no direct matches found
     kom_names = [normalize_route_name(k["Segment"]) for k in zwift_koms]
     close_matches = get_close_matches(normalized_search, kom_names, n=3, cutoff=0.6)
     if close_matches:
@@ -215,7 +209,8 @@ def find_kom(search_term):
         alternative_koms = [k for k in zwift_koms if normalize_route_name(k["Segment"]) in close_matches[1:]]
         if matched_koms:
             return matched_koms[0], alternative_koms
-    return None, []
+    return None, [] 
+
 
 # ==========================================
 # Route Information Fetching
