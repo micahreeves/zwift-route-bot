@@ -380,6 +380,38 @@ try:
             )
         )
 
+try:
+    # Main command logic
+    result, alternatives = find_route(name)
+
+    if not interaction.response.is_done():
+        await interaction.response.defer(thinking=True)
+
+    loading_message = await bike_loading_animation(interaction)
+
+    if result:
+        stats, zwift_img_url = await fetch_route_info(result["URL"])
+        embed = discord.Embed(
+            title=f"🚲 {result['Route']}",
+            url=result["URL"],
+            description="\n".join(stats) if stats else "View full route details on ZwiftInsider",
+            color=0xFC6719
+        )
+
+        if result.get("ImageURL"):
+            embed.set_image(url=result["ImageURL"])
+
+        await interaction.followup.send(embed=embed)
+
+    else:
+        await interaction.followup.send(
+            embed=discord.Embed(
+                title="❌ Route Not Found",
+                description=f"Could not find a route matching `{name}`.",
+                color=discord.Color.red()
+            )
+        )
+
     # Delete loading animation message if it exists
     if loading_message:
         try:
@@ -387,8 +419,8 @@ try:
         except Exception as e:
             logger.error(f"Error deleting loading animation: {e}")
 
-except Exception as e:
-    logger.error(f"Error in route command: {e}")  # Proper indentation ✅
+except Exception as e:  # ✅ NOW THIS IS CORRECTLY INDENTED
+    logger.error(f"Error in route command: {e}")
 
     try:
         if not interaction.response.is_done():
@@ -401,7 +433,7 @@ except Exception as e:
                 ephemeral=True
             )
     except Exception as e:
-        logger.error(f"Failed to send error message: {e}")  # Proper handling ✅
+        logger.error(f"Failed to send error message: {e}")  # ✅ This also belongs to try-except
 
     async def sprint(self, interaction: discord.Interaction, name: str):
         if not interaction.user:
