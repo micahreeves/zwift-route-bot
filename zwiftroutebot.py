@@ -223,8 +223,7 @@ class ZwiftBot(discord.Client):
             self.global_command_times.append(now)
 
     async def route(self, interaction: discord.Interaction, name: str):
-    if not interaction.user:
-        return
+        pass 
         
     try:
         logger.info(f"Route command started for: {name}")
