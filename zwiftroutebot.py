@@ -218,6 +218,9 @@ class ZwiftBot(discord.Client):
         self.GLOBAL_RATE_LIMIT = 20
 
     async def setup_hook(self):
+        # Add the commands to the command tree
+        self.tree.command(name="route", description="Get a Zwift route URL by name")(self.route)
+        self.tree.command(name="sprint", description="Get information about a Zwift sprint segment")(self.sprint)
         await self.tree.sync()
 
     async def check_rate_limit(self, user_id):
@@ -240,211 +243,207 @@ class ZwiftBot(discord.Client):
                                  message="Bot is currently rate limited. Please try again in a few seconds.")
             self.command_cooldowns[user_id] = now
             self.global_command_times.append(now)
-            
-client = ZwiftBot()
 
-@client.tree.command(name="route", description="Get a Zwift route URL by name")
-async def route(interaction: discord.Interaction, name: str):
-    if not interaction.user:
-        return
-        
-    try:
-        logger.info(f"Route command started for: {name}")
-        
-        try:
-            await client.check_rate_limit(interaction.user.id)
-        except HTTPException as e:
-            logger.warning(f"Rate limit hit: {e}")
-            if not interaction.response.is_done():
-                await interaction.response.send_message(
-                    embed=discord.Embed(
-                        title="⏳ Rate Limited",
-                        description=str(e),
-                        color=discord.Color.orange()
-                    ),
-                    ephemeral=True
-                )
+    async def route(self, interaction: discord.Interaction, name: str):
+        if not interaction.user:
             return
-            result, alternatives = find_route(name)
-        logger.info(f"Route search result: {result['Route'] if result else 'Not found'}")
-        
-        if not interaction.response.is_done():
-            await interaction.response.defer(thinking=True)
-            logger.info("Interaction deferred")
             
-        # Show loading animation
         try:
-            loading_message = await bike_loading_animation(interaction)
-        except Exception as e:
-            logger.error(f"Error in loading animation: {e}")
-        
-        if result:
-            stats, zwift_img_url = await fetch_route_info(result["URL"])
-            logger.info(f"ZwiftInsider image URL: {zwift_img_url}")
+            logger.info(f"Route command started for: {name}")
             
-            embed = discord.Embed(
-                title=f"🚲 {result['Route']}",
-                url=result["URL"],
-                description="\n".join(stats) if stats else "View full route details on ZwiftInsider",
-                color=0xFC6719
-            )
-            logger.info("Basic embed created")
-            
-            if alternatives:
-                similar_routes = "\n\n**Similar routes:**\n" + "\n".join(f"• {r['Route']}" for r in alternatives)
-                if embed.description:
-                    embed.description += similar_routes
-                else:
-                    embed.description = similar_routes
-                logger.info("Added alternatives to embed")
-            
-            # Use the ImageURL from the routes JSON if available
-            if result.get("ImageURL"):
-                embed.set_image(url=result["ImageURL"])
-                logger.info(f"Using GitHub image URL: {result['ImageURL']}")
-            elif zwift_img_url:
-                embed.set_image(url=zwift_img_url)
-                logger.info("Using ZwiftInsider fallback image")
-            
-            # Ensure URL is properly encoded if present
-            if embed.image:
-                embed.set_image(url=quote(embed.image.url, safe=':/?=&'))
-                logger.info(f"Final image URL: {embed.image.url}")
-            
-            embed.set_thumbnail(url="https://zwiftinsider.com/wp-content/uploads/2022/12/zwift-logo.png")
-            embed.set_footer(text="ZwiftGuy • Use /route to find routes")
-            
-            # Add length checks
-            if len(embed.description) > 4096:
-                embed.description = embed.description[:4093] + "..."
-            
-            # Log embed details before sending
-            logger.info(f"Embed title: {embed.title}")
-            logger.info(f"Embed description length: {len(embed.description)}")
-            logger.info(f"Embed has image: {embed.image is not None}")
-            
-        else:
-            suggestions = random.sample(zwift_routes, min(3, len(zwift_routes)))
-            embed = discord.Embed(
-                title="❌ Route Not Found",
-                description=f"Could not find a route matching `{name}`.\n\n**Try these routes:**\n" + 
-                           "\n".join(f"• {r['Route']}" for r in suggestions),
-                color=discord.Color.red()
-            )
-            logger.info("Created 'not found' embed")
+            try:
+                await self.check_rate_limit(interaction.user.id)
+            except HTTPException as e:
+                logger.warning(f"Rate limit hit: {e}")
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(
+                        embed=discord.Embed(
+                            title="⏳ Rate Limited",
+                            description=str(e),
+                            color=discord.Color.orange()
+                        ),
+                        ephemeral=True
+                    )
+                return
 
-        # Try to send the embed with error handling
-        try:
-            await interaction.followup.send(embed=embed)
-            logger.info("Successfully sent embed")
-        except discord.HTTPException as e:
-            logger.error(f"Discord HTTP error when sending embed: {e}")
-            # Try without image as fallback
-            embed.set_image(url=None)
-            await interaction.followup.send(embed=embed)
-        except Exception as e:
-            logger.error(f"Unknown error when sending embed: {e}")
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    title="❌ Error",
-                    description="An error occurred while sending the route information.",
+            result, alternatives = find_route(name)
+            logger.info(f"Route search result: {result['Route'] if result else 'Not found'}")
+            
+            if not interaction.response.is_done():
+                await interaction.response.defer(thinking=True)
+                logger.info("Interaction deferred")
+                
+            # Show loading animation
+            try:
+                loading_message = await bike_loading_animation(interaction)
+            except Exception as e:
+                logger.error(f"Error in loading animation: {e}")
+            
+            if result:
+                stats, zwift_img_url = await fetch_route_info(result["URL"])
+                logger.info(f"ZwiftInsider image URL: {zwift_img_url}")
+                
+                embed = discord.Embed(
+                    title=f"🚲 {result['Route']}",
+                    url=result["URL"],
+                    description="\n".join(stats) if stats else "View full route details on ZwiftInsider",
+                    color=0xFC6719
+                )
+                logger.info("Basic embed created")
+                
+                if alternatives:
+                    similar_routes = "\n\n**Similar routes:**\n" + "\n".join(f"• {r['Route']}" for r in alternatives)
+                    if embed.description:
+                        embed.description += similar_routes
+                    else:
+                        embed.description = similar_routes
+                    logger.info("Added alternatives to embed")
+                    # Use the ImageURL from the routes JSON if available
+                if result.get("ImageURL"):
+                    embed.set_image(url=result["ImageURL"])
+                    logger.info(f"Using GitHub image URL: {result['ImageURL']}")
+                elif zwift_img_url:
+                    embed.set_image(url=zwift_img_url)
+                    logger.info("Using ZwiftInsider fallback image")
+                
+                # Ensure URL is properly encoded if present
+                if embed.image:
+                    embed.set_image(url=quote(embed.image.url, safe=':/?=&'))
+                    logger.info(f"Final image URL: {embed.image.url}")
+                
+                embed.set_thumbnail(url="https://zwiftinsider.com/wp-content/uploads/2022/12/zwift-logo.png")
+                embed.set_footer(text="ZwiftGuy • Use /route to find routes")
+                
+                # Add length checks
+                if len(embed.description) > 4096:
+                    embed.description = embed.description[:4093] + "..."
+                
+                # Log embed details before sending
+                logger.info(f"Embed title: {embed.title}")
+                logger.info(f"Embed description length: {len(embed.description)}")
+                logger.info(f"Embed has image: {embed.image is not None}")
+                
+            else:
+                suggestions = random.sample(zwift_routes, min(3, len(zwift_routes)))
+                embed = discord.Embed(
+                    title="❌ Route Not Found",
+                    description=f"Could not find a route matching `{name}`.\n\n**Try these routes:**\n" + 
+                               "\n".join(f"• {r['Route']}" for r in suggestions),
                     color=discord.Color.red()
                 )
-            )
-            
-    except Exception as e:
-        logger.error(f"Error in route command: {e}")
-        try:
-            if not interaction.response.is_done():
-                await interaction.response.send_message(
+                logger.info("Created 'not found' embed")
+
+            # Try to send the embed with error handling
+            try:
+                await interaction.followup.send(embed=embed)
+                logger.info("Successfully sent embed")
+            except discord.HTTPException as e:
+                logger.error(f"Discord HTTP error when sending embed: {e}")
+                # Try without image as fallback
+                embed.set_image(url=None)
+                await interaction.followup.send(embed=embed)
+            except Exception as e:
+                logger.error(f"Unknown error when sending embed: {e}")
+                await interaction.followup.send(
                     embed=discord.Embed(
                         title="❌ Error",
-                        description="An error occurred while processing your request.",
+                        description="An error occurred while sending the route information.",
                         color=discord.Color.red()
-                    ),
-                    ephemeral=True
+                    )
                 )
-        except:
-            pass
+                
+        except Exception as e:
+            logger.error(f"Error in route command: {e}")
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(
+                        embed=discord.Embed(
+                            title="❌ Error",
+                            description="An error occurred while processing your request.",
+                            color=discord.Color.red()
+                        ),
+                        ephemeral=True
+                    )
+            except:
+                pass
 
-@client.tree.command(name="sprint", description="Get information about a Zwift sprint segment")
-async def sprint(interaction: discord.Interaction, name: str):
-    if not interaction.user:
-        return
-        try:
-        try:
-            await client.check_rate_limit(interaction.user.id)
-        except HTTPException as e:
-            if not interaction.response.is_done():
-                await interaction.response.send_message(
-                    embed=discord.Embed(
-                        title="⏳ Rate Limited",
-                        description=str(e),
-                        color=discord.Color.orange()
-                    ),
-                    ephemeral=True
-                )
+    async def sprint(self, interaction: discord.Interaction, name: str):
+        if not interaction.user:
             return
-
-        result, alternatives = find_sprint(name)
-        
-        if not interaction.response.is_done():
-            await interaction.response.defer()
-        
-        if result:
-            embed = discord.Embed(
-                title=f"⚡ {result['Segment']}",
-                url=result['URL'],
-                description=f"Location: {result['Location']}",
-                color=0x00FF00
-            )
-            
-            embed.add_field(
-                name="Distance", 
-                value=f"{result['Length_m']}m", 
-                inline=True
-            )
-            embed.add_field(
-                name="Grade", 
-                value=f"{result['Grade']}%", 
-                inline=True
-            )
-
-            if alternatives:
-                similar_sprints = "\n\n**Similar segments:**\n" + "\n".join(
-                    f"• {s['Segment']} ({s['Length_m']}m, {s['Grade']}%)" 
-                    for s in alternatives
-                )
-                embed.add_field(name="", value=similar_sprints, inline=False)
-            
-            embed.set_thumbnail(url="https://zwiftinsider.com/wp-content/uploads/2022/12/zwift-logo.png")
-            embed.set_footer(text="ZwiftGuy • Use /sprint to find segments")
-        else:
-            suggestions = random.sample(zwift_sprints, min(3, len(zwift_sprints)))
-            embed = discord.Embed(
-                title="❌ Sprint Not Found",
-                description=f"Could not find a sprint segment matching `{name}`.\n\n**Try these segments:**\n" + 
-                           "\n".join(f"• {s['Segment']} ({s['Length_m']}m, {s['Grade']}%)" 
-                                   for s in suggestions),
-                color=discord.Color.red()
-            )
-
-        await interaction.followup.send(embed=embed)
-            
-    except Exception as e:
-        logger.error(f"Error in sprint command: {e}")
         try:
+            try:
+                await self.check_rate_limit(interaction.user.id)
+            except HTTPException as e:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(
+                        embed=discord.Embed(
+                            title="⏳ Rate Limited",
+                            description=str(e),
+                            color=discord.Color.orange()
+                        ),
+                        ephemeral=True
+                    )
+                return
+
+            result, alternatives = find_sprint(name)
+            
             if not interaction.response.is_done():
-                await interaction.response.send_message(
-                    embed=discord.Embed(
-                        title="❌ Error",
-                        description="An error occurred while processing your request.",
-                        color=discord.Color.red()
-                    ),
-                    ephemeral=True
+                await interaction.response.defer()
+            
+            if result:
+                embed = discord.Embed(
+                    title=f"⚡ {result['Segment']}",
+                    url=result['URL'],
+                    description=f"Location: {result['Location']}",
+                    color=0x00FF00
                 )
-        except:
-            pass
+                
+                embed.add_field(
+                    name="Distance", 
+                    value=f"{result['Length_m']}m", 
+                    inline=True
+                )
+                embed.add_field(
+                    name="Grade", 
+                    value=f"{result['Grade']}%", 
+                    inline=True
+                )
+
+                if alternatives:
+                    similar_sprints = "\n\n**Similar segments:**\n" + "\n".join(
+                        f"• {s['Segment']} ({s['Length_m']}m, {s['Grade']}%)" 
+                        for s in alternatives
+                    )
+                    embed.add_field(name="", value=similar_sprints, inline=False)
+                
+                embed.set_thumbnail(url="https://zwiftinsider.com/wp-content/uploads/2022/12/zwift-logo.png")
+                embed.set_footer(text="ZwiftGuy • Use /sprint to find segments")
+            else:
+                suggestions = random.sample(zwift_sprints, min(3, len(zwift_sprints)))
+                embed = discord.Embed(
+                    title="❌ Sprint Not Found",
+                    description=f"Could not find a sprint segment matching `{name}`.\n\n**Try these segments:**\n" + 
+                               "\n".join(f"• {s['Segment']} ({s['Length_m']}m, {s['Grade']}%)" 
+                                       for s in suggestions),
+                    color=discord.Color.red()
+                )
+
+            await interaction.followup.send(embed=embed)
+                
+        except Exception as e:
+            logger.error(f"Error in sprint command: {e}")
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(
+                        embed=discord.Embed(
+                            title="❌ Error",
+                            description="An error occurred while processing your request.",
+                            color=discord.Color.red()
+                        ),
+                        ephemeral=True
+                    )
+            except:
+                pass
 
 def main():
     retries = 0
@@ -467,4 +466,6 @@ def main():
                 break
 
 if __name__ == "__main__":
+    client = ZwiftBot()
     main()
+                    
