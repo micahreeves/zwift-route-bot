@@ -141,6 +141,7 @@ def find_route(search_term):
         if matched_routes:
             return matched_routes[0], alternative_routes
     return None, []
+
 async def fetch_route_info(url):
     """Fetch route information from ZwiftInsider"""
     try:
@@ -160,29 +161,6 @@ async def fetch_route_info(url):
     except Exception as e:
         logger.error(f"Error fetching route info: {e}")
     return [], None
-
-def find_kom(search_term):
-    """Find a KOM using fuzzy matching"""
-    if not search_term or not zwift_koms:
-        return None, []
-    normalized_search = normalize_route_name(search_term)
-    for kom in zwift_koms:
-        if normalize_route_name(kom["Segment"]) == normalized_search:
-            return kom, []
-    matches = []
-    for kom in zwift_koms:
-        if normalized_search in normalize_route_name(kom["Segment"]):
-            matches.append(kom)
-    if matches:
-        return matches[0], matches[1:3]
-    kom_names = [normalize_route_name(k["Segment"]) for k in zwift_koms]
-    close_matches = get_close_matches(normalized_search, kom_names, n=3, cutoff=0.6)
-    if close_matches:
-        matched_koms = [k for k in zwift_koms if normalize_route_name(k["Segment"]) == close_matches[0]]
-        alternative_koms = [k for k in zwift_koms if normalize_route_name(k["Segment"]) in close_matches[1:]]
-        if matched_koms:
-            return matched_koms[0], alternative_koms
-    return None, []
 
 def find_sprint(search_term):
     """Find a sprint segment using fuzzy matching"""
@@ -272,8 +250,9 @@ class ZwiftBot(discord.Client):
             if not interaction.response.is_done():
                 await interaction.response.defer(thinking=True)
                 logger.info("Interaction deferred")
-                
+            
             # Show loading animation
+            loading_message = None
             try:
                 loading_message = await bike_loading_animation(interaction)
             except Exception as e:
@@ -298,10 +277,20 @@ class ZwiftBot(discord.Client):
                     else:
                         embed.description = similar_routes
                     logger.info("Added alternatives to embed")
-                    # Use the ImageURL from the routes JSON if available
+                
+                # Use the ImageURL from the routes JSON if available
                 if result.get("ImageURL"):
                     embed.set_image(url=result["ImageURL"])
                     logger.info(f"Using GitHub image URL: {result['ImageURL']}")
+                    
+                    # Add Cyccal link
+                    cyccal_url = f"https://cyccal.com/{result['Route'].lower().replace(' ', '-')}/"
+                    embed.add_field(
+                        name="Additional Resources",
+                        value=f"[View on Cyccal]({cyccal_url})",
+                        inline=False
+                    )
+                    logger.info(f"Added Cyccal link: {cyccal_url}")
                 elif zwift_img_url:
                     embed.set_image(url=zwift_img_url)
                     logger.info("Using ZwiftInsider fallback image")
@@ -333,39 +322,46 @@ class ZwiftBot(discord.Client):
                 )
                 logger.info("Created 'not found' embed")
 
-            # Try to send the embed with error handling
             try:
+                # Send the actual response
                 await interaction.followup.send(embed=embed)
                 logger.info("Successfully sent embed")
+                
+                # Delete the loading animation message if it exists
+                if loading_message:
+                    try:
+                        await loading_message.delete()
+                        logger.info("Deleted loading animation message")
+                    except Exception as e:
+                        logger.error(f"Error deleting loading animation: {e}")
+                        
             except discord.HTTPException as e:
                 logger.error(f"Discord HTTP error when sending embed: {e}")
                 # Try without image as fallback
                 embed.set_image(url=None)
                 await interaction.followup.send(embed=embed)
-            except Exception as e:
-                logger.error(f"Unknown error when sending embed: {e}")
-                await interaction.followup.send(
+                
+                # Still try to delete loading message if it exists
+               if loading_message:
+                    try:
+                        await loading_message.delete()
+                    except:
+                        pass
+                        
+    except Exception as e:
+        logger.error(f"Error in route command: {e}")
+        try:
+            if not interaction.response.is_done():
+                await interaction.response.send_message(
                     embed=discord.Embed(
                         title="❌ Error",
-                        description="An error occurred while sending the route information.",
+                        description="An error occurred while processing your request.",
                         color=discord.Color.red()
-                    )
+                    ),
+                    ephemeral=True
                 )
-                
-        except Exception as e:
-            logger.error(f"Error in route command: {e}")
-            try:
-                if not interaction.response.is_done():
-                    await interaction.response.send_message(
-                        embed=discord.Embed(
-                            title="❌ Error",
-                            description="An error occurred while processing your request.",
-                            color=discord.Color.red()
-                        ),
-                        ephemeral=True
-                    )
-            except:
-                pass
+        except:
+            pass
 
     async def sprint(self, interaction: discord.Interaction, name: str):
         if not interaction.user:
@@ -468,4 +464,3 @@ def main():
 if __name__ == "__main__":
     client = ZwiftBot()
     main()
-                    
