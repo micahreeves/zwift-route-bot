@@ -228,6 +228,7 @@ class ZwiftBot(discord.Client):
         """Initialize command tree when bot starts up"""
         self.tree.command(name="route", description="Get a Zwift route URL by name")(self.route)
         self.tree.command(name="sprint", description="Get information about a Zwift sprint segment")(self.sprint)
+        self.tree.command(name="kom", description="Get information about a Zwift KOM segment")(self.kom)
         await self.tree.sync()
 
     async def check_rate_limit(self, user_id):
@@ -470,6 +471,86 @@ class ZwiftBot(discord.Client):
                 
         except Exception as e:
             logger.error(f"Error in sprint command: {e}")
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(
+                        embed=discord.Embed(
+                            title="❌ Error",
+                            description="An error occurred while processing your request.",
+                            color=discord.Color.red()
+                        ),
+                        ephemeral=True
+                    )
+            except Exception as err:
+                logger.error(f"Failed to send error message: {err}")
+                
+    async def kom(self, interaction: discord.Interaction, name: str):
+        """Handle the /kom command"""
+        if not interaction.user:
+            return
+        
+        try:
+            try:
+                await self.check_rate_limit(interaction.user.id)
+            except HTTPException as e:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(
+                        embed=discord.Embed(
+                            title="⏳ Rate Limited",
+                            description=str(e),
+                            color=discord.Color.orange()
+                        ),
+                        ephemeral=True
+                    )
+                return
+
+            result, alternatives = find_kom(name)
+            
+            if not interaction.response.is_done():
+                await interaction.response.defer()
+            
+            if result:
+                embed = discord.Embed(
+                    title=f"🏔️ {result['Segment']}",
+                    url=result['URL'],
+                    description=f"Location: {result['Location']}",
+                    color=0xFF6B6B
+                )
+                
+                embed.add_field(
+                    name="Distance", 
+                    value=f"{result['Length_m']}m", 
+                    inline=True
+                )
+                embed.add_field(
+                    name="Grade", 
+                    value=f"{result['Grade']}%", 
+                    inline=True
+                )
+
+                if alternatives:
+                    similar_koms = "\n\n**Similar segments:**\n" + "\n".join(
+                        f"• {k['Segment']} ({k['Length_m']}m, {k['Grade']}%)" 
+                        for k in alternatives
+                    )
+                    embed.add_field(name="", value=similar_koms, inline=False)
+                
+                embed.set_thumbnail(url="https://zwiftinsider.com/wp-content/uploads/2022/12/zwift-logo.png")
+                embed.set_footer(text="ZwiftGuy • Use /kom to find KOM segments")
+            else:
+                suggestions = random.sample(zwift_koms, min(3, len(zwift_koms)))
+                embed = discord.Embed(
+                    title="❌ KOM Not Found",
+                    description=f"Could not find a KOM segment matching `{name}`.\n\n**Try these segments:**\n" + 
+                               "\n".join(f"• {k['Segment']} ({k['Length_m']}m, {k['Grade']}%)" 
+                                       for k in suggestions),
+                    color=discord.Color.red()
+                )
+
+            await interaction.followup.send(embed=embed)
+                
+        except Exception as e:
+            logger.error(f"Error in kom command: {e}")
             try:
                 if not interaction.response.is_done():
                     await interaction.response.send_message(
