@@ -245,9 +245,7 @@ class ZwiftBot(discord.Client):
                 return
 
             result, alternatives = find_route(name)
-            logger.info(f"Route search result: {result['Route'] 
-            if result 
-            else 'Not found'}")
+            logger.info(f"Route search result: {result['Route'] if result else 'Not found'}")
             
             if not interaction.response.is_done():
                 await interaction.response.defer(thinking=True)
@@ -344,11 +342,12 @@ class ZwiftBot(discord.Client):
                 await interaction.followup.send(embed=embed)
                 
                 # Still try to delete loading message if it exists
-if loading_message:
+    if loading_message:
         try:
             await loading_message.delete()
-        except:
-            pass
+        except Exception as e:
+            logger.error(f"Error deleting loading animation: {e}")
+
                         
     except Exception as e:
         logger.error(f"Error in route command: {e}")
