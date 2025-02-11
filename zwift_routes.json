@@ -1,718 +1,730 @@
 [
     {
         "Route": "Glasgow Crit Circuit",
-        "URL": "https:\/\/zwiftinsider.com\/route\/glasgow-crit-circuit\/"
+        "URL": "https://zwiftinsider.com/route/glasgow-crit-circuit/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Scotland_Glasgow_Crit_Circuit_profile.png"
     },
     {
         "Route": "Neokyo Crit Course",
-        "URL": "https:\/\/zwiftinsider.com\/route\/neokyo-crit-course\/"
+        "URL": "https://zwiftinsider.com/route/neokyo-crit-course/"
     },
     {
         "Route": "Mech Isle Loop",
-        "URL": "https:\/\/zwiftinsider.com\/route\/mech-isle-loop\/"
+        "URL": "https://zwiftinsider.com/route/mech-isle-loop/"
     },
     {
         "Route": "Duchy Estate",
-        "URL": "https:\/\/zwiftinsider.com\/route\/duchy-estate\/"
+        "URL": "https://zwiftinsider.com/route/duchy-estate/"
     },
     {
         "Route": "Twilight Harbor",
-        "URL": "https:\/\/zwiftinsider.com\/route\/twilight-harbor\/"
+        "URL": "https://zwiftinsider.com/route/twilight-harbor/"
     },
     {
         "Route": "Volcano Circuit",
-        "URL": "https:\/\/zwiftinsider.com\/route\/volcano-circuit\/"
+        "URL": "https://zwiftinsider.com/route/volcano-circuit/"
     },
     {
         "Route": "Castle Crit",
-        "URL": "https:\/\/zwiftinsider.com\/route\/castle-crit\/"
+        "URL": "https://zwiftinsider.com/route/castle-crit/"
     },
     {
         "Route": "The 6 Train",
-        "URL": "https:\/\/zwiftinsider.com\/route\/the-6-train\/"
+        "URL": "https://zwiftinsider.com/route/the-6-train/"
     },
     {
         "Route": "Queen's Highway",
-        "URL": "https:\/\/zwiftinsider.com\/route\/queens-highway\/"
+        "URL": "https://zwiftinsider.com/route/queens-highway/"
     },
     {
         "Route": "Sea to Tree",
-        "URL": "https:\/\/zwiftinsider.com\/route\/sea-to-tree\/"
+        "URL": "https://zwiftinsider.com/route/sea-to-tree/"
     },
     {
         "Route": "Rooftop Rendezvous",
-        "URL": "https:\/\/zwiftinsider.com\/route\/rooftop-rendezvous\/"
+        "URL": "https://zwiftinsider.com/route/rooftop-rendezvous/"
     },
     {
         "Route": "Two Bridges Loop",
-        "URL": "https:\/\/zwiftinsider.com\/route\/two-bridges-loop\/"
+        "URL": "https://zwiftinsider.com/route/two-bridges-loop/"
     },
     {
         "Route": "Farmland Loop",
-        "URL": "https:\/\/zwiftinsider.com\/route\/farmland-loop\/"
+        "URL": "https://zwiftinsider.com/route/farmland-loop/"
     },
     {
         "Route": "Loch Loop",
-        "URL": "https:\/\/zwiftinsider.com\/route\/loch-loop\/"
+        "URL": "https://zwiftinsider.com/route/loch-loop/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Scotland_Loch_Loop_profile.png"
     },
     {
         "Route": "Electric Loop",
-        "URL": "https:\/\/zwiftinsider.com\/route\/electric-loop\/"
+        "URL": "https://zwiftinsider.com/route/electric-loop/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Electric_Loop_profile.png"
     },
     {
         "Route": "Bridges and Boardwalks",
-        "URL": "https:\/\/zwiftinsider.com\/route\/bridges-and-boardwalks\/"
+        "URL": "https://zwiftinsider.com/route/bridges-and-boardwalks/"
     },
     {
         "Route": "The Fan Flats",
-        "URL": "https:\/\/zwiftinsider.com\/route\/the-fan-flats\/"
+        "URL": "https://zwiftinsider.com/route/the-fan-flats/"
     },
     {
         "Route": "Temple Trek",
-        "URL": "https:\/\/zwiftinsider.com\/route\/temple-trek\/"
+        "URL": "https://zwiftinsider.com/route/temple-trek/"
     },
     {
         "Route": "Valley to Mountaintop",
-        "URL": "https:\/\/zwiftinsider.com\/route\/valley-to-mountaintop\/"
+        "URL": "https://zwiftinsider.com/route/valley-to-mountaintop/"
     },
     {
         "Route": "Sleepless City",
-        "URL": "https:\/\/zwiftinsider.com\/route\/sleepless-city\/"
+        "URL": "https://zwiftinsider.com/route/sleepless-city/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Sleepless_City_profile.png"
     },
+    [
     {
         "Route": "Volcano Circuit CCW",
-        "URL": "https:\/\/zwiftinsider.com\/route\/volcano-circuit-ccw\/"
+        "URL": "https://zwiftinsider.com/route/volcano-circuit-ccw/"
     },
     {
         "Route": "The Classic",
-        "URL": "https:\/\/zwiftinsider.com\/route\/the-classic\/"
+        "URL": "https://zwiftinsider.com/route/the-classic/"
     },
     {
         "Route": "Innsbruckring",
-        "URL": "https:\/\/zwiftinsider.com\/route\/innsbruckring\/"
+        "URL": "https://zwiftinsider.com/route/innsbruckring/"
     },
     {
         "Route": "Railways and Rooftops",
-        "URL": "https:\/\/zwiftinsider.com\/route\/railways-and-rooftops\/"
+        "URL": "https://zwiftinsider.com/route/railways-and-rooftops/"
     },
     {
         "Route": "Champs-Élysées",
-        "URL": "https:\/\/zwiftinsider.com\/route\/champs-elysees\/"
+        "URL": "https://zwiftinsider.com/route/champs-elysees/"
     },
     {
         "Route": "Handful of Gravel",
-        "URL": "https:\/\/zwiftinsider.com\/route\/handful-of-gravel\/"
+        "URL": "https://zwiftinsider.com/route/handful-of-gravel/"
     },
     {
         "Route": "Gotham Grind",
-        "URL": "https:\/\/zwiftinsider.com\/route\/gotham-grind\/"
+        "URL": "https://zwiftinsider.com/route/gotham-grind/"
     },
     {
         "Route": "Flat Route",
-        "URL": "https:\/\/zwiftinsider.com\/route\/flat-route\/"
+        "URL": "https://zwiftinsider.com/route/flat-route/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Flat_Route_profile.png"
     },
     {
         "Route": "Lutece Express",
-        "URL": "https:\/\/zwiftinsider.com\/route\/lutece-express\/"
+        "URL": "https://zwiftinsider.com/route/lutece-express/"
     },
     {
         "Route": "Hilly Route",
-        "URL": "https:\/\/zwiftinsider.com\/route\/hilly-route\/"
+        "URL": "https://zwiftinsider.com/route/hilly-route/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Hilly_Route_profile.png"
     },
     {
         "Route": "Hilly Route Reverse",
-        "URL": "https:\/\/zwiftinsider.com\/route\/hilly-route-reverse\/"
+        "URL": "https://zwiftinsider.com/route/hilly-route-reverse/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Hilly_Route_Reverse_profile.png"
     },
     {
         "Route": "Classique",
-        "URL": "https:\/\/zwiftinsider.com\/route\/classique\/"
+        "URL": "https://zwiftinsider.com/route/classique/"
     },
     {
         "Route": "Fine and Sandy",
-        "URL": "https:\/\/zwiftinsider.com\/route\/fine-and-sandy\/"
+        "URL": "https://zwiftinsider.com/route/fine-and-sandy/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Fine_and_Sandy_profile.png"
     },
     {
         "Route": "Grand Central Circuit",
-        "URL": "https:\/\/zwiftinsider.com\/route\/grand-central-circuit\/"
+        "URL": "https://zwiftinsider.com/route/grand-central-circuit/"
     },
     {
         "Route": "Cobbled Climbs",
-        "URL": "https:\/\/zwiftinsider.com\/route\/cobbled-climbs\/"
+        "URL": "https://zwiftinsider.com/route/cobbled-climbs/"
     },
     {
         "Route": "Park Perimeter Loop",
-        "URL": "https:\/\/zwiftinsider.com\/route\/park-perimeter-loop\/"
+        "URL": "https://zwiftinsider.com/route/park-perimeter-loop/"
     },
     {
         "Route": "Park Perimeter Reverse",
-        "URL": "https:\/\/zwiftinsider.com\/route\/park-perimeter-reverse\/"
+        "URL": "https://zwiftinsider.com/route/park-perimeter-reverse/"
     },
     {
         "Route": "Volcano Flat",
-        "URL": "https:\/\/zwiftinsider.com\/route\/volcano-flat\/"
+        "URL": "https://zwiftinsider.com/route/volcano-flat/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Volcano_Flat_profile.png"
     },
     {
         "Route": "Island Outskirts",
-        "URL": "https:\/\/zwiftinsider.com\/route\/island-outskirts\/"
+        "URL": "https://zwiftinsider.com/route/island-outskirts/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Island_Outskirts_profile.png"
     },
     {
         "Route": "Outer Scotland",
-        "URL": "https:\/\/zwiftinsider.com\/route\/outer-scotland\/"
+        "URL": "https://zwiftinsider.com/route/outer-scotland/"
     },
-    {
-        "Route": "Sprinter's Playground",
-        "URL": "https:\/\/zwiftinsider.com\/route\/sprinters-playground\/"
-    },
-    {
-        "Route": "City and the Sgurr",
-        "URL": "https:\/\/zwiftinsider.com\/route\/city-and-the-sgurr\/"
-    },
-    {
-        "Route": "Beach Island Loop",
-        "URL": "https:\/\/zwiftinsider.com\/route\/beach-island-loop\/"
-    },
-    {
-        "Route": "Jungle Circuit",
-        "URL": "https:\/\/zwiftinsider.com\/route\/jungle-circuit\/"
-    },
-    {
-        "Route": "Three Village Loop",
-        "URL": "https:\/\/zwiftinsider.com\/route\/three-village-loop\/"
-    },
-    {
-        "Route": "Two Village Loop",
-        "URL": "https:\/\/zwiftinsider.com\/route\/two-village-loop\/"
-    },
-    {
-        "Route": "Astoria Line 8",
-        "URL": "https:\/\/zwiftinsider.com\/route\/astoria-line-8\/"
-    },
-    {
-        "Route": "London Flat",
-        "URL": "https:\/\/zwiftinsider.com\/route\/london-flat\/"
-    },
-    {
-        "Route": "Flatland Loop",
-        "URL": "https:\/\/zwiftinsider.com\/route\/flatland-loop\/"
-    },
-    {
-        "Route": "Classique Reverse",
-        "URL": "https:\/\/zwiftinsider.com\/route\/classique-reverse\/"
-    },
-    {
-        "Route": "Loop de Loop",
-        "URL": "https:\/\/zwiftinsider.com\/route\/loop-de-loop\/"
-    },
-    {
-        "Route": "Tour of Tewit Well",
-        "URL": "https:\/\/zwiftinsider.com\/route\/tour-of-tewit-well\/"
-    },
-    {
-        "Route": "Neon Flats",
-        "URL": "https:\/\/zwiftinsider.com\/route\/neon-flats\/"
-    },
-    {
-        "Route": "Rolling Highlands",
-        "URL": "https:\/\/zwiftinsider.com\/route\/rolling-highlands\/"
-    },
-    {
-        "Route": "Oh Hill No",
-        "URL": "https:\/\/zwiftinsider.com\/route\/oh-hill-no\/"
-    },
-    {
-        "Route": "Lady Liberty",
-        "URL": "https:\/\/zwiftinsider.com\/route\/lady-liberty\/"
-    },
-    {
-        "Route": "Greater London Flat",
-        "URL": "https:\/\/zwiftinsider.com\/route\/greater-london-flat\/"
-    },
-    {
-        "Route": "Richmond UCI Reverse",
-        "URL": "https:\/\/zwiftinsider.com\/route\/richmond-uci-reverse\/"
-    },
-    {
-        "Route": "Mountain Mash",
-        "URL": "https:\/\/zwiftinsider.com\/route\/mountain-mash\/"
-    },
-    {
-        "Route": "Richmond UCI Worlds",
-        "URL": "https:\/\/zwiftinsider.com\/route\/richmond-uci-worlds\/"
-    },
+    [
     {
         "Route": "Tempus Fugit",
-        "URL": "https:\/\/zwiftinsider.com\/route\/tempus-fugit\/"
+        "URL": "https://zwiftinsider.com/route/tempus-fugit/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Tempus_Fugit_profile.png"
     },
     {
         "Route": "Chain Chomper",
-        "URL": "https:\/\/zwiftinsider.com\/route\/chain-chomper\/"
+        "URL": "https://zwiftinsider.com/route/chain-chomper/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Chain_Chomper_profile.png"
     },
     {
         "Route": "Tick Tock",
-        "URL": "https:\/\/zwiftinsider.com\/route\/tick-tock\/"
+        "URL": "https://zwiftinsider.com/route/tick-tock/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Tick_Tock_profile.png"
     },
     {
         "Route": "Going Coastal",
-        "URL": "https:\/\/zwiftinsider.com\/route\/going-coastal\/"
+        "URL": "https://zwiftinsider.com/route/going-coastal/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Going_Coastal_profile.png"
     },
     {
         "Route": "2019 UCI Worlds Harrogate Circuit",
-        "URL": "https:\/\/zwiftinsider.com\/route\/2019-uci-worlds-harrogate-circuit\/"
+        "URL": "https://zwiftinsider.com/route/2019-uci-worlds-harrogate-circuit/"
     },
     {
         "Route": "Countryside Tour",
-        "URL": "https:\/\/zwiftinsider.com\/route\/countryside-tour\/"
+        "URL": "https://zwiftinsider.com/route/countryside-tour/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Countryside_Tour_profile.png"
     },
     {
         "Route": "Island Hopper",
-        "URL": "https:\/\/zwiftinsider.com\/route\/island-hopper\/"
+        "URL": "https://zwiftinsider.com/route/island-hopper/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Island_Hopper_profile.png"
     },
     {
         "Route": "Spirit Forest",
-        "URL": "https:\/\/zwiftinsider.com\/route\/spirit-forest\/"
+        "URL": "https://zwiftinsider.com/route/spirit-forest/"
     },
     {
         "Route": "London Loop",
-        "URL": "https:\/\/zwiftinsider.com\/route\/london-loop\/"
+        "URL": "https://zwiftinsider.com/route/london-loop/"
     },
     {
         "Route": "Kappa Quest",
-        "URL": "https:\/\/zwiftinsider.com\/route\/kappa-quest\/"
+        "URL": "https://zwiftinsider.com/route/kappa-quest/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Kappa_Quest_profile.png"
     },
     {
         "Route": "Suki's Playground",
-        "URL": "https:\/\/zwiftinsider.com\/route\/sukis-playground\/"
+        "URL": "https://zwiftinsider.com/route/sukis-playground/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Sukis_Playground_profile.png"
     },
     {
         "Route": "Whole Lotta Lava",
-        "URL": "https:\/\/zwiftinsider.com\/route\/whole-lotta-lava\/"
+        "URL": "https://zwiftinsider.com/route/whole-lotta-lava/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Whole_Lotta_Lava_profile.png"
     },
     {
         "Route": "Ocean Lava Cliffside Loop",
-        "URL": "https:\/\/zwiftinsider.com\/route\/ocean-lava-cliffside-loop\/"
+        "URL": "https://zwiftinsider.com/route/ocean-lava-cliffside-loop/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Ocean_Lava_Cliffside_Loop_profile.png"
     },
     {
         "Route": "Loopin Lava",
-        "URL": "https:\/\/zwiftinsider.com\/route\/loopin-lava\/"
+        "URL": "https://zwiftinsider.com/route/loopin-lava/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Loopin_Lava_profile.png"
     },
     {
         "Route": "Jurassic Coast",
-        "URL": "https:\/\/zwiftinsider.com\/route\/jurassic-coast\/"
+        "URL": "https://zwiftinsider.com/route/jurassic-coast/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Jurassic_Coast_profile.png"
     },
     {
         "Route": "Mayan San Remo",
-        "URL": "https:\/\/zwiftinsider.com\/route\/mayan-san-remo\/"
+        "URL": "https://zwiftinsider.com/route/mayan-san-remo/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Mayan_San_Remo_profile.png"
     },
     {
         "Route": "Castle to Castle",
-        "URL": "https:\/\/zwiftinsider.com\/route\/castle-to-castle\/"
+        "URL": "https://zwiftinsider.com/route/castle-to-castle/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Castle_to_Castle_profile.png"
     },
     {
         "Route": "London 8",
-        "URL": "https:\/\/zwiftinsider.com\/route\/london-8\/"
+        "URL": "https://zwiftinsider.com/route/london-8/"
     },
     {
         "Route": "Sand and Sequoias",
-        "URL": "https:\/\/zwiftinsider.com\/route\/sand-and-sequoias\/"
+        "URL": "https://zwiftinsider.com/route/sand-and-sequoias/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Sand_and_Sequoias_profile.png"
     },
     {
         "Route": "Douce France",
-        "URL": "https:\/\/zwiftinsider.com\/route\/douce-france\/"
+        "URL": "https://zwiftinsider.com/route/douce-france/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/France_Douce_France_profile.png"
     },
+    [
     {
         "Route": "Casse-Pattes",
-        "URL": "https:\/\/zwiftinsider.com\/route\/casse-pattes\/"
+        "URL": "https://zwiftinsider.com/route/casse-pattes/"
     },
     {
         "Route": "Greater London Loop",
-        "URL": "https:\/\/zwiftinsider.com\/route\/greater-london-loop\/"
+        "URL": "https://zwiftinsider.com/route/greater-london-loop/"
     },
     {
         "Route": "R.G.V.",
-        "URL": "https:\/\/zwiftinsider.com\/route\/rgv\/"
+        "URL": "https://zwiftinsider.com/route/rgv/"
     },
     {
         "Route": "Queen's Highway After Party",
-        "URL": "https:\/\/zwiftinsider.com\/route\/queens-highway-after-party\/"
+        "URL": "https://zwiftinsider.com/route/queens-highway-after-party/"
     },
     {
         "Route": "Kappa Quest Reverse",
-        "URL": "https:\/\/zwiftinsider.com\/route\/kappa-quest-reverse\/"
+        "URL": "https://zwiftinsider.com/route/kappa-quest-reverse/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Kappa_Quest_Reverse_profile.png"
     },
     {
         "Route": "Volcano Climb",
-        "URL": "https:\/\/zwiftinsider.com\/route\/volcano-climb\/"
+        "URL": "https://zwiftinsider.com/route/volcano-climb/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Volcano_Climb_profile.png"
     },
     {
         "Route": "Wandering Flats",
-        "URL": "https:\/\/zwiftinsider.com\/route\/wandering-flats\/"
+        "URL": "https://zwiftinsider.com/route/wandering-flats/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Wandering_Flats_profile.png"
     },
     {
         "Route": "Neokyo All-Nighter",
-        "URL": "https:\/\/zwiftinsider.com\/route\/neokyo-all-nighter\/"
+        "URL": "https://zwiftinsider.com/route/neokyo-all-nighter/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Neokyo_All-Nighter_profile.png"
     },
     {
         "Route": "Mighty Metropolitan",
-        "URL": "https:\/\/zwiftinsider.com\/route\/mighty-metropolitan\/"
+        "URL": "https://zwiftinsider.com/route/mighty-metropolitan/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/NewYork_Mighty_Metropolitan_profile.png"
     },
     {
         "Route": "BRAEk-fast",
-        "URL": "https:\/\/zwiftinsider.com\/route\/braek-fast\/"
+        "URL": "https://zwiftinsider.com/route/braek-fast/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Scotland_BRAEk-fast_Crits_and_Grits_profile.png"
     },
     {
         "Route": "Crits and Grits",
-        "URL": "https:\/\/zwiftinsider.com\/route\/crits-and-grits\/"
+        "URL": "https://zwiftinsider.com/route/crits-and-grits/"
     },
     {
         "Route": "Turf N Surf",
-        "URL": "https:\/\/zwiftinsider.com\/route\/turf-n-surf\/"
+        "URL": "https://zwiftinsider.com/route/turf-n-surf/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Turf_N_Surf_profile.png"
     },
     {
         "Route": "Triple Twist",
-        "URL": "https:\/\/zwiftinsider.com\/route\/triple-twist\/"
+        "URL": "https://zwiftinsider.com/route/triple-twist/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Triple_Twist_profile.png"
     },
     {
         "Route": "Watopia's Waistband",
-        "URL": "https:\/\/zwiftinsider.com\/route\/watopias-waistband\/"
+        "URL": "https://zwiftinsider.com/route/watopias-waistband/"
     },
     {
         "Route": "Coast to Coast",
-        "URL": "https:\/\/zwiftinsider.com\/route\/coast-to-coast\/"
+        "URL": "https://zwiftinsider.com/route/coast-to-coast/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Coast_to_Coast_profile.png"
     },
     {
         "Route": "Rising Empire",
-        "URL": "https:\/\/zwiftinsider.com\/route\/rising-empire\/"
+        "URL": "https://zwiftinsider.com/route/rising-empire/"
     },
     {
         "Route": "The Muckle Yin",
-        "URL": "https:\/\/zwiftinsider.com\/route\/the-muckle-yin\/"
+        "URL": "https://zwiftinsider.com/route/the-muckle-yin/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Scotland_The_Muckle_Yin_profile.png"
     },
     {
         "Route": "Serpentine 8",
-        "URL": "https:\/\/zwiftinsider.com\/route\/serpentine-8\/"
+        "URL": "https://zwiftinsider.com/route/serpentine-8/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Serpentine_8_profile.png"
     },
     {
         "Route": "Greater London 8",
-        "URL": "https:\/\/zwiftinsider.com\/route\/greater-london-8\/"
+        "URL": "https://zwiftinsider.com/route/greater-london-8/"
     },
     {
         "Route": "Coastal Crown Loop",
-        "URL": "https:\/\/zwiftinsider.com\/route\/coastal-crown-loop\/"
+        "URL": "https://zwiftinsider.com/route/coastal-crown-loop/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Coastal_Crown_Loop_profile.png"
     },
+    [
     {
         "Route": "Downtown Titans",
-        "URL": "https:\/\/zwiftinsider.com\/route\/downtown-titans\/"
+        "URL": "https://zwiftinsider.com/route/downtown-titans/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Downtown_Titans_profile.png"
     },
     {
         "Route": "Knickerbocker",
-        "URL": "https:\/\/zwiftinsider.com\/route\/knickerbocker\/"
+        "URL": "https://zwiftinsider.com/route/knickerbocker/"
     },
     {
         "Route": "Knickerbocker Reverse",
-        "URL": "https:\/\/zwiftinsider.com\/route\/knickerbocker-reverse\/"
+        "URL": "https://zwiftinsider.com/route/knickerbocker-reverse/"
     },
     {
         "Route": "Mayan 8",
-        "URL": "https:\/\/zwiftinsider.com\/route\/mayan-8\/"
+        "URL": "https://zwiftinsider.com/route/mayan-8/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Mayan_8_profile.png"
     },
     {
         "Route": "The Highline",
-        "URL": "https:\/\/zwiftinsider.com\/route\/the-highline\/"
+        "URL": "https://zwiftinsider.com/route/the-highline/"
     },
     {
         "Route": "Canopies and Coastlines",
-        "URL": "https:\/\/zwiftinsider.com\/route\/canopies-and-coastlines\/"
+        "URL": "https://zwiftinsider.com/route/canopies-and-coastlines/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Canopies_and_Coastlines_profile.png"
     },
     {
         "Route": "Big Flat 8",
-        "URL": "https:\/\/zwiftinsider.com\/route\/big-flat-8\/"
+        "URL": "https://zwiftinsider.com/route/big-flat-8/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Big_Flat_8_profile.png"
     },
     {
         "Route": "Waisted 8",
-        "URL": "https:\/\/zwiftinsider.com\/route\/waisted-8\/"
+        "URL": "https://zwiftinsider.com/route/waisted-8/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Waisted_8_profile.png"
     },
     {
         "Route": "Roule Ma Poule",
-        "URL": "https:\/\/zwiftinsider.com\/route\/roule-ma-poule\/"
+        "URL": "https://zwiftinsider.com/route/roule-ma-poule/"
     },
     {
         "Route": "Libby Hill After Party",
-        "URL": "https:\/\/zwiftinsider.com\/route\/libby-hill-after-party\/"
+        "URL": "https://zwiftinsider.com/route/libby-hill-after-party/"
     },
     {
         "Route": "Greatest London Loop",
-        "URL": "https:\/\/zwiftinsider.com\/route\/greatest-london-loop\/"
+        "URL": "https://zwiftinsider.com/route/greatest-london-loop/"
     },
     {
         "Route": "Legends and Lava",
-        "URL": "https:\/\/zwiftinsider.com\/route\/legends-and-lava\/"
+        "URL": "https://zwiftinsider.com/route/legends-and-lava/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Legends_and_Lava_profile.png"
     },
     {
         "Route": "Figure 8",
-        "URL": "https:\/\/zwiftinsider.com\/route\/figure-8\/"
+        "URL": "https://zwiftinsider.com/route/figure-8/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Figure_8_profile.png"
     },
     {
         "Route": "Figure 8 Reverse",
-        "URL": "https:\/\/zwiftinsider.com\/route\/figure-8-reverse\/"
+        "URL": "https://zwiftinsider.com/route/figure-8-reverse/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Figure_8_Reverse_profile.png"
     },
     {
         "Route": "Road to Ruins",
-        "URL": "https:\/\/zwiftinsider.com\/route\/road-to-ruins\/"
+        "URL": "https://zwiftinsider.com/route/road-to-ruins/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Road_to_Ruins_profile.png"
     },
     {
         "Route": "2018 UCI Worlds Course Short Lap",
-        "URL": "https:\/\/zwiftinsider.com\/route\/2018-uci-worlds-course-short-lap\/"
+        "URL": "https://zwiftinsider.com/route/2018-uci-worlds-course-short-lap/"
     },
     {
         "Route": "Greatest London Flat",
-        "URL": "https:\/\/zwiftinsider.com\/route\/greatest-london-flat\/"
+        "URL": "https://zwiftinsider.com/route/greatest-london-flat/"
     },
     {
         "Route": "Petite Douleur",
-        "URL": "https:\/\/zwiftinsider.com\/route\/petite-douleur\/"
+        "URL": "https://zwiftinsider.com/route/petite-douleur/"
     },
     {
         "Route": "Elevation Evaluation",
-        "URL": "https:\/\/zwiftinsider.com\/route\/elevation-evaluation\/"
+        "URL": "https://zwiftinsider.com/route/elevation-evaluation/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Elevation_Evaluation_profile.png"
     },
     {
         "Route": "Triple Flat Loops",
-        "URL": "https:\/\/zwiftinsider.com\/route\/triple-flat-loops\/"
+        "URL": "https://zwiftinsider.com/route/triple-flat-loops/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Triple_Flat_Loops_profile.png"
     },
+    [
     {
         "Route": "Itza Climb Finish",
-        "URL": "https:\/\/zwiftinsider.com\/route\/itza-climb-finish\/"
+        "URL": "https://zwiftinsider.com/route/itza-climb-finish/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Itza_Climb_Finish_profile.png"
     },
     {
         "Route": "Country to Coastal",
-        "URL": "https:\/\/zwiftinsider.com\/route\/country-to-coastal\/"
+        "URL": "https://zwiftinsider.com/route/country-to-coastal/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Country_to_Coastal_profile.png"
     },
     {
         "Route": "Royal Pump Room 8",
-        "URL": "https:\/\/zwiftinsider.com\/route\/royal-pump-room-8\/"
+        "URL": "https://zwiftinsider.com/route/royal-pump-room-8/"
     },
     {
         "Route": "Tair Dringfa Fechan",
-        "URL": "https:\/\/zwiftinsider.com\/route\/tair-dringfa-fechan\/"
+        "URL": "https://zwiftinsider.com/route/tair-dringfa-fechan/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Tair_Dringfa_Fechan_profile.png"
     },
     {
         "Route": "Temples and Towers",
-        "URL": "https:\/\/zwiftinsider.com\/route\/temples-and-towers\/"
+        "URL": "https://zwiftinsider.com/route/temples-and-towers/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Temples_and_Towers_profile.png"
     },
     {
         "Route": "Chasing the Sun",
-        "URL": "https:\/\/zwiftinsider.com\/route\/chasing-the-sun\/"
+        "URL": "https://zwiftinsider.com/route/chasing-the-sun/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Chasing_the_Sun_profile.png"
     },
     {
         "Route": "Sugar Cookie",
-        "URL": "https:\/\/zwiftinsider.com\/route\/sugar-cookie\/"
+        "URL": "https://zwiftinsider.com/route/sugar-cookie/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Sugar_Cookie_profile.png"
     },
     {
         "Route": "Yorkshire Double Loops",
-        "URL": "https:\/\/zwiftinsider.com\/route\/yorkshire-double-loops\/"
+        "URL": "https://zwiftinsider.com/route/yorkshire-double-loops/"
     },
     {
         "Route": "Coast Crusher",
-        "URL": "https:\/\/zwiftinsider.com\/route\/coast-crusher\/"
+        "URL": "https://zwiftinsider.com/route/coast-crusher/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Coast_Crusher_profile.png"
     },
     {
         "Route": "Makuri 40",
-        "URL": "https:\/\/zwiftinsider.com\/route\/makuri-40\/"
+        "URL": "https://zwiftinsider.com/route/makuri-40/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Makuri_40_profile.png"
     },
     {
         "Route": "Mountain Route",
-        "URL": "https:\/\/zwiftinsider.com\/route\/mountain-route\/"
+        "URL": "https://zwiftinsider.com/route/mountain-route/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Mountain_Route_profile.png"
     },
     {
         "Route": "Everything Bagel",
-        "URL": "https:\/\/zwiftinsider.com\/route\/everything-bagel\/"
+        "URL": "https://zwiftinsider.com/route/everything-bagel/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/NewYork_Everything_Bagel_profile.png"
     },
     {
         "Route": "Three Little Sisters",
-        "URL": "https:\/\/zwiftinsider.com\/route\/three-little-sisters\/"
+        "URL": "https://zwiftinsider.com/route/three-little-sisters/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Three_Little_Sisters_profile.png"
     },
     {
         "Route": "Out and Back Again",
-        "URL": "https:\/\/zwiftinsider.com\/route\/out-and-back-again\/"
+        "URL": "https://zwiftinsider.com/route/out-and-back-again/"
     },
     {
         "Route": "Mountain 8",
-        "URL": "https:\/\/zwiftinsider.com\/route\/mountain-8\/"
+        "URL": "https://zwiftinsider.com/route/mountain-8/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Mountain_8_profile.png"
     },
     {
         "Route": "Tides and Temples",
-        "URL": "https:\/\/zwiftinsider.com\/route\/tides-and-temples\/"
+        "URL": "https://zwiftinsider.com/route/tides-and-temples/"
     },
     {
         "Route": "Lutscher CCW",
-        "URL": "https:\/\/zwiftinsider.com\/route\/lutscher-ccw\/"
+        "URL": "https://zwiftinsider.com/route/lutscher-ccw/"
     },
     {
         "Route": "Climber's Gambit",
-        "URL": "https:\/\/zwiftinsider.com\/route\/climbers-gambit\/"
+        "URL": "https://zwiftinsider.com/route/climbers-gambit/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Climbers_Gambit_profile.png"
     },
     {
         "Route": "Lutscher",
-        "URL": "https:\/\/zwiftinsider.com\/route\/lutscher\/"
+        "URL": "https://zwiftinsider.com/route/lutscher/"
     },
     {
         "Route": "Triple Loops",
-        "URL": "https:\/\/zwiftinsider.com\/route\/triple-loops\/"
+        "URL": "https://zwiftinsider.com/route/triple-loops/"
     },
     {
         "Route": "Richmond Loop Around",
-        "URL": "https:\/\/zwiftinsider.com\/route\/richmond-loop-around\/"
+        "URL": "https://zwiftinsider.com/route/richmond-loop-around/"
     },
     {
         "Route": "The Big Ring",
-        "URL": "https:\/\/zwiftinsider.com\/route\/the-big-ring\/"
+        "URL": "https://zwiftinsider.com/route/the-big-ring/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_The_Big_Ring_profile.png"
     },
     {
         "Route": "Mayan Mash",
-        "URL": "https:\/\/zwiftinsider.com\/route\/mayan-mash\/"
+        "URL": "https://zwiftinsider.com/route/mayan-mash/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Mayan_Mash_profile.png"
     },
     {
         "Route": "Snowman",
-        "URL": "https:\/\/zwiftinsider.com\/route\/snowman\/"
+        "URL": "https://zwiftinsider.com/route/snowman/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Snowman_profile.png"
     },
     {
         "Route": "Big Loop",
-        "URL": "https:\/\/zwiftinsider.com\/route\/big-loop\/"
+        "URL": "https://zwiftinsider.com/route/big-loop/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Big_Loop_profile.png"
     },
     {
         "Route": "Itza Party",
-        "URL": "https:\/\/zwiftinsider.com\/route\/itza-party\/"
+        "URL": "https://zwiftinsider.com/route/itza-party/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Itza_Party_profile.png"
     },
     {
         "Route": "Road to Sky",
-        "URL": "https:\/\/zwiftinsider.com\/route\/road-to-sky\/"
+        "URL": "https://zwiftinsider.com/route/road-to-sky/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Road_to_Sky_profile.png"
     },
     {
         "Route": "Eastern Eight",
-        "URL": "https:\/\/zwiftinsider.com\/route\/eastern-eight\/"
+        "URL": "https://zwiftinsider.com/route/eastern-eight/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Eastern_Eight_profile.png"
     },
     {
         "Route": "Deca Dash",
-        "URL": "https:\/\/zwiftinsider.com\/route\/deca-dash\/"
+        "URL": "https://zwiftinsider.com/route/deca-dash/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Deca_Dash_profile.png"
     },
     {
         "Route": "Spiral Into the Volcano",
-        "URL": "https:\/\/zwiftinsider.com\/route\/spiral-into-the-volcano\/"
+        "URL": "https://zwiftinsider.com/route/spiral-into-the-volcano/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Spiral_Into_the_Volcano_profile.png"
     },
     {
         "Route": "Muir and the Mountain",
-        "URL": "https:\/\/zwiftinsider.com\/route\/muir-and-the-mountain\/"
+        "URL": "https://zwiftinsider.com/route/muir-and-the-mountain/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Muir_and_the_Mountain_profile.png"
     },
     {
         "Route": "Peak Performance",
-        "URL": "https:\/\/zwiftinsider.com\/route\/peak-performance\/"
+        "URL": "https://zwiftinsider.com/route/peak-performance/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Peak_Performance_profile.png"
     },
     {
         "Route": "Dust In the Wind",
-        "URL": "https:\/\/zwiftinsider.com\/route\/dust-in-the-wind\/"
+        "URL": "https://zwiftinsider.com/route/dust-in-the-wind/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Dust_In_the_Wind_profile.png"
     },
     {
         "Route": "The London Pretzel",
-        "URL": "https:\/\/zwiftinsider.com\/route\/the-london-pretzel\/"
+        "URL": "https://zwiftinsider.com/route/the-london-pretzel/"
     },
     {
         "Route": "Shisa Shakedown",
-        "URL": "https:\/\/zwiftinsider.com\/route\/shisa-shakedown\/"
+        "URL": "https://zwiftinsider.com/route/shisa-shakedown/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Shisa_Shakedown_profile.png"
     },
     {
         "Route": "Bigger Loop",
-        "URL": "https:\/\/zwiftinsider.com\/route\/bigger-loop\/"
+        "URL": "https://zwiftinsider.com/route/bigger-loop/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Bigger_Loop_profile.png"
     },
     {
         "Route": "Shorelines and Summits",
-        "URL": "https:\/\/zwiftinsider.com\/route\/shorelines-and-summits\/"
+        "URL": "https://zwiftinsider.com/route/shorelines-and-summits/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Shorelines_and_Summits_profile.png"
     },
     {
         "Route": "Three Sisters",
-        "URL": "https:\/\/zwiftinsider.com\/route\/three-sisters\/"
+        "URL": "https://zwiftinsider.com/route/three-sisters/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Three_Sisters_profile.png"
     },
     {
         "Route": "Petit Boucle",
-        "URL": "https:\/\/zwiftinsider.com\/route\/petit-boucle\/"
+        "URL": "https://zwiftinsider.com/route/petit-boucle/"
     },
     {
         "Route": "La Reine",
-        "URL": "https:\/\/zwiftinsider.com\/route\/la-reine\/"
+        "URL": "https://zwiftinsider.com/route/la-reine/"
     },
     {
         "Route": "Surrey Hills",
-        "URL": "https:\/\/zwiftinsider.com\/route\/surrey-hills\/"
+        "URL": "https://zwiftinsider.com/route/surrey-hills/"
     },
     {
         "Route": "Achterbahn",
-        "URL": "https:\/\/zwiftinsider.com\/route\/achterbahn\/"
+        "URL": "https://zwiftinsider.com/route/achterbahn/"
     },
     {
         "Route": "Navig8",
-        "URL": "https:\/\/zwiftinsider.com\/route\/navig8\/"
+        "URL": "https://zwiftinsider.com/route/navig8/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Navig8_profile.png"
     },
     {
         "Route": "Tour of Fire and Ice",
-        "URL": "https:\/\/zwiftinsider.com\/route\/tour-of-fire-and-ice\/"
+        "URL": "https://zwiftinsider.com/route/tour-of-fire-and-ice/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Tour_of_Fire_and_Ice_profile.png"
     },
     {
         "Route": "Tire-Bouchon",
-        "URL": "https:\/\/zwiftinsider.com\/route\/tire-bouchon\/"
+        "URL": "https://zwiftinsider.com/route/tire-bouchon/"
     },
     {
         "Route": "Ven-Top",
-        "URL": "https:\/\/zwiftinsider.com\/route\/ven-top\/"
+        "URL": "https://zwiftinsider.com/route/ven-top/"
     },
     {
         "Route": "Big Foot Hills",
-        "URL": "https:\/\/zwiftinsider.com\/route\/big-foot-hills\/"
+        "URL": "https://zwiftinsider.com/route/big-foot-hills/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Big_Foot_Hills_profile.png"
     },
     {
         "Route": "Accelerate to Elevate",
-        "URL": "https:\/\/zwiftinsider.com\/route\/accelerate-to-elevate\/"
+        "URL": "https://zwiftinsider.com/route/accelerate-to-elevate/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Accelerate_to_Elevate_profile.png"
     },
     {
         "Route": "Makuri Pretzel",
-        "URL": "https:\/\/zwiftinsider.com\/route\/makuri-pretzel\/"
+        "URL": "https://zwiftinsider.com/route/makuri-pretzel/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Makuri_Pretzel_profile.png"
     },
     {
         "Route": "Power to the Tower",
-        "URL": "https:\/\/zwiftinsider.com\/route\/power-to-the-tower\/"
+        "URL": "https://zwiftinsider.com/route/power-to-the-tower/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Power_to_the_Tower_profile.png"
     },
     {
         "Route": "The PRL Half",
-        "URL": "https:\/\/zwiftinsider.com\/route\/the-prl-half\/"
+        "URL": "https://zwiftinsider.com/route/the-prl-half/"
     },
     {
         "Route": "Zwift Games 2024 Epic",
-        "URL": "https:\/\/zwiftinsider.com\/route\/zwift-games-2024-epic\/"
+        "URL": "https://zwiftinsider.com/route/zwift-games-2024-epic/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Zwift_Games_2024_Epic_profile.png"
     },
     {
         "Route": "The Pretzel",
-        "URL": "https:\/\/zwiftinsider.com\/route\/the-pretzel\/"
+        "URL": "https://zwiftinsider.com/route/the-pretzel/"
     },
     {
         "Route": "Quatch Quest",
-        "URL": "https:\/\/zwiftinsider.com\/route\/quatch-quest\/"
+        "URL": "https://zwiftinsider.com/route/quatch-quest/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Quatch_Quest_profile.png"
     },
     {
         "Route": "Four Horsemen",
-        "URL": "https:\/\/zwiftinsider.com\/route\/four-horsemen\/"
+        "URL": "https://zwiftinsider.com/route/four-horsemen/"
     },
-    {
+   {
         "Route": "The Mega Pretzel",
-        "URL": "https:\/\/zwiftinsider.com\/route\/the-mega-pretzel\/"
+        "URL": "https://zwiftinsider.com/route/the-mega-pretzel/"
     },
     {
         "Route": "The Über Pretzel",
-        "URL": "https:\/\/zwiftinsider.com\/route\/the-uber-pretzel\/"
+        "URL": "https://zwiftinsider.com/route/the-uber-pretzel/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_The_Uber_Pretzel_profile.png"
     },
     {
         "Route": "The PRL Full",
-        "URL": "https:\/\/zwiftinsider.com\/route\/the-prl-full\/"
+        "URL": "https://zwiftinsider.com/route/the-prl-full/"
     },
-     {
+    {
         "Route": "Bell Lap",
-        "URL": "https:\/\/zwiftinsider.com\/route\/bell-lap\/"
+        "URL": "https://zwiftinsider.com/route/bell-lap/"
     }
 ]
