@@ -338,9 +338,15 @@ class ZwiftBot(discord.Client):
                 # Try without image as fallback
                 embed.set_image(url=None)
                 await interaction.followup.send(embed=embed)
-    
-            except Exception as e:
-        logger.error(f"Error in route command: {e}")
+                
+# Still try to delete loading message if it exists
+if loading_message:
+                    try:
+                        await loading_message.delete()
+                    except:
+                        pass
+                        
+            except Exception as        logger.error(f"Error in route command: {e}")
         try:
             if not interaction.response.is_done():
                 await interaction.response.send_message(
