@@ -342,7 +342,7 @@ class ZwiftBot(discord.Client):
                 await interaction.followup.send(embed=embed)
                 
                 # Still try to delete loading message if it exists
-    if loading_message:
+if loading_message:
         try:
             await loading_message.delete()
         except:
