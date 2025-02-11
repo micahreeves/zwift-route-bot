@@ -342,10 +342,10 @@ class ZwiftBot(discord.Client):
                 await interaction.followup.send(embed=embed)
                 
                 # Still try to delete loading message if it exists
-    if loading_message:
-        try:
-            await loading_message.delete()
-        except Exception as e:
+        if loading_message:
+            try:
+                await loading_message.delete()
+            except Exception as e:
             logger.error(f"Error deleting loading animation: {e}")
 
                         
@@ -361,8 +361,8 @@ class ZwiftBot(discord.Client):
                     ),
                     ephemeral=True
                 )
-        except:
-            pass
+        except Exception as err:
+        logger.error(f"Failed to send error message: {err}")
 
     async def sprint(self, interaction: discord.Interaction, name: str):
         if not interaction.user:
