@@ -508,7 +508,7 @@ class ZwiftBot(discord.Client):
             except Exception as err:
                 logger.error(f"Failed to send error message: {err}")
                 
-    async def kom(self, interaction: discord.Interaction, name: str):
+  async def kom(self, interaction: discord.Interaction, name: str):
         """Handle the /kom command"""
         if not interaction.user:
             return
@@ -543,7 +543,12 @@ class ZwiftBot(discord.Client):
                 
                 embed.add_field(
                     name="Distance", 
-                    value=f"{result['Length_m']}m", 
+                    value=f"{result['Length_km']}km ({result['Length_miles']} miles)", 
+                    inline=True
+                )
+                embed.add_field(
+                    name="Elevation", 
+                    value=f"{result['Elev_Gain_m']}m ({result['Elev_Gain_ft']} ft)", 
                     inline=True
                 )
                 embed.add_field(
@@ -554,7 +559,7 @@ class ZwiftBot(discord.Client):
 
                 if alternatives:
                     similar_koms = "\n\n**Similar segments:**\n" + "\n".join(
-                        f"• {k['Segment']} ({k['Length_m']}m, {k['Grade']}%)" 
+                        f"• {k['Segment']} ({k['Length_km']}km, {k['Grade']}%)" 
                         for k in alternatives
                     )
                     embed.add_field(name="", value=similar_koms, inline=False)
@@ -566,7 +571,7 @@ class ZwiftBot(discord.Client):
                 embed = discord.Embed(
                     title="❌ KOM Not Found",
                     description=f"Could not find a KOM segment matching `{name}`.\n\n**Try these segments:**\n" + 
-                               "\n".join(f"• {k['Segment']} ({k['Length_m']}m, {k['Grade']}%)" 
+                               "\n".join(f"• {k['Segment']} ({k['Length_km']}km, {k['Grade']}%)" 
                                        for k in suggestions),
                     color=discord.Color.red()
                 )
