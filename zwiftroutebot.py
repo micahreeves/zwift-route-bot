@@ -508,7 +508,7 @@ class ZwiftBot(discord.Client):
             except Exception as err:
                 logger.error(f"Failed to send error message: {err}")
                 
-  async def kom(self, interaction: discord.Interaction, name: str):
+    async def kom(self, interaction: discord.Interaction, name: str):
         """Handle the /kom command"""
         if not interaction.user:
             return
