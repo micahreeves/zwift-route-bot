@@ -562,7 +562,7 @@
     },
     {
         "Route": "Loop de Loop",
-        "URL": "https://zwiftinsider.com/route/https://zwiftinsider.com/route/loop-de-loop//",
+        "URL": "https://zwiftinsider.com/route/loop-de-loop/",
         "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Loop_de_Loop_profile.png"
     },
     {
@@ -731,5 +731,10 @@
     {
         "Route": "Bell Lap",
         "URL": "https://zwiftinsider.com/route/bell-lap/"
+    },
+     {
+        "Route": "Danger Noodle",
+        "URL": "https://zwiftinsider.com/route/danger-noodle/",
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Danger_Noodle_profile.png"
     }
 ]
