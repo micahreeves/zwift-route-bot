@@ -736,5 +736,26 @@
         "Route": "Danger Noodle",
         "URL": "https://zwiftinsider.com/route/danger-noodle/",
         "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Danger_Noodle_profile.png"
-    }
+    },
+    {
+        "Route": "ZG25 Queen",
+        "URL": "https://zwiftinsider.com/route/zg25-queen/"
+    },
+    {
+        "Route": "Downtown Eruption",
+        "URL": "https://zwiftinsider.com/route/downtown-eruption/"
+    },
+    {
+        "Route": "London Uprising",
+        "URL": "https://zwiftinsider.com/route/london-uprising/"
+    },
+    {
+        "Route": "Scotland Smash",
+        "URL": "https://zwiftinsider.com/route/scotland-smash/"
+    },
+    {
+        "Route": "Makuri Madness",
+        "URL": "https://zwiftinsider.com/route/makuri-madness/"
+    },
+    
 ]
