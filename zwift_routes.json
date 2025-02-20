@@ -756,5 +756,10 @@
     {
         "Route": "Makuri Madness",
         "URL": "https://zwiftinsider.com/route/makuri-madness/"
+    },
+    {
+        "Route": "Astoria Line 8",
+        "URL": "https://zwiftinsider.com/route/astoria-line-8/"
+        "ImageURL": "https://zwiftinsider.com/wp-content/uploads/2020/05/astoria-line-8-zwifthub.png"
     }
 ]
