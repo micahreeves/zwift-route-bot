@@ -296,18 +296,16 @@ class ZwiftBot(discord.Client):
                             logger.info(f"Checking file: {file_lower}")
                             logger.info(f"Looking for base name: {name}")
                             # Check if the base name is in the filename AND it ends with a valid extension
-                            if name in file_lower:
-                                logger.info(f"Found matching base name in: {file_lower}")
+                            if name in file_lower and ('_png' in file_lower or '_jpg' in file_lower or '_jpeg' in file_lower or '_webp' in file_lower):
                             
-                                if any(file_lower.endswith(ext) for ext in valid_extensions):
-                                    image_path = f"{dir_path}/{file}"
-                                    logger.info(f"Found match with valid extension: {file}")
-                                    if os.path.exists(image_path):
-                                        file_size = os.path.getsize(image_path)
-                                        logger.info(f"Found valid image: {image_path} (size: {file_size} bytes)")
-                                        return image_path
+                               image_path = f"{dir_path}/{file}"
+                               logger.info(f"Found matching file: {file}")
+                               if os.path.exists(image_path):
+                                   file_size = os.path.getsize(image_path)
+                                   logger.info(f"Found valid image: {image_path} (size: {file_size} bytes)")
+                                   return image_path
                             else:
-                                logger.info(f"File {file_lower} didn't have valid extension")
+                                logger.info(f"No match for {file_lower}")
                                 
                 except Exception as e:
                     logger.error(f"Error checking {image_path}: {e}")
