@@ -8,5 +8,15 @@ services:
       - DISCORD_BOT_TOKEN
     restart: unless-stopped
     volumes:
-      - /home/micah-reeves/Desktop/zwift-route-bot/route_images:/app/route_images/profiles
-      - /home/micah-reeves/Desktop/zwift-route-bot/route_images:/app/route_images/maps
+      # Mount the entire route_images directory
+      - /home/micah-reeves/Desktop/zwift-route-bot/route_images:/app/route_images
+    # Add listing of mounted directories on startup for verification
+    entrypoint: >
+      sh -c "
+        echo 'Listing mounted directories:' &&
+        echo 'Profiles directory:' &&
+        ls -la /app/route_images/profiles &&
+        echo 'Maps directory:' &&
+        ls -la /app/route_images/maps &&
+        python zwiftroutebot.py
+      "

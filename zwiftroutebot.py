@@ -260,11 +260,11 @@ class ZwiftBot(discord.Client):
             
                 # Try multiple formats
                 possible_names = [
-                    f"{official_name.lower().replace(' ', '_').replace('-', '_')}",  # duchy_estate.svg
-                    f"{official_name.lower().replace(' ', '-')}",  # duchy-estate.svg
-                    f"{official_name.lower().replace(' ', '')}",  # duchyestate.svg
-                    f"{official_name.replace(' ', '_')},  # Duchy_Estate.svg
-                    f"{official_name.lower().replace(' ', '_')}"  # duchy_estate_svg
+                    f"{official_name.lower().replace(' ', '_').replace('-', '_')}.svg",  # duchy_estate.svg
+                    f"{official_name.lower().replace(' ', '-')}.svg",  # duchy-estate.svg
+                    f"{official_name.lower().replace(' ', '')}.svg",  # duchyestate.svg
+                    f"{official_name.replace(' ', '_')}.svg",  # Duchy_Estate.svg
+                    f"{official_name.lower().replace(' ', '_')}_svg"  # duchy_estate_svg
                 ]
             
                 # Log what we're looking for
