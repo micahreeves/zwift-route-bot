@@ -271,11 +271,12 @@ class ZwiftBot(discord.Client):
                 official_name.lower()
             ]
             
-            
+            logger.info(f"Trying base names: {base_names}")
             
             import os
             
             valid_extensions = ['.png', '.jpg', '.webp', '.svg']
+            logger.info(f"Valid extensions: {valid_extensions}")
             
             for directory in ['profiles', 'maps']:
                 try:
@@ -286,16 +287,27 @@ class ZwiftBot(discord.Client):
                         
                     files = os.listdir(dir_path)
                     logger.info(f"Files in {directory}: {len(files)} files found")
+                    # Log a few sample files
+                    logger.info(f"Sample files from {directory}: {files[:3]}")
                         
                     for name in base_names:
                         for file in files:
                             file_lower = file.lower()
+                            logger.info(f"Checking file: {file_lower}")
+                            logger.info(f"Looking for base name: {name}")
                             # Check if the base name is in the filename AND it ends with a valid extension
-                            if name in file_lower and any(file_lower.endswith(ext) for ext in valid_extensions):
-                                image_path = f"{dir_path}/{file}"
-                                file_size = os.path.getsize(image_path)
-                                logger.info(f"Found image: {image_path} (size: {file_size} bytes)")
-                                return image_path
+                            if name in file_lower:
+                                logger.info(f"Found matching base name in: {file_lower}")
+                            
+                                if any(file_lower.endswith(ext) for ext in valid_extensions):
+                                    image_path = f"{dir_path}/{file}"
+                                    logger.info(f"Found match with valid extension: {file}")
+                                    if os.path.exists(image_path):
+                                        file_size = os.path.getsize(image_path)
+                                        logger.info(f"Found valid image: {image_path} (size: {file_size} bytes)")
+                                        return image_path
+                            else:
+                                logger.info(f"File {file_lower} didn't have valid extension")
                                 
                 except Exception as e:
                     logger.error(f"Error checking {image_path}: {e}")
