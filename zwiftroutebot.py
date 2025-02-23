@@ -271,9 +271,11 @@ class ZwiftBot(discord.Client):
                 official_name.lower()
             ]
             
-            extensions = ['.png', '.jpg', '.webp', '.svg']
+            
             
             import os
+            
+            valid_extensions = ['.png', '.jpg', '.webp', '.svg']
             
             for directory in ['profiles', 'maps']:
                 try:
