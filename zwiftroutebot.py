@@ -319,6 +319,48 @@ class ZwiftBot(discord.Client):
             import traceback
             logger.error(traceback.format_exc())
             return None
+            
+# ==========================================
+# Image Type Helper Functions
+# - Handles different image file types for routes
+# - Supports PNG and SVG formats
+# - Returns appropriate discord.File object
+# ==========================================
+    def handle_local_image(self, local_path: str, embed: discord.Embed) -> tuple:
+        """
+        Handle different image types for the route command.
+        
+        Args:
+            local_path (str): Path to the local image file
+            embed (discord.Embed): Discord embed object to modify
+            
+        Returns:
+            tuple: (discord.File or None, str or None) The image file and source type
+        """
+        try:
+            if not local_path:
+                return None, None
+                
+            # Check file type based on filename
+            file_lower = local_path.lower()
+            
+            if '_png' in file_lower:
+                image_file = discord.File(local_path, filename="route.png")
+                embed.set_image(url="attachment://route.png")
+                return image_file, "local"
+                
+            elif '_svg' in file_lower:
+                image_file = discord.File(local_path, filename="route.svg")
+                embed.set_image(url="attachment://route.svg")
+                return image_file, "svg"
+                
+            else:
+                logger.error(f"Unsupported file type for {local_path}")
+                return None, None
+                
+        except Exception as e:
+            logger.error(f"Error handling local image: {e}")
+            return None, None            
 
     async def setup_hook(self):
         """Initialize command tree when bot starts up"""
@@ -417,8 +459,7 @@ class ZwiftBot(discord.Client):
                         embed.description = similar_routes
                     logger.info("Added alternatives to embed")
                 
-                # Replace the image handling section in your route command
-                # Replace the image handling section in your route command
+                
                 image_source = None
                 image_file = None
 
@@ -438,25 +479,16 @@ class ZwiftBot(discord.Client):
                     logger.info(f"Added Cyccal link: {cyccal_url}")
 
                 # 2. Try local SVG if no GitHub image
-                elif svg_path := self.get_local_svg(result["Route"]):  # Note: self. is important here
-                   logger.info(f"Using local SVG: {svg_path}")
-                   try:
-                       image_file = discord.File(svg_path, filename="route.svg")
-                       embed.set_image(url="attachment://route.svg")
-                       image_source = "svg"
-                   except Exception as e:
-                       logger.error(f"Error loading SVG: {e}")
+                elif local_path := self.get_local_svg(result["Route"]):
+                    logger.info(f"Found local image: {local_path}")
+                    image_file, image_source = self.handle_local_image(local_path, embed)
+                    logger.info(f"Image processed - source: {image_source}")
 
                 # 3. Fall back to ZwiftInsider image
                 elif zwift_img_url:
                    logger.info("Using ZwiftInsider image")
                    embed.set_image(url=zwift_img_url)
                    image_source = "zwiftinsider"
-
-                # Ensure URL is properly encoded
-                if embed.image and not image_file:  # Don't encode for local files
-                    embed.set_image(url=quote(embed.image.url, safe=':/?=&'))
-                    logger.info(f"Final image URL: {embed.image.url}")
 
                 # Add thumbnail
                 embed.set_thumbnail(url="https://zwiftinsider.com/wp-content/uploads/2022/12/zwift-logo.png")
@@ -626,6 +658,48 @@ class ZwiftBot(discord.Client):
                     )
             except Exception as err:
                 logger.error(f"Failed to send error message: {err}")
+# ==========================================
+# Image Type Helper Functions
+# - Handles different image file types for routes
+# - Supports PNG and SVG formats
+# - Returns appropriate discord.File object
+# ==========================================
+    def handle_local_image(self, local_path: str, embed: discord.Embed) -> tuple:
+        """
+        Handle different image types for the route command.
+        
+        Args:
+            local_path (str): Path to the local image file
+            embed (discord.Embed): Discord embed object to modify
+            
+        Returns:
+            tuple: (discord.File or None, str or None) The image file and source type
+        """
+        try:
+            if not local_path:
+                return None, None
+                
+            # Check file type based on filename
+            file_lower = local_path.lower()
+            
+            if '_png' in file_lower:
+                image_file = discord.File(local_path, filename="route.png")
+                embed.set_image(url="attachment://route.png")
+                return image_file, "local"
+                
+            elif '_svg' in file_lower:
+                image_file = discord.File(local_path, filename="route.svg")
+                embed.set_image(url="attachment://route.svg")
+                return image_file, "svg"
+                
+            else:
+                logger.error(f"Unsupported file type for {local_path}")
+                return None, None
+                
+        except Exception as e:
+            logger.error(f"Error handling local image: {e}")
+            return None, None
+                
                 
     async def kom(self, interaction: discord.Interaction, name: str):
         """Handle the /kom command"""
@@ -711,6 +785,8 @@ class ZwiftBot(discord.Client):
                     )
             except Exception as err:
                 logger.error(f"Failed to send error message: {err}")
+                
+
 
 # ==========================================
 # Main Program
