@@ -274,20 +274,30 @@ class ZwiftBot(discord.Client):
             extensions = ['.png', '.jpg', '.webp', '.svg']
             
             import os
-            for name in base_names:
-                for ext in extensions:
-                    # Try both in profiles and maps directories
-                    for directory in ['profiles', 'maps']:
-                        try:
-                            image_path = f"/app/route_images/{directory}/{name}{ext}"
-                            logger.info(f"Checking path: {image_path}")
-                            if os.path.exists(image_path):
+            
+            for directory in ['profiles', 'maps']:
+                try:
+                    dir_path = f"/app/route_images/{directory}"
+                    if not os.path.exists(dir_path):
+                        logger.error(f"Directory does not exist: {dir_path}")
+                        continue
+                        
+                    files = os.listdir(dir_path)
+                    logger.info(f"Files in {directory}: {len(files)} files found")
+                        
+                    for name in base_names:
+                        for file in files:
+                            file_lower = file.lower()
+                            # Check if the base name is in the filename AND it ends with a valid extension
+                            if name in file_lower and any(file_lower.endswith(ext) for ext in valid_extensions):
+                                image_path = f"{dir_path}/{file}"
                                 file_size = os.path.getsize(image_path)
                                 logger.info(f"Found image: {image_path} (size: {file_size} bytes)")
                                 return image_path
-                        except Exception as e:
-                            logger.error(f"Error checking {image_path}: {e}")
-                            continue
+                                
+                except Exception as e:
+                    logger.error(f"Error checking {image_path}: {e}")
+                    continue
                             
             logger.info(f"No image found for {official_name} after trying all variations")
             return None
