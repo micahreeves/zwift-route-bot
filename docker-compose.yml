@@ -1,11 +1,12 @@
 version: '3.8'
 
 services:
-  zwift-discord-bot:
+  zwift-route-bot:
     build: .
-    container_name: zwift-discord-bot
+    container_name: zwift-route-bot
     environment:
       - DISCORD_BOT_TOKEN
     restart: unless-stopped
     volumes:
       - ./logs:/app/logs
+      - ./route_images:/app/route_images
