@@ -275,196 +275,200 @@ class ZwiftBot(discord.Client):
                                      message=f"Please wait {wait_time:.1f} seconds before trying again.")
                                      
                                      
-# ==========================================
-# Route Command Implementation
-# ==========================================
-# Features:
-# - Route information lookup and display
-# - Image priority: GitHub/Cyccal -> Local SVG -> ZwiftInsider
-# - Custom footers based on image source
-# - Loading animation
-# - Rate limiting
-# - Alternative route suggestions
-# - Error handling
-# ==========================================
+    
 
-async def route(self, interaction: discord.Interaction, name: str):
-    """Handle the /route command"""
-    if not interaction.user:
-        return
-        
-    try:
-        logger.info(f"Route command started for: {name}")
-        
-        # Check rate limits
-        try:
-            await self.check_rate_limit(interaction.user.id)
-        except HTTPException as e:
-            logger.warning(f"Rate limit hit: {e}")
-            if not interaction.response.is_done():
-                await interaction.response.send_message(
-                    embed=discord.Embed(
-                        title="⏳ Rate Limited",
-                        description=str(e),
-                        color=discord.Color.orange()
-                    ),
-                    ephemeral=True
-                )
+
+    # ==========================================
+    # Route Command Implementation
+    # ==========================================
+    # Features:
+    # - Route information lookup and display
+    # - Image priority: GitHub/Cyccal -> Local SVG -> ZwiftInsider
+    # - Custom footers based on image source
+    # - Loading animation
+    # - Rate limiting
+    # - Alternative route suggestions
+    # - Error handling
+    # ==========================================
+
+    async def route(self, interaction: discord.Interaction, name: str):
+        """Handle the /route command"""
+        if not interaction.user:
             return
-
-        # Find route and defer response
-        result, alternatives = find_route(name)
-        logger.info(f"Route search result: {result['Route'] if result else 'Not found'}")
-        
-        if not interaction.response.is_done():
-            await interaction.response.defer(thinking=True)
-            logger.info("Interaction deferred")
-        
-        # Show loading animation
-        loading_message = None
+            
         try:
-            loading_message = await bike_loading_animation(interaction)
-        except Exception as e:
-            logger.error(f"Error in loading animation: {e}")
-        
-        if result:
-            # Fetch route details
-            stats, zwift_img_url = await fetch_route_info(result["URL"])
-            logger.info(f"ZwiftInsider image URL: {zwift_img_url}")
+            logger.info(f"Route command started for: {name}")
             
-            # Create embed
-            embed = discord.Embed(
-                title=f"🚲 {result['Route']}",
-                url=result["URL"],
-                description="\n".join(stats) if stats else "View full route details on ZwiftInsider",
-                color=0xFC6719
-            )
-            logger.info("Basic embed created")
-            
-            # Add alternatives if any
-            if alternatives:
-                similar_routes = "\n\n**Similar routes:**\n" + "\n".join(f"• {r['Route']}" for r in alternatives)
-                if embed.description:
-                    embed.description += similar_routes
-                else:
-                    embed.description = similar_routes
-                logger.info("Added alternatives to embed")
-            
-            # Track which image source we're using
-            image_source = None
-            image_file = None
+            # Check rate limits
+            try:
+                await self.check_rate_limit(interaction.user.id)
+            except HTTPException as e:
+                logger.warning(f"Rate limit hit: {e}")
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(
+                        embed=discord.Embed(
+                            title="⏳ Rate Limited",
+                            description=str(e),
+                            color=discord.Color.orange()
+                        ),
+                        ephemeral=True
+                    )
+                return
 
-            # 1. Try GitHub profile image (for Cyccal)
-            if result.get("ImageURL") and 'github' in result["ImageURL"].lower():
-                logger.info("Using GitHub profile image")
-                embed.set_image(url=result["ImageURL"])
-                
-                # Add Cyccal link
-                cyccal_url = f"https://cyccal.com/{result['Route'].lower().replace(' ', '-')}/"
-                embed.add_field(
-                    name="Additional Resources",
-                    value=f"[View on Cyccal]({cyccal_url})",
-                    inline=False
-                )
-                image_source = "github"
-                logger.info(f"Added Cyccal link: {cyccal_url}")
-
-            # 2. Try local SVG if no GitHub image
-            elif svg_path := get_local_svg(result["Route"]):
-                logger.info(f"Using local SVG: {svg_path}")
-                try:
-                    image_file = discord.File(svg_path, filename="route.svg")
-                    embed.set_image(url="attachment://route.svg")
-                    image_source = "svg"
-                except Exception as e:
-                    logger.error(f"Error loading SVG: {e}")
-
-            # 3. Fall back to ZwiftInsider image
-            elif zwift_img_url:
-                logger.info("Using ZwiftInsider image")
-                embed.set_image(url=zwift_img_url)
-                image_source = "zwiftinsider"
+            # Find route and defer response
+            result, alternatives = find_route(name)
+            logger.info(f"Route search result: {result['Route'] if result else 'Not found'}")
             
-            # Ensure URL is properly encoded
-            if embed.image and not image_file:  # Don't encode for local files
-                embed.set_image(url=quote(embed.image.url, safe=':/?=&'))
-                logger.info(f"Final image URL: {embed.image.url}")
-            
-            # Add thumbnail
-            embed.set_thumbnail(url="https://zwiftinsider.com/wp-content/uploads/2022/12/zwift-logo.png")
-            
-            # Set custom footer based on image source
-            footer_text = {
-                "github": "ZwiftGuy • Profile from Cyccal • Use /route to find routes",
-                "svg": "ZwiftGuy • Profile from ZwiftHacks • Use /route to find routes",
-                "zwiftinsider": "ZwiftGuy • Profile from ZwiftInsider • Use /route to find routes",
-                None: "ZwiftGuy • Use /route to find routes"
-            }
-            embed.set_footer(text=footer_text.get(image_source, footer_text[None]))
-            
-            # Check description length
-            if len(embed.description) > 4096:
-                embed.description = embed.description[:4093] + "..."
-            
-            # Log embed details
-            logger.info(f"Embed title: {embed.title}")
-            logger.info(f"Embed description length: {len(embed.description)}")
-            logger.info(f"Embed has image: {embed.image is not None}")
-            logger.info(f"Image source: {image_source}")
-            
-        else:
-            # Create not found embed
-            suggestions = random.sample(zwift_routes, min(3, len(zwift_routes)))
-            embed = discord.Embed(
-                title="❌ Route Not Found",
-                description=f"Could not find a route matching `{name}`.\n\n**Try these routes:**\n" + 
-                           "\n".join(f"• {r['Route']}" for r in suggestions),
-                color=discord.Color.red()
-            )
-            logger.info("Created 'not found' embed")
-
-        # Send response and clean up loading message
-        try:
-            if image_file:
-                await interaction.followup.send(embed=embed, file=image_file)
-            else:
-                await interaction.followup.send(embed=embed)
-            logger.info("Successfully sent embed")
-            
-            # Delete loading animation if it exists
-            if loading_message:
-                try:
-                    await loading_message.delete()
-                    logger.info("Deleted loading animation message")
-                except Exception as e:
-                    logger.error(f"Error deleting loading animation: {e}")
-        except discord.HTTPException as e:
-            logger.error(f"Discord HTTP error when sending embed: {e}")
-            # Try without image as fallback
-            embed.set_image(url=None)
-            await interaction.followup.send(embed=embed)
-            
-            # Try to delete loading message even if main response failed
-            if loading_message:
-                try:
-                    await loading_message.delete()
-                except Exception as e:
-                    logger.error(f"Error deleting loading animation: {e}")
-                    
-    except Exception as e:
-        logger.error(f"Error in route command: {e}")
-        try:
             if not interaction.response.is_done():
-                await interaction.response.send_message(
-                    embed=discord.Embed(
-                        title="❌ Error",
-                        description="An error occurred while processing your request.",
-                        color=discord.Color.red()
-                    ),
-                    ephemeral=True
+                await interaction.response.defer(thinking=True)
+                logger.info("Interaction deferred")
+            
+            # Show loading animation
+            loading_message = None
+            try:
+                loading_message = await bike_loading_animation(interaction)
+            except Exception as e:
+                logger.error(f"Error in loading animation: {e}")
+            
+            if result:
+                # Fetch route details
+                stats, zwift_img_url = await fetch_route_info(result["URL"])
+                logger.info(f"ZwiftInsider image URL: {zwift_img_url}")
+                
+                # Create embed
+                embed = discord.Embed(
+                    title=f"🚲 {result['Route']}",
+                    url=result["URL"],
+                    description="\n".join(stats) if stats else "View full route details on ZwiftInsider",
+                    color=0xFC6719
                 )
-        except Exception as err:
-            logger.error(f"Failed to send error message: {err}")
+                logger.info("Basic embed created")
+                
+                # Add alternatives if any
+                if alternatives:
+                    similar_routes = "\n\n**Similar routes:**\n" + "\n".join(f"• {r['Route']}" for r in alternatives)
+                    if embed.description:
+                        embed.description += similar_routes
+                    else:
+                        embed.description = similar_routes
+                    logger.info("Added alternatives to embed")
+                
+                # Track which image source we're using
+                image_source = None
+                image_file = None
+
+                # 1. Try GitHub profile image (for Cyccal)
+                if result.get("ImageURL") and 'github' in result["ImageURL"].lower():
+                    logger.info("Using GitHub profile image")
+                    embed.set_image(url=result["ImageURL"])
+                    
+                    # Add Cyccal link
+                    cyccal_url = f"https://cyccal.com/{result['Route'].lower().replace(' ', '-')}/"
+                    embed.add_field(
+                        name="Additional Resources",
+                        value=f"[View on Cyccal]({cyccal_url})",
+                        inline=False
+                    )
+                    image_source = "github"
+                    logger.info(f"Added Cyccal link: {cyccal_url}")
+
+                # 2. Try local SVG if no GitHub image
+                elif svg_path := self.get_local_svg(result["Route"]):  # Note: self. added here
+                    logger.info(f"Using local SVG: {svg_path}")
+                    try:
+                        image_file = discord.File(svg_path, filename="route.svg")
+                        embed.set_image(url="attachment://route.svg")
+                        image_source = "svg"
+                    except Exception as e:
+                        logger.error(f"Error loading SVG: {e}")
+
+                # 3. Fall back to ZwiftInsider image
+                elif zwift_img_url:
+                    logger.info("Using ZwiftInsider image")
+                    embed.set_image(url=zwift_img_url)
+                    image_source = "zwiftinsider"
+                
+                # Ensure URL is properly encoded
+                if embed.image and not image_file:  # Don't encode for local files
+                    embed.set_image(url=quote(embed.image.url, safe=':/?=&'))
+                    logger.info(f"Final image URL: {embed.image.url}")
+                
+                # Add thumbnail
+                embed.set_thumbnail(url="https://zwiftinsider.com/wp-content/uploads/2022/12/zwift-logo.png")
+                
+                # Set custom footer based on image source
+                footer_text = {
+                    "github": "ZwiftGuy • Profile from Cyccal • Use /route to find routes",
+                    "svg": "ZwiftGuy • Profile from ZwiftHacks • Use /route to find routes",
+                    "zwiftinsider": "ZwiftGuy • Profile from ZwiftInsider • Use /route to find routes",
+                    None: "ZwiftGuy • Use /route to find routes"
+                }
+                embed.set_footer(text=footer_text.get(image_source, footer_text[None]))
+                
+                # Check description length
+                if len(embed.description) > 4096:
+                    embed.description = embed.description[:4093] + "..."
+                
+                # Log embed details
+                logger.info(f"Embed title: {embed.title}")
+                logger.info(f"Embed description length: {len(embed.description)}")
+                logger.info(f"Embed has image: {embed.image is not None}")
+                logger.info(f"Image source: {image_source}")
+                
+            else:
+                # Create not found embed
+                suggestions = random.sample(zwift_routes, min(3, len(zwift_routes)))
+                embed = discord.Embed(
+                    title="❌ Route Not Found",
+                    description=f"Could not find a route matching `{name}`.\n\n**Try these routes:**\n" + 
+                               "\n".join(f"• {r['Route']}" for r in suggestions),
+                    color=discord.Color.red()
+                )
+                logger.info("Created 'not found' embed")
+
+            # Send response and clean up loading message
+            try:
+                if image_file:
+                    await interaction.followup.send(embed=embed, file=image_file)
+                else:
+                    await interaction.followup.send(embed=embed)
+                logger.info("Successfully sent embed")
+                
+                # Delete loading animation if it exists
+                if loading_message:
+                    try:
+                        await loading_message.delete()
+                        logger.info("Deleted loading animation message")
+                    except Exception as e:
+                        logger.error(f"Error deleting loading animation: {e}")
+            except discord.HTTPException as e:
+                logger.error(f"Discord HTTP error when sending embed: {e}")
+                # Try without image as fallback
+                embed.set_image(url=None)
+                await interaction.followup.send(embed=embed)
+                
+                # Try to delete loading message even if main response failed
+                if loading_message:
+                    try:
+                        await loading_message.delete()
+                    except Exception as e:
+                        logger.error(f"Error deleting loading animation: {e}")
+                        
+        except Exception as e:
+            logger.error(f"Error in route command: {e}")
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(
+                        embed=discord.Embed(
+                            title="❌ Error",
+                            description="An error occurred while processing your request.",
+                            color=discord.Color.red()
+                        ),
+                        ephemeral=True
+                    )
+            except Exception as err:
+                logger.error(f"Failed to send error message: {err}")
+
 
     # ==========================================
     # Sprint Command Implementation
