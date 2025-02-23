@@ -255,33 +255,48 @@ class ZwiftBot(discord.Client):
         try:
             # Get official name from fuzzy matching
             route_result, _ = find_route(route_name)
-            if route_result:
-                official_name = route_result["Route"]
+            if not route_result:
+                logger.error(f"Could not find route match for {route_name}")
+                return None
+                
+            official_name = route_result["Route"]
+            logger.info(f"Looking for image for route: {official_name}")
             
-                # Try multiple formats
-                possible_names = [
-                    f"{official_name.lower().replace(' ', '_').replace('-', '_')}.svg",  # duchy_estate.svg
-                    f"{official_name.lower().replace(' ', '-')}.svg",  # duchy-estate.svg
-                    f"{official_name.lower().replace(' ', '')}.svg",  # duchyestate.svg
-                    f"{official_name.replace(' ', '_')}.svg",  # Duchy_Estate.svg
-                    f"{official_name.lower().replace(' ', '_')}_svg"  # duchy_estate_svg
-                ]
+            # Try multiple formats with common image extensions
+            base_names = [
+                official_name.lower().replace(' ', '_').replace('-', '_'),
+                official_name.lower().replace(' ', '-'),
+                official_name.lower().replace(' ', ''),
+                official_name.replace(' ', '_'),
+                official_name.lower()
+            ]
             
-                # Log what we're looking for
-                logger.info(f"Looking for SVG for route: {official_name}")
+            extensions = ['.png', '.jpg', '.webp', '.svg']
             
-                # Try each possible name
-                for name in possible_names:
-                    svg_path = f"/app/route_images/profiles/{name}.svg"
-                    logger.info(f"Checking for SVG: {svg_path}")
-                    if os.path.exists(svg_path):
-                        logger.info(f"Found SVG: {svg_path}")
-                        return svg_path
+            import os
+            for name in base_names:
+                for ext in extensions:
+                    # Try both in profiles and maps directories
+                    for directory in ['profiles', 'maps']:
+                        try:
+                            image_path = f"/app/route_images/{directory}/{name}{ext}"
+                            logger.info(f"Checking path: {image_path}")
+                            if os.path.exists(image_path):
+                                file_size = os.path.getsize(image_path)
+                                logger.info(f"Found image: {image_path} (size: {file_size} bytes)")
+                                return image_path
+                        except Exception as e:
+                            logger.error(f"Error checking {image_path}: {e}")
+                            continue
+                            
+            logger.info(f"No image found for {official_name} after trying all variations")
+            return None
             
-                logger.info(f"No SVG found for {official_name}")
         except Exception as e:
             logger.error(f"Error in get_local_svg: {e}")
-        return None
+            import traceback
+            logger.error(traceback.format_exc())
+            return None
 
     async def setup_hook(self):
         """Initialize command tree when bot starts up"""
