@@ -251,10 +251,36 @@ class ZwiftBot(discord.Client):
         self.GLOBAL_RATE_LIMIT = 20
         
     def get_local_svg(self, route_name: str) -> str:
-        """Get local SVG path for a route"""
-        safe_name = route_name.lower().replace(' ', '_').replace("'", '').replace('-', '_')
-        svg_path = f"/app/route_images/profiles/{safe_name}.svg"
-        return svg_path if os.path.exists(svg_path) else None
+        """Get local SVG path for a route with flexible name matching"""
+        try:
+            # Get official name from fuzzy matching
+            route_result, _ = find_route(route_name)
+            if route_result:
+                official_name = route_result["Route"]
+            
+                # Try multiple formats
+                possible_names = [
+                    official_name.lower().replace(' ', '_').replace("'", '').replace('-', '_'),  # tempus_fugit
+                    official_name.lower().replace(' ', '-').replace("'", ''),  # tempus-fugit
+                    official_name.lower().replace(' ', ''),  # tempusfugit
+                    official_name.replace(' ', '_')  # Tempus_Fugit
+                ]
+            
+                # Log what we're looking for
+                logger.info(f"Looking for SVG for route: {official_name}")
+            
+                # Try each possible name
+                for name in possible_names:
+                    svg_path = f"/app/route_images/profiles/{name}.svg"
+                    logger.info(f"Checking for SVG: {svg_path}")
+                    if os.path.exists(svg_path):
+                        logger.info(f"Found SVG: {svg_path}")
+                        return svg_path
+            
+                logger.info(f"No SVG found for {official_name}")
+        except Exception as e:
+            logger.error(f"Error in get_local_svg: {e}")
+        return None
 
     async def setup_hook(self):
         """Initialize command tree when bot starts up"""
@@ -353,7 +379,8 @@ class ZwiftBot(discord.Client):
                         embed.description = similar_routes
                     logger.info("Added alternatives to embed")
                 
-                # Track which image source we're using
+                # Replace the image handling section in your route command
+                # Replace the image handling section in your route command
                 image_source = None
                 image_file = None
 
@@ -361,7 +388,7 @@ class ZwiftBot(discord.Client):
                 if result.get("ImageURL") and 'github' in result["ImageURL"].lower():
                     logger.info("Using GitHub profile image")
                     embed.set_image(url=result["ImageURL"])
-                    
+
                     # Add Cyccal link
                     cyccal_url = f"https://cyccal.com/{result['Route'].lower().replace(' ', '-')}/"
                     embed.add_field(
@@ -373,29 +400,29 @@ class ZwiftBot(discord.Client):
                     logger.info(f"Added Cyccal link: {cyccal_url}")
 
                 # 2. Try local SVG if no GitHub image
-                elif svg_path := self.get_local_svg(result["Route"]):  # Note: self. added here
-                    logger.info(f"Using local SVG: {svg_path}")
-                    try:
-                        image_file = discord.File(svg_path, filename="route.svg")
-                        embed.set_image(url="attachment://route.svg")
-                        image_source = "svg"
-                    except Exception as e:
-                        logger.error(f"Error loading SVG: {e}")
+                elif svg_path := self.get_local_svg(result["Route"]):  # Note: self. is important here
+                   logger.info(f"Using local SVG: {svg_path}")
+                   try:
+                       image_file = discord.File(svg_path, filename="route.svg")
+                       embed.set_image(url="attachment://route.svg")
+                       image_source = "svg"
+                   except Exception as e:
+                       logger.error(f"Error loading SVG: {e}")
 
                 # 3. Fall back to ZwiftInsider image
                 elif zwift_img_url:
-                    logger.info("Using ZwiftInsider image")
-                    embed.set_image(url=zwift_img_url)
-                    image_source = "zwiftinsider"
-                
+                   logger.info("Using ZwiftInsider image")
+                   embed.set_image(url=zwift_img_url)
+                   image_source = "zwiftinsider"
+
                 # Ensure URL is properly encoded
                 if embed.image and not image_file:  # Don't encode for local files
                     embed.set_image(url=quote(embed.image.url, safe=':/?=&'))
                     logger.info(f"Final image URL: {embed.image.url}")
-                
+
                 # Add thumbnail
                 embed.set_thumbnail(url="https://zwiftinsider.com/wp-content/uploads/2022/12/zwift-logo.png")
-                
+
                 # Set custom footer based on image source
                 footer_text = {
                     "github": "ZwiftGuy • Profile from Cyccal • Use /route to find routes",
@@ -404,10 +431,11 @@ class ZwiftBot(discord.Client):
                     None: "ZwiftGuy • Use /route to find routes"
                 }
                 embed.set_footer(text=footer_text.get(image_source, footer_text[None]))
+
                 
                 # Check description length
                 if len(embed.description) > 4096:
-                    embed.description = embed.description[:4093] + "..."
+                        embed.description = embed.description[:4093] + "..."
                 
                 # Log embed details
                 logger.info(f"Embed title: {embed.title}")
