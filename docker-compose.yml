@@ -8,4 +8,5 @@ services:
       - DISCORD_BOT_TOKEN
     restart: unless-stopped
     volumes:
-      - /home/micah-reeves/Desktop/zwift-route-bot/route_images:/app/route_images
+      - /home/micah-reeves/Desktop/zwift-route-bot/route_images:/app/route_images/profiles
+      - /home/micah-reeves/Desktop/zwift-route-bot/route_images:/app/route_images/maps
