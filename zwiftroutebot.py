@@ -128,12 +128,7 @@ def get_world_for_route(route_name):
     # Default to Watopia if no other world matches
     return 'Watopia'
     
-def get_local_svg(route_name: str) -> str:
-    """Get local SVG path for a route"""
-    safe_name = route_name.lower().replace(' ', '_').replace("'", '').replace('-', '_')
-    svg_path = f"/app/route_images/profiles/{safe_name}.svg"
-    return svg_path if os.path.exists(svg_path) else None
-    
+
 # ==========================================
 # Route Finding Functions
 # ==========================================
@@ -254,6 +249,12 @@ class ZwiftBot(discord.Client):
         self.rate_limit_lock = asyncio.Lock()
         self.USER_COOLDOWN = 5.0
         self.GLOBAL_RATE_LIMIT = 20
+        
+    def get_local_svg(self, route_name: str) -> str:
+        """Get local SVG path for a route"""
+        safe_name = route_name.lower().replace(' ', '_').replace("'", '').replace('-', '_')
+        svg_path = f"/app/route_images/profiles/{safe_name}.svg"
+        return svg_path if os.path.exists(svg_path) else None
 
     async def setup_hook(self):
         """Initialize command tree when bot starts up"""
