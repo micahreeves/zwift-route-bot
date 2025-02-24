@@ -320,47 +320,38 @@ class ZwiftBot(discord.Client):
             logger.error(traceback.format_exc())
             return None
             
-# ==========================================
+  # ==========================================
 # Image Type Helper Functions
-# - Handles different image file types for routes
-# - Supports PNG and SVG formats
-# - Returns appropriate discord.File object
+# - Handles PNG from ZwiftInsider and SVG from ZwiftHacks
 # ==========================================
     def handle_local_image(self, local_path: str, embed: discord.Embed) -> tuple:
         """
-        Handle different image types for the route command.
-        
-        Args:
-            local_path (str): Path to the local image file
-            embed (discord.Embed): Discord embed object to modify
-            
-        Returns:
-            tuple: (discord.File or None, str or None) The image file and source type
+        Handle PNG and SVG files for route images.
+        Returns the file and source type for the embed.
         """
         try:
             if not local_path:
                 return None, None
                 
-            # Check file type based on filename
             file_lower = local_path.lower()
             
+            # Handle PNGs from ZwiftInsider
             if '_png' in file_lower:
                 image_file = discord.File(local_path, filename="route.png")
                 embed.set_image(url="attachment://route.png")
-                return image_file, "local"
+                return image_file, "zwiftinsider"
                 
+            # Handle SVGs from ZwiftHacks
             elif '_svg' in file_lower:
                 image_file = discord.File(local_path, filename="route.svg")
                 embed.set_image(url="attachment://route.svg")
                 return image_file, "svg"
                 
-            else:
-                logger.error(f"Unsupported file type for {local_path}")
-                return None, None
+            return None, None
                 
         except Exception as e:
-            logger.error(f"Error handling local image: {e}")
-            return None, None            
+            logger.error(f"Error handling image: {e}")
+            return None, None       
 
     async def setup_hook(self):
         """Initialize command tree when bot starts up"""
