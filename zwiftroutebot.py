@@ -296,7 +296,7 @@ class ZwiftBot(discord.Client):
                             logger.info(f"Checking file: {file_lower}")
                             logger.info(f"Looking for base name: {name}")
                             # Check if the base name is in the filename AND it ends with a valid extension
-                            if name in file_lower and ('_png' in file_lower or '_jpg' in file_lower or '_jpeg' in file_lower or '_webp' in file_lower):
+                            if name in file_lower and ('_png' in file_lower or '_jpg' in file_lower or '_jpeg' in file_lower or '_webp' in file_lower or '_svg' in file_lower):
                             
                                image_path = f"{dir_path}/{file}"
                                logger.info(f"Found matching file: {file}")
