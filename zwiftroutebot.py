@@ -848,23 +848,11 @@ class ZwiftBot(discord.Client):
                     if map_file:
                         files_to_send.append(map_file)
                         
-                        # Add field with map reference (now PNG)
-                        embed.add_field(
-                            name="Route Map",
-                            value="[View route map](attachment://route_map.png)",
-                            inline=False
-                        )
+                    
                         logger.info("Added ZwiftHacks map")
                     else:
                         logger.warning(f"Failed to create map file from {zwifthacks_map_path}")
 
-                # Add world information (without bold formatting)
-                world = get_world_for_route(result["Route"])
-                embed.add_field(
-                    name="World",
-                    value=world,
-                    inline=True
-                )
 
                 # Add thumbnail
                 embed.set_thumbnail(url="https://zwiftinsider.com/wp-content/uploads/2022/12/zwift-logo.png")
