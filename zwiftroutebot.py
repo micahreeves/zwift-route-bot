@@ -251,69 +251,90 @@ class ZwiftBot(discord.Client):
         self.GLOBAL_RATE_LIMIT = 20
         
     def get_local_svg(self, route_name: str) -> str:
-        """Get local SVG path for a route with flexible name matching"""
+        """
+        Get local image path using RapidFuzz for better matching.
+    
+        Args:
+            route_name (str): The name of the route to find an image for
+        
+        Returns:
+            str or None: Path to the image file if found, None otherwise
+        """
         try:
-            # Get official name from fuzzy matching
+            # Try to import RapidFuzz
+            try:
+                from rapidfuzz import process, fuzz
+            except ImportError:
+                logger.warning("RapidFuzz not installed. Install with: pip install rapidfuzz")
+                return self._basic_image_search(route_name)
+            
+            import os
+        
+            # Get official name from your existing fuzzy matching
             route_result, _ = find_route(route_name)
             if not route_result:
                 logger.error(f"Could not find route match for {route_name}")
                 return None
-                
+            
             official_name = route_result["Route"]
             logger.info(f"Looking for image for route: {official_name}")
+        
+            # Directory to search for images
+            dir_path = "/app/route_images/maps"
+            if not os.path.exists(dir_path):
+                logger.error(f"Directory does not exist: {dir_path}")
+                return None
+        
+            # Get list of PNG and WEBP files
+            image_files = [file for file in os.listdir(dir_path) 
+                          if '_png' in file.lower() or '_webp' in file.lower()]
+        
+            if not image_files:
+                logger.error("No image files found in directory")
+                return None
+        
+            # Prepare clean version of the route name
+            clean_name = ''.join(c for c in official_name.lower() if c.isalnum() or c.isspace())
+            name_with_underscores = clean_name.replace(' ', '_')
+        
+            # Try different strategies in order
+            strategies = [
+                # Strategy 1: WRatio on original name (handles many cases well)
+                {"query": official_name, "scorer": fuzz.WRatio, "cutoff": 65},
             
-            # Try multiple formats with common image extensions
-            base_names = [
-                official_name.lower().replace(' ', '_').replace('-', '_'),
-                official_name.lower().replace(' ', '-'),
-                official_name.lower().replace(' ', ''),
-                official_name.replace(' ', '_'),
-                official_name.lower()
+                # Strategy 2: token_set_ratio on underscored name (handles word reordering)
+                {"query": name_with_underscores, "scorer": fuzz.token_set_ratio, "cutoff": 70},
+            
+                # Strategy 3: partial_ratio on clean name (handles partial matches)
+                {"query": clean_name, "scorer": fuzz.partial_ratio, "cutoff": 80},
             ]
+        
+            # Try each strategy
+            for strategy in strategies:
+                match = process.extractOne(
+                    query=strategy["query"],
+                    choices=image_files,
+                    scorer=strategy["scorer"],
+                    score_cutoff=strategy["cutoff"]
+                )
             
-            logger.info(f"Trying base names: {base_names}")
-            
-            import os
-            
-            valid_extensions = ['.png', '.jpg', '.webp', '.svg']
-            logger.info(f"Valid extensions: {valid_extensions}")
-            
-            for directory in ['profiles', 'maps']:
-                try:
-                    dir_path = f"/app/route_images/{directory}"
-                    if not os.path.exists(dir_path):
-                        logger.error(f"Directory does not exist: {dir_path}")
-                        continue
-                        
-                    files = os.listdir(dir_path)
-                    logger.info(f"Files in {directory}: {len(files)} files found")
-                    # Log a few sample files
-                    logger.info(f"Sample files from {directory}: {files[:3]}")
-                        
-                    for name in base_names:
-                        for file in files:
-                            file_lower = file.lower()
-                            logger.info(f"Checking file: {file_lower}")
-                            logger.info(f"Looking for base name: {name}")
-                            # Check if the base name is in the filename AND it ends with a valid extension
-                            if name in file_lower and ('_png' in file_lower or '_webp' in file_lower):
-                            
-                               image_path = f"{dir_path}/{file}"
-                               logger.info(f"Found matching file: {file}")
-                               if os.path.exists(image_path):
-                                   file_size = os.path.getsize(image_path)
-                                   logger.info(f"Found valid image: {image_path} (size: {file_size} bytes)")
-                                   return image_path
-                            else:
-                                logger.info(f"No match for {file_lower}")
-                                
-                except Exception as e:
-                    logger.error(f"Error checking {image_path}: {e}")
-                    continue
-                            
-            logger.info(f"No image found for {official_name} after trying all variations")
+                if match:
+                    best_match, score = match
+                    scorer_name = strategy["scorer"].__name__
+                    logger.info(f"Found match with {scorer_name}: {best_match} (score: {score})")
+                    return f"{dir_path}/{best_match}"
+        
+            # Special case for "Queen's Highway After Party" which seems problematic
+            if "queen" in clean_name and "highway" in clean_name:
+                logger.info("Special case for Queen's Highway - checking for partial matches")
+                for file in image_files:
+                    if "queen" in file.lower() and "highway" in file.lower():
+                        logger.info(f"Found Queen's Highway file: {file}")
+                        return f"{dir_path}/{file}"
+        
+            logger.info(f"No image found for {official_name}")
             return None
-            
+        
         except Exception as e:
             logger.error(f"Error in get_local_svg: {e}")
             import traceback
@@ -351,7 +372,115 @@ class ZwiftBot(discord.Client):
                 
         except Exception as e:
             logger.error(f"Error handling image: {e}")
-            return None, None       
+            return None, None
+
+
+    def get_zwifthacks_map(self, route_name: str) -> str:
+        """
+        Get the ZwiftHacks map image (PNG) for a route from the 'profile' directory.
+    
+        Args:
+            route_name (str): The name of the route to find a map image for
+        
+        Returns:
+            str or None: Path to the map image file if found, None otherwise
+        """
+        try:
+            # Try to import RapidFuzz for better matching
+            try:
+                from rapidfuzz import process, fuzz
+            except ImportError:
+                logger.warning("RapidFuzz not installed. Using basic matching for ZwiftHacks maps.")
+                return None
+            
+            import os
+    
+            # Get official name from existing fuzzy matching
+            route_result, _ = find_route(route_name)
+            if not route_result:
+                logger.error(f"Could not find route match for {route_name}")
+                return None
+        
+            official_name = route_result["Route"]
+            logger.info(f"Looking for ZwiftHacks map for route: {official_name}")
+    
+            # Directory to search for ZwiftHacks map images (now PNG)
+            dir_path = "/app/route_images/profile"
+            if not os.path.exists(dir_path):
+                logger.error(f"ZwiftHacks maps directory does not exist: {dir_path}")
+                return None
+    
+            # Get list of PNG files instead of SVG
+            image_files = [file for file in os.listdir(dir_path) 
+                          if file.lower().endswith('.png')]
+    
+            if not image_files:
+                logger.error("No PNG files found in ZwiftHacks directory")
+                return None
+    
+            # Prepare clean version of the route name
+            clean_name = ''.join(c for c in official_name.lower() if c.isalnum() or c.isspace())
+            name_with_underscores = clean_name.replace(' ', '_')
+    
+            # Using the same strategies as get_local_svg
+            strategies = [
+                {"query": official_name, "scorer": fuzz.WRatio, "cutoff": 65},
+                {"query": name_with_underscores, "scorer": fuzz.token_set_ratio, "cutoff": 70},
+                {"query": clean_name, "scorer": fuzz.partial_ratio, "cutoff": 80},
+            ]
+    
+            for strategy in strategies:
+                match = process.extractOne(
+                    query=strategy["query"],
+                    choices=image_files,
+                    scorer=strategy["scorer"],
+                    score_cutoff=strategy["cutoff"]
+               )
+        
+                if match:
+                   best_match, score = match
+                   logger.info(f"Found ZwiftHacks map: {best_match} (score: {score})")
+                   return f"{dir_path}/{best_match}"
+    
+            # Special case handling
+            if "queen" in clean_name and "highway" in clean_name:
+                for file in image_files:
+                    if "queen" in file.lower() and "highway" in file.lower():
+                        logger.info(f"Found Queen's Highway file in ZwiftHacks: {file}")
+                        return f"{dir_path}/{file}"
+    
+            logger.info(f"No ZwiftHacks map found for {official_name}")
+            return None
+    
+        except Exception as e:
+            logger.error(f"Error in get_zwifthacks_map: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return None    
+
+
+    def handle_zwifthacks_map(self, map_path: str) -> discord.File:
+        """
+        Create a Discord file object for a ZwiftHacks map.
+    
+        Args:
+            map_path (str): Path to the map file
+        
+        Returns:
+            discord.File: File object for the map
+        """
+        try:
+            if not map_path:
+                return None
+            
+            # Create a Discord file for the map (now PNG)
+            map_file = discord.File(map_path, filename="route_map.png")
+            logger.info(f"Created Discord file for ZwiftHacks map: {map_path}")
+            return map_file
+            
+        except Exception as e:
+            logger.error(f"Error handling ZwiftHacks map: {e}")
+            return None 
 
     async def setup_hook(self):
         """Initialize command tree when bot starts up"""
@@ -374,22 +503,21 @@ class ZwiftBot(discord.Client):
                                      
     
 
-
-    # ==========================================
-    # Route Command Implementation
-    # ==========================================
-    # Features:
-    # - Route information lookup and display
-    # - Image priority: GitHub/Cyccal -> Local SVG -> ZwiftInsider
-    # - Custom footers based on image source
-    # - Loading animation
-    # - Rate limiting
-    # - Alternative route suggestions
-    # - Error handling
-    # ==========================================
+# ==========================================
+# Updated Route Command Implementation
+# ==========================================
+# Features:
+# - Route information lookup and display
+# - Dual image support: Profile (Cyccal/ZwiftInsider) and Map (ZwiftHacks)
+# - World information display
+# - Loading animation with bike emoji
+# - Rate limiting and error handling
+# - Alternative route suggestions
+# - Adaptive footer based on image sources
+# ==========================================
 
     async def route(self, interaction: discord.Interaction, name: str):
-        """Handle the /route command"""
+        """Handle the /route command with both profile and map images"""
         if not interaction.user:
             return
             
@@ -450,9 +578,12 @@ class ZwiftBot(discord.Client):
                         embed.description = similar_routes
                     logger.info("Added alternatives to embed")
                 
+                # Setup for file attachments
+                files_to_send = []
                 
+                # Setup for primary image (profile)
                 image_source = None
-                image_file = None
+                primary_image_file = None
 
                 # 1. Try GitHub profile image (for Cyccal)
                 if result.get("ImageURL") and 'github' in result["ImageURL"].lower():
@@ -469,40 +600,71 @@ class ZwiftBot(discord.Client):
                     image_source = "github"
                     logger.info(f"Added Cyccal link: {cyccal_url}")
 
-                # 2. Try local SVG if no GitHub image
+                # 2. Try local image if no GitHub image
                 elif local_path := self.get_local_svg(result["Route"]):
                     logger.info(f"Found local image: {local_path}")
-                    image_file, image_source = self.handle_local_image(local_path, embed)
-                    logger.info(f"Image processed - source: {image_source}")
+                    primary_image_file, image_source = self.handle_local_image(local_path, embed)
+                    if primary_image_file:
+                        files_to_send.append(primary_image_file)
+                    logger.info(f"Primary image processed - source: {image_source}")
 
                 # 3. Fall back to ZwiftInsider image
                 elif zwift_img_url:
-                   logger.info("Using ZwiftInsider image")
+                   logger.info("Using ZwiftInsider web image")
                    embed.set_image(url=zwift_img_url)
                    image_source = "zwiftinsider"
+
+                # Always try to add ZwiftHacks map
+                zwifthacks_map_path = self.get_zwifthacks_map(result["Route"])
+                if zwifthacks_map_path:
+                    logger.info(f"Found ZwiftHacks map: {zwifthacks_map_path}")
+                    map_file = self.handle_zwifthacks_map(zwifthacks_map_path)
+                    if map_file:
+                        files_to_send.append(map_file)
+                        
+                        # Add field with map reference (now PNG)
+                        embed.add_field(
+                            name="Route Map",
+                            value="[View route map](attachment://route_map.png)",
+                            inline=False
+                        )
+                        logger.info("Added ZwiftHacks map")
+
+                # Add world information
+                world = get_world_for_route(result["Route"])
+                embed.add_field(
+                    name="World",
+                    value=world,
+                    inline=True
+                )
 
                 # Add thumbnail
                 embed.set_thumbnail(url="https://zwiftinsider.com/wp-content/uploads/2022/12/zwift-logo.png")
 
-                # Set custom footer based on image source
-                footer_text = {
-                    "github": "ZwiftGuy • Profile from Cyccal • Use /route to find routes",
-                    "svg": "ZwiftGuy • Profile from ZwiftHacks • Use /route to find routes",
-                    "zwiftinsider": "ZwiftGuy • Profile from ZwiftInsider • Use /route to find routes",
-                    None: "ZwiftGuy • Use /route to find routes"
-                }
-                embed.set_footer(text=footer_text.get(image_source, footer_text[None]))
-
+                # Determine footer based on image sources
+                if image_source == "github" and zwifthacks_map_path:
+                    footer_text = "ZwiftGuy • Profile from Cyccal, Map from ZwiftHacks • Use /route to find routes"
+                elif (image_source == "zwiftinsider" or image_source == "local") and zwifthacks_map_path:
+                    footer_text = "ZwiftGuy • Profile from ZwiftInsider, Map from ZwiftHacks • Use /route to find routes"
+                elif image_source == "svg" and zwifthacks_map_path:
+                    footer_text = "ZwiftGuy • Profile from ZwiftHacks, Map from ZwiftHacks • Use /route to find routes"
+                elif zwifthacks_map_path:
+                    footer_text = "ZwiftGuy • Map from ZwiftHacks • Use /route to find routes"
+                else:
+                    footer_text = "ZwiftGuy • Use /route to find routes"
+                
+                embed.set_footer(text=footer_text)
                 
                 # Check description length
                 if len(embed.description) > 4096:
-                        embed.description = embed.description[:4093] + "..."
+                    embed.description = embed.description[:4093] + "..."
                 
                 # Log embed details
                 logger.info(f"Embed title: {embed.title}")
                 logger.info(f"Embed description length: {len(embed.description)}")
                 logger.info(f"Embed has image: {embed.image is not None}")
                 logger.info(f"Image source: {image_source}")
+                logger.info(f"Number of files to send: {len(files_to_send)}")
                 
             else:
                 # Create not found embed
@@ -514,11 +676,12 @@ class ZwiftBot(discord.Client):
                     color=discord.Color.red()
                 )
                 logger.info("Created 'not found' embed")
+                files_to_send = []
 
             # Send response and clean up loading message
             try:
-                if image_file:
-                    await interaction.followup.send(embed=embed, file=image_file)
+                if files_to_send:
+                    await interaction.followup.send(embed=embed, files=files_to_send)
                 else:
                     await interaction.followup.send(embed=embed)
                 logger.info("Successfully sent embed")
@@ -532,7 +695,7 @@ class ZwiftBot(discord.Client):
                         logger.error(f"Error deleting loading animation: {e}")
             except discord.HTTPException as e:
                 logger.error(f"Discord HTTP error when sending embed: {e}")
-                # Try without image as fallback
+                # Try without images as fallback
                 embed.set_image(url=None)
                 await interaction.followup.send(embed=embed)
                 
@@ -557,6 +720,7 @@ class ZwiftBot(discord.Client):
                     )
             except Exception as err:
                 logger.error(f"Failed to send error message: {err}")
+
 
 
     # ==========================================
