@@ -251,18 +251,16 @@ class ZwiftBot(discord.Client):
         self.GLOBAL_RATE_LIMIT = 20
         
 # ==========================================
-# Route Image Finder Function
-# ==========================================
-# Features:
-# - Uses RapidFuzz for fuzzy string matching
-# - Multiple matching strategies for better results
-# - Handles PNG and WEBP files
-# - Special case handling for problematic routes
-# - Robust error handling and logging
-# - Direct filename matching as fallback
-# - Specific handling for Mech Isle Loop
-# ==========================================
-
+    # Route Image Finder Function
+    # ==========================================
+    # Features:
+    # - Fixed path handling for Docker environment
+    # - Enhanced logging for easier troubleshooting
+    # - Added direct path checking based on Docker volume mounts
+    # - Improved error handling with traceback logging
+    # - Expanded file type detection capabilities
+    # ==========================================
+    
     def get_local_svg(self, route_name: str) -> str:
         """
         Get local image path using RapidFuzz for better matching.
@@ -278,8 +276,15 @@ class ZwiftBot(discord.Client):
             try:
                 from rapidfuzz import process, fuzz
             except ImportError:
-                logger.warning("RapidFuzz not installed. Install with: pip install rapidfuzz")
-                return self._basic_image_search(route_name)
+                logger.warning("RapidFuzz not installed. Trying to install it...")
+                try:
+                    import pip
+                    pip.main(['install', 'rapidfuzz'])
+                    from rapidfuzz import process, fuzz
+                    logger.info("Successfully installed and imported RapidFuzz")
+                except Exception as install_err:
+                    logger.error(f"Failed to install RapidFuzz: {install_err}")
+                    return None
             
             import os
         
@@ -292,19 +297,48 @@ class ZwiftBot(discord.Client):
             official_name = route_result["Route"]
             logger.info(f"Looking for image for route: {official_name}")
         
-            # Directory to search for images
-            dir_path = "/app/route_images/maps"
-            if not os.path.exists(dir_path):
-                logger.error(f"Directory does not exist: {dir_path}")
+            # Try multiple directories based on Docker volume mapping
+            dirs_to_check = [
+                "/app/route_images/maps",
+                "/app/route_images/profiles",
+                "/app/route_images"
+            ]
+            
+            # Find first directory that exists
+            dir_path = None
+            for path in dirs_to_check:
+                if os.path.exists(path):
+                    logger.info(f"Found existing directory: {path}")
+                    dir_path = path
+                    # Check if there are any files in this directory
+                    if os.listdir(path):
+                        break
+            
+            if not dir_path:
+                logger.error("No valid image directories found")
+                # List all directories in /app to help troubleshoot
+                try:
+                    logger.info(f"Contents of /app: {os.listdir('/app')}")
+                    if os.path.exists('/app/route_images'):
+                        logger.info(f"Contents of /app/route_images: {os.listdir('/app/route_images')}")
+                except Exception as list_err:
+                    logger.error(f"Error listing directories: {list_err}")
                 return None
+                
+            logger.info(f"Using directory for images: {dir_path}")
         
-            # Get list of PNG and WEBP files
-            image_files = [file for file in os.listdir(dir_path) 
-                          if file.lower().endswith('.png') or file.lower().endswith('.webp')]
+            # Get list of PNG and SVG files
+            image_files = []
+            for root, _, files in os.walk(dir_path):
+                for file in files:
+                    if file.lower().endswith(('.png', '.svg', '.webp')):
+                        image_files.append(os.path.join(root, file))
         
             if not image_files:
-                logger.error("No image files found in directory")
+                logger.error(f"No image files found in directory {dir_path}")
                 return None
+            
+            logger.info(f"Found {len(image_files)} image files")
         
             # Prepare clean version of the route name
             clean_name = ''.join(c for c in official_name.lower() if c.isalnum() or c.isspace())
@@ -313,20 +347,26 @@ class ZwiftBot(discord.Client):
             # Try different strategies in order
             strategies = [
                 # Strategy 1: WRatio on original name (handles many cases well)
-                {"query": official_name, "scorer": fuzz.WRatio, "cutoff": 65},
+                {"query": official_name, "scorer": fuzz.WRatio, "cutoff": 60},
             
                 # Strategy 2: token_set_ratio on underscored name (handles word reordering)
-                {"query": name_with_underscores, "scorer": fuzz.token_set_ratio, "cutoff": 70},
+                {"query": name_with_underscores, "scorer": fuzz.token_set_ratio, "cutoff": 65},
             
                 # Strategy 3: partial_ratio on clean name (handles partial matches)
-                {"query": clean_name, "scorer": fuzz.partial_ratio, "cutoff": 80},
+                {"query": clean_name, "scorer": fuzz.partial_ratio, "cutoff": 75},
             ]
         
+            # Extract just the filenames for matching
+            filenames_for_matching = [os.path.basename(file) for file in image_files]
+            
             # Try each strategy
+            best_match_file = None
+            best_match_score = 0
+            
             for strategy in strategies:
                 match_result = process.extractOne(
                     query=strategy["query"],
-                    choices=image_files,
+                    choices=filenames_for_matching,
                     scorer=strategy["scorer"],
                     score_cutoff=strategy["cutoff"]
                 )
@@ -334,35 +374,54 @@ class ZwiftBot(discord.Client):
                 if match_result:
                     # Handle both tuple formats (RapidFuzz might return different formats)
                     if isinstance(match_result, tuple) and len(match_result) >= 2:
-                        best_match = match_result[0]
+                        best_match_filename = match_result[0]
                         score = match_result[1]
-                        scorer_name = strategy["scorer"].__name__
-                        logger.info(f"Found match with {scorer_name}: {best_match} (score: {score})")
-                        return f"{dir_path}/{best_match}"
-        
-            # Special case for "Queen's Highway After Party" which seems problematic
-            if "queen" in clean_name and "highway" in clean_name:
-                logger.info("Special case for Queen's Highway - checking for partial matches")
-                for file in image_files:
-                    if "queen" in file.lower() and "highway" in file.lower():
-                        logger.info(f"Found Queen's Highway file: {file}")
-                        return f"{dir_path}/{file}"
-        
-            # Check for exact matches in the filename
-            for file in image_files:
-                # Convert to lowercase and remove extension for comparison
-                filename_base = os.path.splitext(file.lower())[0]
-                if clean_name in filename_base or filename_base in clean_name:
-                    logger.info(f"Found direct match: {file}")
-                    return f"{dir_path}/{file}"
-            
-            # Additional check for the specific case mentioned - Mech Isle Loop
-            if "mech isle" in clean_name or "mech-isle" in clean_name:
-                for file in image_files:
-                    if "mech" in file.lower() and ("isle" in file.lower() or "island" in file.lower()):
-                        logger.info(f"Found Mech Isle file: {file}")
-                        return f"{dir_path}/{file}"
                         
+                        # Find the full path that matches this filename
+                        for file_path in image_files:
+                            if os.path.basename(file_path) == best_match_filename:
+                                if score > best_match_score:
+                                    best_match_file = file_path
+                                    best_match_score = score
+                        
+                        scorer_name = strategy["scorer"].__name__
+                        logger.info(f"Found match with {scorer_name}: {best_match_filename} (score: {score})")
+            
+            if best_match_file:
+                logger.info(f"Best match found: {best_match_file} with score {best_match_score}")
+                return best_match_file
+        
+            # Special case for problematic routes
+            special_cases = {
+                "queen": "highway",
+                "mech": "isle",
+                "london": "loop",
+                "tour": "london"
+            }
+            
+            for key, value in special_cases.items():
+                if key in clean_name and (value in clean_name or not value):
+                    logger.info(f"Checking special case for {key}/{value}")
+                    for file_path in image_files:
+                        filename_lower = os.path.basename(file_path).lower()
+                        if key in filename_lower and (value in filename_lower or not value):
+                            logger.info(f"Found special case match: {file_path}")
+                            return file_path
+            
+            # Direct filename checks
+            exact_name = official_name.lower().replace(' ', '_').replace('-', '_')
+            for file_path in image_files:
+                filename = os.path.basename(file_path).lower()
+                filename_no_ext = os.path.splitext(filename)[0]
+                
+                # Try various transformations of the name
+                if (exact_name in filename_no_ext or 
+                    filename_no_ext in exact_name or
+                    clean_name in filename_no_ext or
+                    filename_no_ext in clean_name):
+                    logger.info(f"Found direct filename match: {file_path}")
+                    return file_path
+                    
             logger.info(f"No image found for {official_name}")
             return None
         
@@ -371,7 +430,6 @@ class ZwiftBot(discord.Client):
             import traceback
             logger.error(traceback.format_exc())
             return None
-
             
   # ==========================================
 # Image Type Helper Functions
@@ -408,21 +466,19 @@ class ZwiftBot(discord.Client):
 
 
 # ==========================================
-# ZwiftHacks Map Finder Function
-# ==========================================
-# Features:
-# - Uses RapidFuzz for fuzzy string matching
-# - Multiple matching strategies for better results
-# - Handles PNG files (converted from SVG)
-# - Special case handling for problematic routes
-# - Robust error handling and logging
-# - Direct filename matching as fallback
-# - Specific handling for Mech Isle Loop
-# ==========================================
-
+    # ZwiftHacks Map Finder Function
+    # ==========================================
+    # Features:
+    # - Fixed path handling for Docker environment
+    # - Enhanced error logging with traceback
+    # - Added support for multiple directory structures
+    # - Improved file type detection
+    # - Better fuzzy matching settings for route names
+    # ==========================================
+    
     def get_zwifthacks_map(self, route_name: str) -> str:
         """
-        Get the ZwiftHacks map image (PNG) for a route.
+        Get the ZwiftHacks map image for a route.
         
         Args:
             route_name (str): The name of the route to find a map image for
@@ -435,8 +491,15 @@ class ZwiftBot(discord.Client):
             try:
                 from rapidfuzz import process, fuzz
             except ImportError:
-                logger.warning("RapidFuzz not installed. Using basic matching for ZwiftHacks maps.")
-                return None
+                logger.warning("RapidFuzz not installed for ZwiftHacks maps.")
+                try:
+                    import pip
+                    pip.main(['install', 'rapidfuzz'])
+                    from rapidfuzz import process, fuzz
+                    logger.info("Successfully installed RapidFuzz for map matching")
+                except Exception as install_err:
+                    logger.error(f"Failed to install RapidFuzz: {install_err}")
+                    return None
                 
             import os
         
@@ -449,77 +512,117 @@ class ZwiftBot(discord.Client):
             official_name = route_result["Route"]
             logger.info(f"Looking for ZwiftHacks map for route: {official_name}")
         
-            # Try both possible directories
-            dir_paths = ["/app/route_images/profile", "/app/route_images/maps"]
+            # Try multiple potential directories
+            dir_paths = [
+                "/app/route_images/maps", 
+                "/app/route_images/profiles",
+                "/app/route_images"
+            ]
             
-            # Find the first directory that exists
-            dir_path = None
+            # Find directories that exist and have files
+            valid_dirs = []
             for path in dir_paths:
                 if os.path.exists(path):
-                    dir_path = path
-                    logger.info(f"Using directory: {dir_path}")
-                    break
-                    
-            if not dir_path:
+                    logger.info(f"Found existing directory: {path}")
+                    # Check if there are any files in this directory
+                    files = os.listdir(path)
+                    if files:
+                        valid_dirs.append(path)
+                        logger.info(f"Directory {path} contains {len(files)} files")
+                        
+            if not valid_dirs:
                 logger.error("No valid map directories found")
                 return None
-        
-            # Get list of PNG files (converted from SVG)
-            image_files = [file for file in os.listdir(dir_path) 
-                          if file.lower().endswith('.png')]
+                
+            # Get list of all image files in all valid directories
+            image_files = []
+            for dir_path in valid_dirs:
+                for root, _, files in os.walk(dir_path):
+                    for file in files:
+                        if file.lower().endswith(('.png', '.svg')):
+                            image_files.append(os.path.join(root, file))
         
             if not image_files:
-                logger.error(f"No PNG files found in {dir_path}")
+                logger.error(f"No image files found in directories: {valid_dirs}")
                 return None
+                
+            logger.info(f"Found {len(image_files)} total image files")
         
             # Prepare clean version of the route name
             clean_name = ''.join(c for c in official_name.lower() if c.isalnum() or c.isspace())
             name_with_underscores = clean_name.replace(' ', '_')
         
-            # Using the same strategies as get_local_svg
+            # Using slightly more permissive strategies than get_local_svg
             strategies = [
-                {"query": official_name, "scorer": fuzz.WRatio, "cutoff": 65},
-                {"query": name_with_underscores, "scorer": fuzz.token_set_ratio, "cutoff": 70},
-                {"query": clean_name, "scorer": fuzz.partial_ratio, "cutoff": 80},
+                {"query": official_name, "scorer": fuzz.WRatio, "cutoff": 60},
+                {"query": name_with_underscores, "scorer": fuzz.token_set_ratio, "cutoff": 60},
+                {"query": clean_name, "scorer": fuzz.partial_ratio, "cutoff": 70},
             ]
-        
+            
+            # Extract just the filenames for matching
+            filenames_for_matching = [os.path.basename(file) for file in image_files]
+            
+            # Try each strategy
+            best_match_file = None
+            best_match_score = 0
+            
             for strategy in strategies:
                 match_result = process.extractOne(
                     query=strategy["query"],
-                    choices=image_files,
+                    choices=filenames_for_matching,
                     scorer=strategy["scorer"],
                     score_cutoff=strategy["cutoff"]
                 )
             
                 if match_result:
-                    # Handle both tuple formats (RapidFuzz might return different formats)
+                    # Handle both tuple formats
                     if isinstance(match_result, tuple) and len(match_result) >= 2:
-                        best_match = match_result[0]
+                        best_match_filename = match_result[0]
                         score = match_result[1]
-                        logger.info(f"Found ZwiftHacks map: {best_match} (score: {score})")
-                        return f"{dir_path}/{best_match}"
+                        
+                        # Find the full path that matches this filename
+                        for file_path in image_files:
+                            if os.path.basename(file_path) == best_match_filename:
+                                if score > best_match_score:
+                                    best_match_file = file_path
+                                    best_match_score = score
+                        
+                        logger.info(f"Found ZwiftHacks map match: {best_match_filename} (score: {score})")
+            
+            if best_match_file:
+                logger.info(f"Best ZwiftHacks map match: {best_match_file} with score {best_match_score}")
+                return best_match_file
         
             # Special case handling
-            if "queen" in clean_name and "highway" in clean_name:
-                for file in image_files:
-                    if "queen" in file.lower() and "highway" in file.lower():
-                        logger.info(f"Found Queen's Highway file in ZwiftHacks: {file}")
-                        return f"{dir_path}/{file}"
-                        
-            # Check for exact matches in the filename
-            for file in image_files:
-                # Convert to lowercase and remove extension for comparison
-                filename_base = os.path.splitext(file.lower())[0]
-                if clean_name in filename_base or filename_base in clean_name:
-                    logger.info(f"Found direct match in ZwiftHacks: {file}")
-                    return f"{dir_path}/{file}"
+            special_cases = {
+                "queen": "highway",
+                "mech": "isle",
+                "london": "loop",
+                "watopia": "flat",
+                "tour": "france"
+            }
             
-            # Additional check for the specific case mentioned - Mech Isle Loop
-            if "mech isle" in clean_name or "mech-isle" in clean_name:
-                for file in image_files:
-                    if "mech" in file.lower() and ("isle" in file.lower() or "island" in file.lower()):
-                        logger.info(f"Found Mech Isle file in ZwiftHacks: {file}")
-                        return f"{dir_path}/{file}"
+            for key, value in special_cases.items():
+                if key in clean_name and (value in clean_name or not value):
+                    logger.info(f"Checking special map case for {key}/{value}")
+                    for file_path in image_files:
+                        filename_lower = os.path.basename(file_path).lower()
+                        if key in filename_lower and (value in filename_lower or not value):
+                            logger.info(f"Found special case map match: {file_path}")
+                            return file_path
+            
+            # Direct filename checks
+            for file_path in image_files:
+                filename = os.path.basename(file_path).lower()
+                filename_no_ext = os.path.splitext(filename)[0]
+                
+                # Try various transformations of the name
+                if (clean_name in filename_no_ext or 
+                    filename_no_ext in clean_name or
+                    name_with_underscores in filename_no_ext or
+                    filename_no_ext in name_with_underscores):
+                    logger.info(f"Found direct filename map match: {file_path}")
+                    return file_path
         
             logger.info(f"No ZwiftHacks map found for {official_name}")
             return None
@@ -531,14 +634,14 @@ class ZwiftBot(discord.Client):
             return None
 
 
-# ==========================================
-# ZwiftHacks Map Handler Function
-# ==========================================
-# Features:
-# - Creates Discord File object for found maps
-# - Handles PNG files (converted from SVG)
-# - Robust error handling and logging
-# ==========================================
+    # ==========================================
+    # ZwiftHacks Map Handler Function
+    # ==========================================
+    # Features:
+    # - Fixed file handling for Discord attachments
+    # - Enhanced error logging with traceback
+    # - Improved file type detection
+    # ==========================================
 
     def handle_zwifthacks_map(self, map_path: str) -> discord.File:
         """
@@ -552,19 +655,56 @@ class ZwiftBot(discord.Client):
         """
         try:
             if not map_path:
+                logger.warning("No map path provided to handle_zwifthacks_map")
                 return None
                 
-            # Create a Discord file for the map (PNG format)
-            map_file = discord.File(map_path, filename="route_map.png")
-            logger.info(f"Created Discord file for ZwiftHacks map: {map_path}")
-            return map_file
+            logger.info(f"Creating Discord file for map: {map_path}")
+            
+            # Determine file type
+            file_lower = map_path.lower()
+            
+            if file_lower.endswith('.svg'):
+                # For SVG files
+                map_file = discord.File(map_path, filename="route_map.svg")
+                logger.info("Created Discord file for SVG map")
+                return map_file
+            elif file_lower.endswith('.png') or '.png' in file_lower:
+                # For PNG files (most common)
+                map_file = discord.File(map_path, filename="route_map.png")
+                logger.info("Created Discord file for PNG map")
+                return map_file
+            else:
+                # Try to detect file type by content
+                try:
+                    with open(map_path, 'rb') as f:
+                        header = f.read(10)
+                        if header.startswith(b'<svg') or header.startswith(b'<?xml'):
+                            map_file = discord.File(map_path, filename="route_map.svg")
+                            logger.info("Created Discord file for SVG map (content detection)")
+                            return map_file
+                        elif header.startswith(b'\x89PNG'):
+                            map_file = discord.File(map_path, filename="route_map.png")
+                            logger.info("Created Discord file for PNG map (content detection)")
+                            return map_file
+                except Exception as read_err:
+                    logger.error(f"Error reading file content: {read_err}")
+                
+                # Fallback - try to use it as PNG
+                try:
+                    map_file = discord.File(map_path, filename="route_map.png")
+                    logger.info("Created Discord file for map as fallback PNG")
+                    return map_file
+                except Exception as fallback_err:
+                    logger.error(f"Fallback file creation failed: {fallback_err}")
+                
+                logger.error(f"Could not determine file type for {map_path}")
+                return None
                 
         except Exception as e:
             logger.error(f"Error handling ZwiftHacks map: {e}")
             import traceback
             logger.error(traceback.format_exc())
             return None
-
  
 
     async def setup_hook(self):
@@ -589,17 +729,15 @@ class ZwiftBot(discord.Client):
     
 
 # ==========================================
-# Updated Route Command Implementation
-# ==========================================
-# Features:
-# - Route information lookup and display
-# - Dual image support: Profile (Cyccal/ZwiftInsider) and Map (ZwiftHacks)
-# - World information display
-# - Loading animation with bike emoji
-# - Rate limiting and error handling
-# - Alternative route suggestions
-# - Adaptive footer based on image sources
-# ==========================================
+    # Updated Route Command Implementation
+    # ==========================================
+    # Features:
+    # - Fixed image display issues with proper path handling
+    # - Removed bold formatting from World field
+    # - Improved file attachment logic
+    # - Enhanced error handling for image processing
+    # - Fixed Discord embed structure
+    # ==========================================
 
     async def route(self, interaction: discord.Interaction, name: str):
         """Handle the /route command with both profile and map images"""
@@ -691,13 +829,16 @@ class ZwiftBot(discord.Client):
                     primary_image_file, image_source = self.handle_local_image(local_path, embed)
                     if primary_image_file:
                         files_to_send.append(primary_image_file)
+                        logger.info(f"Successfully added primary image to files_to_send")
+                    else:
+                        logger.warning(f"Failed to create image file from {local_path}")
                     logger.info(f"Primary image processed - source: {image_source}")
 
                 # 3. Fall back to ZwiftInsider image
                 elif zwift_img_url:
-                   logger.info("Using ZwiftInsider web image")
-                   embed.set_image(url=zwift_img_url)
-                   image_source = "zwiftinsider"
+                    logger.info("Using ZwiftInsider web image")
+                    embed.set_image(url=zwift_img_url)
+                    image_source = "zwiftinsider"
 
                 # Always try to add ZwiftHacks map
                 zwifthacks_map_path = self.get_zwifthacks_map(result["Route"])
@@ -714,8 +855,10 @@ class ZwiftBot(discord.Client):
                             inline=False
                         )
                         logger.info("Added ZwiftHacks map")
+                    else:
+                        logger.warning(f"Failed to create map file from {zwifthacks_map_path}")
 
-                # Add world information
+                # Add world information (without bold formatting)
                 world = get_world_for_route(result["Route"])
                 embed.add_field(
                     name="World",
@@ -729,7 +872,9 @@ class ZwiftBot(discord.Client):
                 # Determine footer based on image sources
                 if image_source == "github" and zwifthacks_map_path:
                     footer_text = "ZwiftGuy • Profile from Cyccal, Map from ZwiftHacks • Use /route to find routes"
-                elif (image_source == "zwiftinsider" or image_source == "local") and zwifthacks_map_path:
+                elif image_source == "zwiftinsider" and zwifthacks_map_path:
+                    footer_text = "ZwiftGuy • Profile from ZwiftInsider, Map from ZwiftHacks • Use /route to find routes"
+                elif image_source == "local" and zwifthacks_map_path:
                     footer_text = "ZwiftGuy • Profile from ZwiftInsider, Map from ZwiftHacks • Use /route to find routes"
                 elif image_source == "svg" and zwifthacks_map_path:
                     footer_text = "ZwiftGuy • Profile from ZwiftHacks, Map from ZwiftHacks • Use /route to find routes"
@@ -765,6 +910,7 @@ class ZwiftBot(discord.Client):
 
             # Send response and clean up loading message
             try:
+                # Make sure we send files properly if they exist
                 if files_to_send:
                     await interaction.followup.send(embed=embed, files=files_to_send)
                 else:
@@ -793,6 +939,8 @@ class ZwiftBot(discord.Client):
                         
         except Exception as e:
             logger.error(f"Error in route command: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
             try:
                 if not interaction.response.is_done():
                     await interaction.response.send_message(
@@ -898,46 +1046,89 @@ class ZwiftBot(discord.Client):
                     )
             except Exception as err:
                 logger.error(f"Failed to send error message: {err}")
+
 # ==========================================
-# Image Type Helper Functions
-# - Handles different image file types for routes
-# - Supports PNG and SVG formats
-# - Returns appropriate discord.File object
-# ==========================================
+    # Image Type Helper Functions
+    # ==========================================
+    # Features:
+    # - Fixed image handling to properly identify file types
+    # - Enhanced error logging for troubleshooting
+    # - Added explicit file extension detection for PNG and SVG
+    # - Improved return value consistency for embed integration
+    # ==========================================
+    
     def handle_local_image(self, local_path: str, embed: discord.Embed) -> tuple:
         """
-        Handle different image types for the route command.
+        Handle PNG and SVG files for route images.
+        Returns the file and source type for the embed.
         
         Args:
-            local_path (str): Path to the local image file
-            embed (discord.Embed): Discord embed object to modify
+            local_path (str): Path to the image file
+            embed (discord.Embed): The embed to attach the image to
             
         Returns:
-            tuple: (discord.File or None, str or None) The image file and source type
+            tuple: (discord.File or None, str or None) - The file object and source type
         """
         try:
             if not local_path:
+                logger.warning("No local path provided to handle_local_image")
                 return None, None
                 
-            # Check file type based on filename
             file_lower = local_path.lower()
+            logger.info(f"Handling local image: {file_lower}")
             
-            if '_png' in file_lower:
+            # First check for actual file extensions
+            if file_lower.endswith('.png'):
+                logger.info("Detected PNG file by extension")
                 image_file = discord.File(local_path, filename="route.png")
                 embed.set_image(url="attachment://route.png")
                 return image_file, "local"
                 
-            elif '_svg' in file_lower:
+            elif file_lower.endswith('.svg'):
+                logger.info("Detected SVG file by extension")
+                image_file = discord.File(local_path, filename="route.svg")
+                embed.set_image(url="attachment://route.svg")
+                return image_file, "svg"
+            
+            # Then check for naming patterns
+            elif '_png' in file_lower or '/png/' in file_lower:
+                logger.info("Detected PNG file by naming pattern")
+                image_file = discord.File(local_path, filename="route.png")
+                embed.set_image(url="attachment://route.png")
+                return image_file, "local"
+                
+            elif '_svg' in file_lower or '/svg/' in file_lower:
+                logger.info("Detected SVG file by naming pattern")
                 image_file = discord.File(local_path, filename="route.svg")
                 embed.set_image(url="attachment://route.svg")
                 return image_file, "svg"
                 
             else:
+                logger.warning(f"Unable to determine file type for {local_path}")
+                # Try to detect file type by reading first few bytes
+                try:
+                    with open(local_path, 'rb') as f:
+                        header = f.read(10)
+                        if header.startswith(b'<svg') or header.startswith(b'<?xml'):
+                            logger.info("Detected SVG file by content")
+                            image_file = discord.File(local_path, filename="route.svg")
+                            embed.set_image(url="attachment://route.svg")
+                            return image_file, "svg"
+                        elif header.startswith(b'\x89PNG'):
+                            logger.info("Detected PNG file by content")
+                            image_file = discord.File(local_path, filename="route.png")
+                            embed.set_image(url="attachment://route.png")
+                            return image_file, "local"
+                except Exception as inner_e:
+                    logger.error(f"Error reading file content: {inner_e}")
+                
                 logger.error(f"Unsupported file type for {local_path}")
                 return None, None
                 
         except Exception as e:
             logger.error(f"Error handling local image: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
             return None, None
                 
                 
