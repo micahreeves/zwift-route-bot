@@ -250,10 +250,23 @@ class ZwiftBot(discord.Client):
         self.USER_COOLDOWN = 5.0
         self.GLOBAL_RATE_LIMIT = 20
         
+# ==========================================
+# Route Image Finder Function
+# ==========================================
+# Features:
+# - Uses RapidFuzz for fuzzy string matching
+# - Multiple matching strategies for better results
+# - Handles PNG and WEBP files
+# - Special case handling for problematic routes
+# - Robust error handling and logging
+# - Direct filename matching as fallback
+# - Specific handling for Mech Isle Loop
+# ==========================================
+
     def get_local_svg(self, route_name: str) -> str:
         """
         Get local image path using RapidFuzz for better matching.
-    
+
         Args:
             route_name (str): The name of the route to find an image for
         
@@ -287,7 +300,7 @@ class ZwiftBot(discord.Client):
         
             # Get list of PNG and WEBP files
             image_files = [file for file in os.listdir(dir_path) 
-                          if '_png' in file.lower() or '_webp' in file.lower()]
+                          if file.lower().endswith('.png') or file.lower().endswith('.webp')]
         
             if not image_files:
                 logger.error("No image files found in directory")
@@ -311,18 +324,21 @@ class ZwiftBot(discord.Client):
         
             # Try each strategy
             for strategy in strategies:
-                match = process.extractOne(
+                match_result = process.extractOne(
                     query=strategy["query"],
                     choices=image_files,
                     scorer=strategy["scorer"],
                     score_cutoff=strategy["cutoff"]
                 )
             
-                if match:
-                    best_match, score = match
-                    scorer_name = strategy["scorer"].__name__
-                    logger.info(f"Found match with {scorer_name}: {best_match} (score: {score})")
-                    return f"{dir_path}/{best_match}"
+                if match_result:
+                    # Handle both tuple formats (RapidFuzz might return different formats)
+                    if isinstance(match_result, tuple) and len(match_result) >= 2:
+                        best_match = match_result[0]
+                        score = match_result[1]
+                        scorer_name = strategy["scorer"].__name__
+                        logger.info(f"Found match with {scorer_name}: {best_match} (score: {score})")
+                        return f"{dir_path}/{best_match}"
         
             # Special case for "Queen's Highway After Party" which seems problematic
             if "queen" in clean_name and "highway" in clean_name:
@@ -332,6 +348,21 @@ class ZwiftBot(discord.Client):
                         logger.info(f"Found Queen's Highway file: {file}")
                         return f"{dir_path}/{file}"
         
+            # Check for exact matches in the filename
+            for file in image_files:
+                # Convert to lowercase and remove extension for comparison
+                filename_base = os.path.splitext(file.lower())[0]
+                if clean_name in filename_base or filename_base in clean_name:
+                    logger.info(f"Found direct match: {file}")
+                    return f"{dir_path}/{file}"
+            
+            # Additional check for the specific case mentioned - Mech Isle Loop
+            if "mech isle" in clean_name or "mech-isle" in clean_name:
+                for file in image_files:
+                    if "mech" in file.lower() and ("isle" in file.lower() or "island" in file.lower()):
+                        logger.info(f"Found Mech Isle file: {file}")
+                        return f"{dir_path}/{file}"
+                        
             logger.info(f"No image found for {official_name}")
             return None
         
@@ -340,6 +371,7 @@ class ZwiftBot(discord.Client):
             import traceback
             logger.error(traceback.format_exc())
             return None
+
             
   # ==========================================
 # Image Type Helper Functions
@@ -375,13 +407,26 @@ class ZwiftBot(discord.Client):
             return None, None
 
 
+# ==========================================
+# ZwiftHacks Map Finder Function
+# ==========================================
+# Features:
+# - Uses RapidFuzz for fuzzy string matching
+# - Multiple matching strategies for better results
+# - Handles PNG files (converted from SVG)
+# - Special case handling for problematic routes
+# - Robust error handling and logging
+# - Direct filename matching as fallback
+# - Specific handling for Mech Isle Loop
+# ==========================================
+
     def get_zwifthacks_map(self, route_name: str) -> str:
         """
-        Get the ZwiftHacks map image (PNG) for a route from the 'profile' directory.
-    
+        Get the ZwiftHacks map image (PNG) for a route.
+        
         Args:
             route_name (str): The name of the route to find a map image for
-        
+            
         Returns:
             str or None: Path to the map image file if found, None otherwise
         """
@@ -392,95 +437,135 @@ class ZwiftBot(discord.Client):
             except ImportError:
                 logger.warning("RapidFuzz not installed. Using basic matching for ZwiftHacks maps.")
                 return None
-            
+                
             import os
-    
+        
             # Get official name from existing fuzzy matching
             route_result, _ = find_route(route_name)
             if not route_result:
                 logger.error(f"Could not find route match for {route_name}")
                 return None
-        
+            
             official_name = route_result["Route"]
             logger.info(f"Looking for ZwiftHacks map for route: {official_name}")
-    
-            # Directory to search for ZwiftHacks map images (now PNG)
-            dir_path = "/app/route_images/profile"
-            if not os.path.exists(dir_path):
-                logger.error(f"ZwiftHacks maps directory does not exist: {dir_path}")
+        
+            # Try both possible directories
+            dir_paths = ["/app/route_images/profile", "/app/route_images/maps"]
+            
+            # Find the first directory that exists
+            dir_path = None
+            for path in dir_paths:
+                if os.path.exists(path):
+                    dir_path = path
+                    logger.info(f"Using directory: {dir_path}")
+                    break
+                    
+            if not dir_path:
+                logger.error("No valid map directories found")
                 return None
-    
-            # Get list of PNG files instead of SVG
+        
+            # Get list of PNG files (converted from SVG)
             image_files = [file for file in os.listdir(dir_path) 
                           if file.lower().endswith('.png')]
-    
+        
             if not image_files:
-                logger.error("No PNG files found in ZwiftHacks directory")
+                logger.error(f"No PNG files found in {dir_path}")
                 return None
-    
+        
             # Prepare clean version of the route name
             clean_name = ''.join(c for c in official_name.lower() if c.isalnum() or c.isspace())
             name_with_underscores = clean_name.replace(' ', '_')
-    
+        
             # Using the same strategies as get_local_svg
             strategies = [
                 {"query": official_name, "scorer": fuzz.WRatio, "cutoff": 65},
                 {"query": name_with_underscores, "scorer": fuzz.token_set_ratio, "cutoff": 70},
                 {"query": clean_name, "scorer": fuzz.partial_ratio, "cutoff": 80},
             ]
-    
+        
             for strategy in strategies:
-                match = process.extractOne(
+                match_result = process.extractOne(
                     query=strategy["query"],
                     choices=image_files,
                     scorer=strategy["scorer"],
                     score_cutoff=strategy["cutoff"]
-               )
+                )
+            
+                if match_result:
+                    # Handle both tuple formats (RapidFuzz might return different formats)
+                    if isinstance(match_result, tuple) and len(match_result) >= 2:
+                        best_match = match_result[0]
+                        score = match_result[1]
+                        logger.info(f"Found ZwiftHacks map: {best_match} (score: {score})")
+                        return f"{dir_path}/{best_match}"
         
-                if match:
-                   best_match, score = match
-                   logger.info(f"Found ZwiftHacks map: {best_match} (score: {score})")
-                   return f"{dir_path}/{best_match}"
-    
             # Special case handling
             if "queen" in clean_name and "highway" in clean_name:
                 for file in image_files:
                     if "queen" in file.lower() and "highway" in file.lower():
                         logger.info(f"Found Queen's Highway file in ZwiftHacks: {file}")
                         return f"{dir_path}/{file}"
-    
+                        
+            # Check for exact matches in the filename
+            for file in image_files:
+                # Convert to lowercase and remove extension for comparison
+                filename_base = os.path.splitext(file.lower())[0]
+                if clean_name in filename_base or filename_base in clean_name:
+                    logger.info(f"Found direct match in ZwiftHacks: {file}")
+                    return f"{dir_path}/{file}"
+            
+            # Additional check for the specific case mentioned - Mech Isle Loop
+            if "mech isle" in clean_name or "mech-isle" in clean_name:
+                for file in image_files:
+                    if "mech" in file.lower() and ("isle" in file.lower() or "island" in file.lower()):
+                        logger.info(f"Found Mech Isle file in ZwiftHacks: {file}")
+                        return f"{dir_path}/{file}"
+        
             logger.info(f"No ZwiftHacks map found for {official_name}")
             return None
-    
+        
         except Exception as e:
             logger.error(f"Error in get_zwifthacks_map: {e}")
             import traceback
             logger.error(traceback.format_exc())
-            return None    
+            return None
 
+
+# ==========================================
+# ZwiftHacks Map Handler Function
+# ==========================================
+# Features:
+# - Creates Discord File object for found maps
+# - Handles PNG files (converted from SVG)
+# - Robust error handling and logging
+# ==========================================
 
     def handle_zwifthacks_map(self, map_path: str) -> discord.File:
         """
         Create a Discord file object for a ZwiftHacks map.
-    
+        
         Args:
             map_path (str): Path to the map file
-        
+            
         Returns:
-            discord.File: File object for the map
+            discord.File: File object for the map, or None if error
         """
         try:
             if not map_path:
                 return None
-            
-            # Create a Discord file for the map (now PNG)
+                
+            # Create a Discord file for the map (PNG format)
             map_file = discord.File(map_path, filename="route_map.png")
             logger.info(f"Created Discord file for ZwiftHacks map: {map_path}")
             return map_file
-            
+                
         except Exception as e:
             logger.error(f"Error handling ZwiftHacks map: {e}")
-            return None 
+            import traceback
+            logger.error(traceback.format_exc())
+            return None
+
+ 
 
     async def setup_hook(self):
         """Initialize command tree when bot starts up"""
