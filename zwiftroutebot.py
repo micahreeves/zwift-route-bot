@@ -1772,6 +1772,896 @@ class ZwiftBot(discord.Client):
                     await loading_message.delete()
                 except Exception as e:
                     logger.error(f"Error deleting loading animation: {e}")
+                    
+# ==========================================
+    # Find Route Command
+    # ==========================================
+    # Features:
+    # - Allows users to find routes based on various criteria
+    # - Supports filtering by distance, elevation, world, and route type
+    # - Uses the route cache for fast responses
+    # - Presents results in an organized Discord embed with share button
+    # ==========================================
+
+    @app_commands.command(name="findroute", description="Find routes matching your criteria")
+    @app_commands.describe(
+        min_km="Minimum route distance in kilometers",
+        max_km="Maximum route distance in kilometers",
+        min_elev="Minimum elevation in meters",
+        max_elev="Maximum elevation in meters",
+        world="Zwift world (e.g., Watopia, London, Makuri)",
+        route_type="Type of route (flat, mixed, hilly)",
+        duration="Duration category (short, medium, long)"
+    )
+    async def findroute(self, interaction: discord.Interaction, 
+                      min_km: app_commands.Range[int, 0, 100] = None, 
+                      max_km: app_commands.Range[int, 0, 100] = None,
+                      min_elev: app_commands.Range[int, 0, 2000] = None,
+                      max_elev: app_commands.Range[int, 0, 2000] = None,
+                      world: str = None,
+                      route_type: Literal["flat", "mixed", "hilly"] = None,
+                      duration: Literal["short", "medium", "long"] = None):
+        """Find routes matching specific criteria (Ephemeral with share button)"""
+        if not interaction.user:
+            return
+            
+        # Defer response and show animation
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        loading_message = await bike_loading_animation(interaction)
+        
+        try:
+            # Set default values if not provided
+            _min_km = min_km if min_km is not None else 0
+            _max_km = max_km if max_km is not None else 999
+            _min_elev = min_elev if min_elev is not None else 0
+            _max_elev = max_elev if max_elev is not None else 9999
+            
+            # Check if cache is initialized
+            if not hasattr(self, 'route_cache') or not self.route_cache:
+                logger.warning("Route cache not initialized, loading now...")
+                self.route_cache = await self.load_or_update_route_cache()
+            
+            # Filter routes based on criteria
+            matching_routes = []
+            
+            for route_name, data in self.route_cache.items():
+                # Skip routes with missing data
+                if 'distance_km' not in data or 'elevation_m' not in data:
+                    continue
+                    
+                # Apply filters
+                if data['distance_km'] < _min_km:
+                    continue
+                if data['distance_km'] > _max_km:
+                    continue
+                if data['elevation_m'] < _min_elev:
+                    continue
+                if data['elevation_m'] > _max_elev:
+                    continue
+                
+                # World filter (case insensitive)
+                if world and world.lower() not in data['world'].lower():
+                    continue
+                
+                # Route type filter
+                if route_type:
+                    route_type_cap = route_type.capitalize()
+                    if route_type_cap not in data.get('badges', []):
+                        continue
+                
+                # Duration filter
+                if duration:
+                    duration_cap = duration.capitalize()
+                    if duration_cap not in data.get('badges', []):
+                        continue
+                
+                # All filters passed, add to results
+                matching_routes.append(data)
+            
+            # Create response embed
+            if matching_routes:
+                # Sort routes by distance
+                matching_routes.sort(key=lambda x: x.get('distance_km', 0))
+                
+                # Create embed with filter information
+                filter_desc = []
+                if min_km is not None or max_km is not None:
+                    distance_range = f"{_min_km if min_km is not None else 'any'}-{_max_km if max_km is not None else 'any'} km"
+                    filter_desc.append(f"Distance: {distance_range}")
+                
+                if min_elev is not None or max_elev is not None:
+                    elev_range = f"{_min_elev if min_elev is not None else 'any'}-{_max_elev if max_elev is not None else 'any'} m"
+                    filter_desc.append(f"Elevation: {elev_range}")
+                
+                if world:
+                    filter_desc.append(f"World: {world}")
+                
+                if route_type:
+                    filter_desc.append(f"Type: {route_type}")
+                    
+                if duration:
+                    filter_desc.append(f"Duration: {duration}")
+                
+                filter_text = ", ".join(filter_desc) if filter_desc else "No filters applied"
+                
+                embed = discord.Embed(
+                    title=f"🔍 Found {len(matching_routes)} Routes",
+                    description=f"Filters: {filter_text}\n\n"
+                               f"Here are the top matches:",
+                    color=0x3498DB
+                )
+                
+                # Show top 5 matches
+                display_count = min(5, len(matching_routes))
+                for i, route in enumerate(matching_routes[:display_count]):
+                    # Format estimated time
+                    est_time = route.get('estimated_time_min', 0)
+                    if est_time >= 60:
+                        time_str = f"{est_time // 60}h {est_time % 60}m"
+                    else:
+                        time_str = f"{est_time}m"
+                    
+                    # Format badges
+                    badges = route.get('badges', [])
+                    badges_str = ", ".join(badges) if badges else "Unknown"
+                    
+                    embed.add_field(
+                        name=f"{i+1}. {route['route_name']}",
+                        value=f"🌎 {route.get('world', 'Unknown')}\n"
+                              f"📏 {route.get('distance_km', '?')} km "
+                              f"({route.get('distance_miles', '?')} mi)\n"
+                              f"⛰️ {route.get('elevation_m', '?')} m "
+                              f"({route.get('elevation_ft', '?')} ft)\n"
+                              f"⏱️ Est. time: {time_str}\n"
+                              f"🏷️ {badges_str}\n"
+                              f"[View details]({route['url']})",
+                        inline=False
+                    )
+                
+                # Add note if there are more results
+                if len(matching_routes) > display_count:
+                    embed.set_footer(text=f"Showing top {display_count} of {len(matching_routes)} matches • Use more specific filters to narrow results")
+                else:
+                    embed.set_footer(text="ZwiftGuy • Use /findroute to search for routes")
+                
+            else:
+                # No matches found
+                embed = discord.Embed(
+                    title="❌ No Matching Routes",
+                    description="No routes match your criteria. Try broadening your search filters.",
+                    color=discord.Color.red()
+                )
+                
+                # Suggest some routes for common categories
+                if world:
+                    # If world was specified but no routes found, suggest some routes from that world
+                    world_routes = [r for _, r in self.route_cache.items() 
+                                 if 'world' in r and world.lower() in r['world'].lower()]
+                    
+                    if world_routes:
+                        sample = random.sample(world_routes, min(3, len(world_routes)))
+                        suggestions = "\n\n**Some routes in {}:**\n".format(world)
+                        for route in sample:
+                            suggestions += f"• {route['route_name']} ({route.get('distance_km', '?')} km, {route.get('elevation_m', '?')} m)\n"
+                        embed.description += suggestions
+            
+            # Send the ephemeral embed with share button
+            await self.send_ephemeral_response(interaction, embed, command_type="findroute")
+            
+        except Exception as e:
+            logger.error(f"Error in findroute command: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            
+            # Send error message
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    title="❌ Error",
+                    description="An error occurred while searching for routes. Please try again later.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+        finally:
+            # Delete loading animation
+            if loading_message:
+                try:
+                    await loading_message.delete()
+                except Exception as e:
+                    logger.error(f"Error deleting loading animation: {e}")
+
+    # ==========================================
+    # Stats Command with Time Estimates
+    # ==========================================
+    # Features:
+    # - Shows basic route statistics as before
+    # - Adds time estimate information from ZwiftInsider 
+    # - Includes option to select rider category
+    # - Displays time-related fun facts
+    # ==========================================
+    
+    @app_commands.command(name="stats", description="Get statistics about Zwift routes")
+    @app_commands.describe(
+        category="Rider category for time estimates (A/B/C/D)",
+        focus="Choose which stats to highlight"
+    )
+    async def route_stats(self, interaction: discord.Interaction, 
+                        category: Literal["A", "B", "C", "D"] = "B",
+                        focus: Literal["general", "distance", "climbing", "time"] = "general"):
+        """Display statistics about Zwift routes with time estimates (Ephemeral with share button)"""
+        if not interaction.user:
+            return
+            
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        loading_message = await bike_loading_animation(interaction)
+        
+        try:
+            # Check if cache is initialized
+            if not hasattr(self, 'route_cache') or not self.route_cache:
+                logger.warning("Route cache not initialized, loading now...")
+                self.route_cache = await self.load_or_update_route_cache()
+            
+            # Filter to routes with complete data
+            valid_routes = [r for r in self.route_cache.values() 
+                          if 'distance_km' in r and 'elevation_m' in r]
+            
+            # Calculate statistics
+            total_routes = len(valid_routes)
+            
+            if total_routes == 0:
+                await interaction.followup.send(
+                    embed=discord.Embed(
+                        title="❌ No Route Data",
+                        description="Route statistics are not available. The cache may still be building.",
+                        color=discord.Color.red()
+                    ),
+                    ephemeral=True
+                )
+                return
+            
+            # World stats
+            worlds = {}
+            for route in valid_routes:
+                world = route.get('world', 'Unknown')
+                if world not in worlds:
+                    worlds[world] = 0
+                worlds[world] += 1
+            
+            # Sort worlds by route count
+            sorted_worlds = sorted(worlds.items(), key=lambda x: x[1], reverse=True)
+            
+            # Route type stats
+            route_types = {'Flat': 0, 'Mixed': 0, 'Hilly': 0}
+            for route in valid_routes:
+                for badge in route.get('badges', []):
+                    if badge in route_types:
+                        route_types[badge] += 1
+            
+            # Duration stats
+            durations = {'Short': 0, 'Medium': 0, 'Long': 0}
+            for route in valid_routes:
+                for badge in route.get('badges', []):
+                    if badge in durations:
+                        durations[badge] += 1
+            
+            # Elevation stats
+            elevation_data = [r['elevation_m'] for r in valid_routes]
+            avg_elevation = sum(elevation_data) / len(elevation_data)
+            max_elevation = max(elevation_data)
+            min_elevation = min(elevation_data)
+            
+            # Distance stats
+            distance_data = [r['distance_km'] for r in valid_routes]
+            avg_distance = sum(distance_data) / len(distance_data)
+            max_distance = max(distance_data)
+            min_distance = min(distance_data)
+            
+            # Total distance and elevation
+            total_distance = sum(distance_data)
+            total_elevation = sum(elevation_data)
+            
+            # Time estimate stats for selected category
+            time_data = []
+            category_times = []
+            routes_with_time = 0
+            
+            for route in valid_routes:
+                if 'time_estimates' in route and category in route['time_estimates']:
+                    time_min = route['time_estimates'][category]
+                    category_times.append(time_min)
+                    time_data.append({
+                        'route': route['route_name'],
+                        'time_min': time_min,
+                        'distance_km': route['distance_km'],
+                        'elevation_m': route['elevation_m'],
+                        'world': route['world']
+                    })
+                    routes_with_time += 1
+            
+            # Calculate time stats if we have data
+            time_stats = {}
+            if category_times:
+                avg_time = sum(category_times) / len(category_times)
+                max_time = max(category_times)
+                min_time = min(category_times)
+                
+                # Format times nicely
+                format_time = lambda min: f"{min // 60}h {min % 60}m" if min >= 60 else f"{min}m"
+                
+                time_stats = {
+                    'avg': format_time(int(avg_time)),
+                    'max': format_time(max_time),
+                    'min': format_time(min_time),
+                    'count': len(category_times)
+                }
+                
+                # Sort routes by time
+                time_data.sort(key=lambda r: r['time_min'])
+            
+            # Create embed
+            embed = discord.Embed(
+                title=f"📊 Zwift Route Statistics",
+                description=f"Stats based on {total_routes} routes with complete data",
+                color=0x3498DB
+            )
+            
+            # Change focus based on user selection
+            if focus == "general" or focus == "distance":
+                # Add world stats
+                world_stats = "\n".join([f"{world}: {count} routes" for world, count in sorted_worlds[:5]])
+                if len(sorted_worlds) > 5:
+                    world_stats += f"\n+ {len(sorted_worlds) - 5} more worlds"
+                embed.add_field(
+                    name="Routes by World",
+                    value=world_stats,
+                    inline=True
+                )
+                
+                # Add type and duration stats
+                type_stats = "\n".join([f"{type_}: {count} routes" for type_, count in route_types.items()])
+                duration_stats = "\n".join([f"{dur}: {count} routes" for dur, count in durations.items()])
+                embed.add_field(
+                    name="Routes by Type",
+                    value=type_stats,
+                    inline=True
+                )
+                embed.add_field(
+                    name="Routes by Duration",
+                    value=duration_stats,
+                    inline=True
+                )
+            
+            if focus == "general" or focus == "distance":
+                # Add distance stats
+                distance_stats = (
+                    f"Total: {total_distance:.1f} km\n"
+                    f"Average: {avg_distance:.1f} km\n"
+                    f"Shortest: {min_distance:.1f} km\n"
+                    f"Longest: {max_distance:.1f} km"
+                )
+                embed.add_field(
+                    name="Distance Stats",
+                    value=distance_stats,
+                    inline=True
+                )
+            
+            if focus == "general" or focus == "climbing":
+                # Add elevation stats
+                elevation_stats = (
+                    f"Total: {total_elevation:.1f} m\n"
+                    f"Average: {avg_elevation:.1f} m\n"
+                    f"Flattest: {min_elevation:.1f} m\n"
+                    f"Hilliest: {max_elevation:.1f} m"
+                )
+                embed.add_field(
+                    name="Elevation Stats",
+                    value=elevation_stats,
+                    inline=True
+                )
+            
+            # Add time estimates for selected category if available
+            if focus == "general" or focus == "time":
+                if time_stats:
+                    time_summary = (
+                        f"Routes with data: {time_stats['count']}\n"
+                        f"Average: {time_stats['avg']}\n"
+                        f"Shortest: {time_stats['min']}\n"
+                        f"Longest: {time_stats['max']}"
+                    )
+                    embed.add_field(
+                        name=f"Category {category} Times",
+                        value=time_summary,
+                        inline=True
+                    )
+                    
+                    # Add quickest and slowest routes
+                    if time_data:
+                        quickest = time_data[0]
+                        slowest = time_data[-1]
+                        
+                        time_routes = (
+                            f"Quickest: {quickest['route']} "
+                            f"({format_time(quickest['time_min'])})\n"
+                            f"Longest: {slowest['route']} "
+                            f"({format_time(slowest['time_min'])})"
+                        )
+                        embed.add_field(
+                            name=f"Time Extremes",
+                            value=time_routes,
+                            inline=True
+                        )
+                else:
+                    embed.add_field(
+                        name=f"Category {category} Times",
+                        value="No time data available for this category",
+                        inline=True
+                    )
+                    
+                # Add note about time estimates
+                time_coverage = routes_with_time / total_routes * 100 if total_routes > 0 else 0
+                time_note = (
+                    f"*Note: Time estimates are from ZwiftInsider and available for "
+                    f"{routes_with_time} routes ({time_coverage:.1f}% of total).*"
+                )
+                if focus == "time":
+                    embed.description += f"\n\n{time_note}"
+            
+            # Add interesting stats
+            if focus == "general":
+                # Find routes with highest elevation/km ratio
+                routes_by_gradient = sorted(valid_routes, 
+                                          key=lambda r: r['elevation_m'] / r['distance_km'], 
+                                          reverse=True)
+                steepest_route = routes_by_gradient[0]
+                steepest_gradient = steepest_route['elevation_m'] / steepest_route['distance_km']
+                
+                # Find longest ride time
+                routes_by_time = sorted(valid_routes, 
+                                      key=lambda r: r.get('estimated_time_min', 0), 
+                                      reverse=True)
+                longest_time_route = routes_by_time[0]
+                longest_time = longest_time_route.get('estimated_time_min', 0)
+                hours = longest_time // 60
+                minutes = longest_time % 60
+                time_str = f"{hours}h {minutes}m" if hours > 0 else f"{minutes}m"
+                
+                fun_facts = (
+                    f"Steepest Route: {steepest_route['route_name']} "
+                    f"({steepest_gradient:.1f} m/km)\n"
+                    f"Longest Ride: {longest_time_route['route_name']} "
+                    f"(est. {time_str})\n"
+                    f"Epic Routes: {sum(1 for r in valid_routes if 'Epic' in r.get('badges', []))}"
+                )
+                
+                embed.add_field(
+                    name="Fun Facts",
+                    value=fun_facts,
+                    inline=False
+                )
+            
+            # If focus is time, add more time-related information
+            if focus == "time":
+                # Add time duration distribution if we have the data
+                if time_data:
+                    # Group routes by time ranges
+                    time_ranges = {
+                        "< 30m": 0,
+                        "30-60m": 0,
+                        "1-2h": 0,
+                        "2-3h": 0,
+                        "> 3h": 0
+                    }
+                    
+                    for route in time_data:
+                        time_min = route['time_min']
+                        if time_min < 30:
+                            time_ranges["< 30m"] += 1
+                        elif time_min < 60:
+                            time_ranges["30-60m"] += 1
+                        elif time_min < 120:
+                            time_ranges["1-2h"] += 1
+                        elif time_min < 180:
+                            time_ranges["2-3h"] += 1
+                        else:
+                            time_ranges["> 3h"] += 1
+                    
+                    time_distribution = "\n".join([f"{range_}: {count} routes" 
+                                                for range_, count in time_ranges.items() if count > 0])
+                    
+                    embed.add_field(
+                        name=f"Time Distribution",
+                        value=time_distribution,
+                        inline=True
+                    )
+                    
+                    # Calculate average times by world
+                    world_times = {}
+                    for route in time_data:
+                        world = route['world']
+                        if world not in world_times:
+                            world_times[world] = []
+                        world_times[world].append(route['time_min'])
+                    
+                    # Find average time by world
+                    avg_world_times = {}
+                    for world, times in world_times.items():
+                        if len(times) >= 3:  # Only include worlds with enough routes
+                            avg_world_times[world] = sum(times) / len(times)
+                    
+                    # Sort and format
+                    sorted_worlds = sorted(avg_world_times.items(), key=lambda x: x[1])
+                    
+                    if sorted_worlds:
+                        worlds_text = "\n".join([
+                            f"{world}: {format_time(int(avg_time))}" 
+                            for world, avg_time in sorted_worlds[:5]
+                        ])
+                        
+                        embed.add_field(
+                            name="Avg Time by World",
+                            value=worlds_text,
+                            inline=True
+                        )
+            
+            # Add cache info
+            cache_date = None
+            if os.path.exists(CACHE_FILE):
+                cache_mtime = os.path.getmtime(CACHE_FILE)
+                cache_date = datetime.datetime.fromtimestamp(cache_mtime).strftime("%Y-%m-%d")
+            
+            footer_text = f"ZwiftGuy • Cache last updated: {cache_date or 'Unknown'} • Category {category} selected"
+            embed.set_footer(text=footer_text)
+            
+            # Send ephemeral response with share button
+            await self.send_ephemeral_response(interaction, embed, command_type="stats")
+            
+        except Exception as e:
+            logger.error(f"Error in route stats command: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    title="❌ Error",
+                    description="An error occurred while generating route statistics. Please try again later.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+        finally:
+            # Delete loading animation
+            if loading_message:
+                try:
+                    await loading_message.delete()
+                except Exception as e:
+                    logger.error(f"Error deleting loading animation: {e}")
+
+    # ==========================================
+    # World Routes Command
+    # ==========================================
+    # Features:
+    # - Lists all routes in a specific Zwift world
+    # - Organizes routes by length or elevation
+    # - Uses the route cache for complete information
+    # - Displays results in an organized format with share button
+    # ==========================================
+    
+    @app_commands.command(name="worldroutes", description="List all routes in a specific Zwift world")
+    @app_commands.describe(
+        world="Zwift world to show routes for",
+        sort_by="How to sort the routes"
+    )
+    async def world_routes(self, interaction: discord.Interaction, 
+                         world: str,
+                         sort_by: Literal["distance", "elevation", "name"] = "distance"):
+        """List all routes in a specific Zwift world (Ephemeral with share button)"""
+        if not interaction.user:
+            return
+            
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        loading_message = await bike_loading_animation(interaction)
+        
+        try:
+            # Check if cache is initialized
+            if not hasattr(self, 'route_cache') or not self.route_cache:
+                logger.warning("Route cache not initialized, loading now...")
+                self.route_cache = await self.load_or_update_route_cache()
+            
+            # Filter routes by world (case-insensitive partial match)
+            world_routes = []
+            for route_data in self.route_cache.values():
+                route_world = route_data.get('world', '')
+                if world.lower() in route_world.lower():
+                    world_routes.append(route_data)
+            
+            if not world_routes:
+                await interaction.followup.send(
+                    embed=discord.Embed(
+                        title="❌ World Not Found",
+                        description=f"Could not find routes for world '{world}'.\n\n"
+                                  f"Try one of these: Watopia, London, New York, Paris, France, "
+                                  f"Innsbruck, Yorkshire, Makuri, Scotland, Richmond",
+                        color=discord.Color.red()
+                    ),
+                    ephemeral=True
+                )
+                return
+            
+            # Get proper world name from first result
+            proper_world = world_routes[0]['world']
+            
+            # Sort the routes
+            if sort_by == "distance":
+                world_routes.sort(key=lambda r: r.get('distance_km', 0))
+                sort_text = "by distance (shortest to longest)"
+            elif sort_by == "elevation":
+                world_routes.sort(key=lambda r: r.get('elevation_m', 0))
+                sort_text = "by elevation (flattest to hilliest)"
+            else:  # name
+                world_routes.sort(key=lambda r: r['route_name'])
+                sort_text = "alphabetically"
+            
+            # Create embed
+            embed = discord.Embed(
+                title=f"🌍 Routes in {proper_world}",
+                description=f"Found {len(world_routes)} routes in {proper_world}, sorted {sort_text}:",
+                color=0x3498DB
+            )
+            
+            # Create route list with details
+            # Discord has a 1024 character limit per field and 6000 overall
+            route_entries = []
+            
+            for route in world_routes:
+                # Format entry
+                entry = (
+                    f"**{route['route_name']}**\n"
+                    f"📏 {route.get('distance_km', '?')} km • "
+                    f"⛰️ {route.get('elevation_m', '?')} m • "
+                )
+                
+                # Add badges if available
+                badges = route.get('badges', [])
+                if badges:
+                    entry += f"🏷️ {', '.join(badges)}\n"
+                else:
+                    entry += "\n"
+                
+                route_entries.append(entry)
+            
+            # Split into chunks for fields (roughly 5 routes per field)
+            chunks = []
+            current_chunk = ""
+            
+            for entry in route_entries:
+                if len(current_chunk) + len(entry) > 1000:  # Leave some margin
+                    chunks.append(current_chunk)
+                    current_chunk = entry
+                else:
+                    current_chunk += entry
+                    
+            if current_chunk:
+                chunks.append(current_chunk)
+            
+            # Add fields
+            for i, chunk in enumerate(chunks):
+                field_name = f"Routes {i+1}/{len(chunks)}" if len(chunks) > 1 else "Routes"
+                embed.add_field(
+                    name=field_name,
+                    value=chunk,
+                    inline=False
+                )
+            
+            # Add footer with sorting options
+            embed.set_footer(
+                text=f"ZwiftGuy • Use /worldroutes with sort_by parameter to change sorting"
+            )
+            
+            # Send ephemeral response with share button
+            await self.send_ephemeral_response(interaction, embed, command_type="worldroutes")
+            
+        except Exception as e:
+            logger.error(f"Error in world routes command: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    title="❌ Error",
+                    description="An error occurred while listing world routes. Please try again later.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+        finally:
+            # Delete loading animation
+            if loading_message:
+                try:
+                    await loading_message.delete()
+                except Exception as e:
+                    logger.error(f"Error deleting loading animation: {e}")
+
+
+# ==========================================
+    # Cache Info Command
+    # ==========================================
+    # Features:
+    # - Shows information about the route cache
+    # - Displays cache status, coverage, and missing data
+    # - Admin-only command for monitoring
+    # ==========================================
+    
+    @app_commands.command(name="cacheinfo", description="Show information about the route cache")
+    async def cache_info(self, interaction: discord.Interaction):
+        """Display information about the route cache (Admin only)"""
+        if not interaction.user:
+            return
+        
+        # Check if user is admin - adjust IDs as needed
+        ADMIN_IDS = [182621539539025920]  # Replace with actual admin IDs
+        is_admin = interaction.user.id in ADMIN_IDS
+        
+        if not is_admin:
+            await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="⛔ Permission Denied",
+                    description="This command is only available to bot administrators.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+            return
+            
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        
+        try:
+            # Check cache file status
+            cache_status = "Not Found"
+            cache_size = "0 KB"
+            cache_date = "Never"
+            
+            if os.path.exists(CACHE_FILE):
+                # Get file stats
+                cache_stats = os.stat(CACHE_FILE)
+                cache_size = f"{cache_stats.st_size / 1024:.1f} KB"
+                cache_date = datetime.datetime.fromtimestamp(cache_stats.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
+                cache_status = "Found"
+            
+            # Check cache in memory
+            memory_cache_size = 0
+            route_count = 0
+            complete_routes = 0
+            incomplete_routes = 0
+            missing_fields = {}
+            
+            if hasattr(self, 'route_cache') and self.route_cache:
+                route_count = len(self.route_cache)
+                
+                # Check for data completeness
+                required_fields = ['route_name', 'url', 'world', 'distance_km', 'elevation_m']
+                
+                for route_name, data in self.route_cache.items():
+                    missing = [field for field in required_fields if field not in data]
+                    
+                    if missing:
+                        incomplete_routes += 1
+                        # Track which fields are most commonly missing
+                        for field in missing:
+                            missing_fields[field] = missing_fields.get(field, 0) + 1
+                    else:
+                        complete_routes += 1
+                        
+                # Estimate memory usage (rough approximation)
+                import sys
+                memory_cache_size = sys.getsizeof(str(self.route_cache)) / 1024  # KB
+                
+            # Create embed
+            embed = discord.Embed(
+                title="🔍 Route Cache Information",
+                description="Status of the route cache system",
+                color=0x3498DB
+            )
+            
+            # Add file info
+            embed.add_field(
+                name="Cache File",
+                value=f"Status: {cache_status}\n"
+                      f"Size: {cache_size}\n"
+                      f"Last Updated: {cache_date}",
+                inline=True
+            )
+            
+            # Add memory cache info
+            embed.add_field(
+                name="Memory Cache",
+                value=f"Routes: {route_count}\n"
+                      f"Complete: {complete_routes}\n"
+                      f"Incomplete: {incomplete_routes}\n"
+                      f"Size: {memory_cache_size:.1f} KB",
+                inline=True
+            )
+            
+            # Add data quality info
+            coverage = f"{complete_routes / max(1, route_count) * 100:.1f}%" if route_count > 0 else "N/A"
+            
+            missing_fields_info = "\n".join([f"{field}: {count}" for field, count in 
+                                          sorted(missing_fields.items(), key=lambda x: x[1], reverse=True)])
+            if not missing_fields_info:
+                missing_fields_info = "None"
+                
+            embed.add_field(
+                name="Data Quality",
+                value=f"Coverage: {coverage}\n"
+                      f"Missing Fields:\n{missing_fields_info}",
+                inline=False
+            )
+            
+            # Add cache directory info
+            cache_dir_status = "Not Found"
+            cache_dir_contents = "Empty"
+            
+            if os.path.exists(CACHE_DIR):
+                cache_dir_status = "Found"
+                dir_contents = os.listdir(CACHE_DIR)
+                if dir_contents:
+                    cache_dir_contents = ", ".join(dir_contents[:5])
+                    if len(dir_contents) > 5:
+                        cache_dir_contents += f"... (+{len(dir_contents) - 5} more)"
+                else:
+                    cache_dir_contents = "Empty"
+            
+            embed.add_field(
+                name="Cache Directory",
+                value=f"Path: {CACHE_DIR}\n"
+                      f"Status: {cache_dir_status}\n"
+                      f"Contents: {cache_dir_contents}",
+                inline=False
+            )
+            
+            # Add time estimate info
+            time_estimate_count = sum(1 for _, data in self.route_cache.items() 
+                                   if 'time_estimates' in data and data['time_estimates'])
+            
+            time_coverage = f"{time_estimate_count / max(1, route_count) * 100:.1f}%" if route_count > 0 else "N/A"
+            
+            # Count available categories
+            categories = {'A': 0, 'B': 0, 'C': 0, 'D': 0}
+            for _, data in self.route_cache.items():
+                if 'time_estimates' in data:
+                    for cat in categories.keys():
+                        if cat in data['time_estimates']:
+                            categories[cat] += 1
+            
+            categories_info = "\n".join([f"{cat}: {count} routes" for cat, count in categories.items() if count > 0])
+            if not categories_info:
+                categories_info = "None"
+            
+            embed.add_field(
+                name="Time Estimates",
+                value=f"Routes with times: {time_estimate_count}\n"
+                      f"Coverage: {time_coverage}\n"
+                      f"Available Categories:\n{categories_info}",
+                inline=False
+            )
+            
+            # Add system info
+            embed.set_footer(text=f"ZwiftGuy • Cache System • Admin View")
+            
+            await interaction.followup.send(embed=embed, ephemeral=True)
+            
+        except Exception as e:
+            logger.error(f"Error in cache info command: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    title="❌ Error",
+                    description="An error occurred while retrieving cache information.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
                 
 # ==========================================
     # Updated Setup Hook Method
