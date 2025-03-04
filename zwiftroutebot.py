@@ -2683,7 +2683,7 @@ class ZwiftBot(discord.Client):
             app_commands.Command(
                 name="route",
                 description="Get a Zwift route URL by name",
-                callback=lambda interaction: discord.Interaction, name: str: self.route(interaction, name)
+                callback=lambda interaction, name: self.route(interaction, name)
             )
         )
         
@@ -2692,7 +2692,7 @@ class ZwiftBot(discord.Client):
             app_commands.Command(
                 name="sprint",
                 description="Get information about a Zwift sprint segment",
-                callback=lambda interaction: discord.Interaction, name: str: self.sprint(interaction, name)
+                callback=lambda interaction, name: self.sprint(interaction, name)
             )
         )
         
@@ -2701,7 +2701,7 @@ class ZwiftBot(discord.Client):
             app_commands.Command(
                 name="kom",
                 description="Get information about a Zwift KOM segment",
-                callback=lambda interaction: discord.Interaction, name: str: self.kom(interaction, name)
+                callback=lambda interaction, name: self.kom(interaction, name)
             )
         )
         
@@ -2710,14 +2710,7 @@ class ZwiftBot(discord.Client):
             app_commands.Command(
                 name="findroute",
                 description="Find routes matching your criteria",
-                callback=lambda interaction: discord.Interaction, 
-                              min_km: Optional[int]=None, 
-                              max_km: Optional[int]=None, 
-                              min_elev: Optional[int]=None, 
-                              max_elev: Optional[int]=None, 
-                              world: Optional[str]=None, 
-                              route_type: Optional[Literal["flat", "mixed", "hilly"]]=None, 
-                              duration: Optional[Literal["short", "medium", "long"]]=None: 
+                callback=lambda interaction, min_km=None, max_km=None, min_elev=None, max_elev=None, world=None, route_type=None, duration=None: 
                     self.findroute(interaction, min_km, max_km, min_elev, max_elev, world, route_type, duration)
             )
         )
@@ -2727,10 +2720,7 @@ class ZwiftBot(discord.Client):
             app_commands.Command(
                 name="random",
                 description="Get a random Zwift route",
-                callback=lambda interaction: discord.Interaction, 
-                              world: Optional[str]=None, 
-                              route_type: Optional[Literal["flat", "mixed", "hilly"]]=None, 
-                              duration: Optional[Literal["short", "medium", "long"]]=None: 
+                callback=lambda interaction, world=None, route_type=None, duration=None: 
                     self.random_route(interaction, world, route_type, duration)
             )
         )
@@ -2740,9 +2730,7 @@ class ZwiftBot(discord.Client):
             app_commands.Command(
                 name="stats",
                 description="Get statistics about Zwift routes",
-                callback=lambda interaction: discord.Interaction, 
-                              category: Literal["A", "B", "C", "D"]="B", 
-                              focus: Literal["general", "distance", "climbing", "time"]="general": 
+                callback=lambda interaction, category="B", focus="general": 
                     self.route_stats(interaction, category, focus)
             )
         )
@@ -2752,9 +2740,7 @@ class ZwiftBot(discord.Client):
             app_commands.Command(
                 name="worldroutes",
                 description="List all routes in a specific Zwift world",
-                callback=lambda interaction: discord.Interaction, 
-                              world: str, 
-                              sort_by: Literal["distance", "elevation", "name"]="distance": 
+                callback=lambda interaction, world, sort_by="distance": 
                     self.world_routes(interaction, world, sort_by)
             )
         )
@@ -2764,7 +2750,7 @@ class ZwiftBot(discord.Client):
             app_commands.Command(
                 name="cacheinfo",
                 description="Show information about the route cache",
-                callback=lambda interaction: discord.Interaction: self.cache_info(interaction)
+                callback=lambda interaction: self.cache_info(interaction)
             )
         )
 
