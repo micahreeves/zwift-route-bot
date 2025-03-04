@@ -2669,244 +2669,93 @@ class ZwiftBot(discord.Client):
 # ==========================================
 # Features:
 # - Registers all commands with proper parameter handling
-# - Uses explicit command objects instead of lambda functions
+# - Uses decorators with type annotations
 # - Initializes the route cache for data access
 # - Starts periodic cache update background task
 # ==========================================
 
     async def setup_hook(self):
         """Initialize command tree and cache when bot starts up"""
-        # Register all slash commands
+        # Register commands with proper type annotations
         
-        # Helper function to create commands with typed parameters
-        def create_command_wrapper(name, description, callback, parameters=None):
-            async def wrapper(interaction, **kwargs):
-                await callback(interaction, **kwargs)
-                
-            cmd = app_commands.Command(name=name, description=description, callback=wrapper)
-            
-            if parameters:
-                for param in parameters:
-                    cmd.add_parameter(param)
-                    
-            return cmd
+        @self.tree.command(name="route", description="Get a Zwift route URL by name")
+        @app_commands.describe(name="Name of the route to find")
+        async def route_command(interaction: discord.Interaction, name: str):
+            await self.route(interaction, name)
         
-        # Route command
-        route_cmd = create_command_wrapper(
-            name="route",
-            description="Get a Zwift route URL by name",
-            callback=self.route,
-            parameters=[
-                app_commands.Parameter(
-                    name="name",
-                    description="Name of the route to find",
-                    type=app_commands.transformers.AppCommandOptionType.string,
-                    required=True
-                )
-            ]
+        @self.tree.command(name="sprint", description="Get information about a Zwift sprint segment")
+        @app_commands.describe(name="Name of the sprint segment")
+        async def sprint_command(interaction: discord.Interaction, name: str):
+            await self.sprint(interaction, name)
+        
+        @self.tree.command(name="kom", description="Get information about a Zwift KOM segment")
+        @app_commands.describe(name="Name of the KOM segment")
+        async def kom_command(interaction: discord.Interaction, name: str):
+            await self.kom(interaction, name)
+        
+        @self.tree.command(name="findroute", description="Find routes matching your criteria")
+        @app_commands.describe(
+            min_km="Minimum route distance in kilometers",
+            max_km="Maximum route distance in kilometers",
+            min_elev="Minimum elevation in meters",
+            max_elev="Maximum elevation in meters",
+            world="Zwift world (e.g., Watopia, London, Makuri)",
+            route_type="Type of route (flat, mixed, hilly)",
+            duration="Duration category (short, medium, long)"
         )
-        self.tree.add_command(route_cmd)
+        async def findroute_command(
+            interaction: discord.Interaction, 
+            min_km: Optional[int] = None, 
+            max_km: Optional[int] = None, 
+            min_elev: Optional[int] = None, 
+            max_elev: Optional[int] = None, 
+            world: Optional[str] = None, 
+            route_type: Optional[Literal["flat", "mixed", "hilly"]] = None, 
+            duration: Optional[Literal["short", "medium", "long"]] = None
+        ):
+            await self.findroute(interaction, min_km, max_km, min_elev, max_elev, world, route_type, duration)
         
-        # Sprint command
-        sprint_cmd = create_command_wrapper(
-            name="sprint",
-            description="Get information about a Zwift sprint segment",
-            callback=self.sprint,
-            parameters=[
-                app_commands.Parameter(
-                    name="name",
-                    description="Name of the sprint segment",
-                    type=app_commands.transformers.AppCommandOptionType.string,
-                    required=True
-                )
-            ]
+        @self.tree.command(name="random", description="Get a random Zwift route")
+        @app_commands.describe(
+            world="Filter by Zwift world (e.g., Watopia, London)",
+            route_type="Type of route (flat, mixed, hilly)",
+            duration="Duration category (short, medium, long)"
         )
-        self.tree.add_command(sprint_cmd)
+        async def random_command(
+            interaction: discord.Interaction, 
+            world: Optional[str] = None, 
+            route_type: Optional[Literal["flat", "mixed", "hilly"]] = None, 
+            duration: Optional[Literal["short", "medium", "long"]] = None
+        ):
+            await self.random_route(interaction, world, route_type, duration)
         
-        # KOM command
-        kom_cmd = create_command_wrapper(
-            name="kom",
-            description="Get information about a Zwift KOM segment",
-            callback=self.kom,
-            parameters=[
-                app_commands.Parameter(
-                    name="name",
-                    description="Name of the KOM segment",
-                    type=app_commands.transformers.AppCommandOptionType.string,
-                    required=True
-                )
-            ]
+        @self.tree.command(name="stats", description="Get statistics about Zwift routes")
+        @app_commands.describe(
+            category="Rider category for time estimates (A/B/C/D)",
+            focus="Choose which stats to highlight"
         )
-        self.tree.add_command(kom_cmd)
+        async def stats_command(
+            interaction: discord.Interaction, 
+            category: Literal["A", "B", "C", "D"] = "B", 
+            focus: Literal["general", "distance", "climbing", "time"] = "general"
+        ):
+            await self.route_stats(interaction, category, focus)
         
-        # Find route command
-        findroute_cmd = create_command_wrapper(
-            name="findroute",
-            description="Find routes matching your criteria",
-            callback=self.findroute,
-            parameters=[
-                app_commands.Parameter(
-                    name="min_km",
-                    description="Minimum route distance in kilometers",
-                    type=app_commands.transformers.AppCommandOptionType.integer,
-                    required=False
-                ),
-                app_commands.Parameter(
-                    name="max_km",
-                    description="Maximum route distance in kilometers",
-                    type=app_commands.transformers.AppCommandOptionType.integer,
-                    required=False
-                ),
-                app_commands.Parameter(
-                    name="min_elev",
-                    description="Minimum elevation in meters",
-                    type=app_commands.transformers.AppCommandOptionType.integer,
-                    required=False
-                ),
-                app_commands.Parameter(
-                    name="max_elev",
-                    description="Maximum elevation in meters",
-                    type=app_commands.transformers.AppCommandOptionType.integer,
-                    required=False
-                ),
-                app_commands.Parameter(
-                    name="world",
-                    description="Zwift world (e.g., Watopia, London, Makuri)",
-                    type=app_commands.transformers.AppCommandOptionType.string,
-                    required=False
-                ),
-                app_commands.Parameter(
-                    name="route_type",
-                    description="Type of route (flat, mixed, hilly)",
-                    type=app_commands.transformers.AppCommandOptionType.string,
-                    required=False,
-                    choices=[
-                        app_commands.Choice(name="flat", value="flat"),
-                        app_commands.Choice(name="mixed", value="mixed"),
-                        app_commands.Choice(name="hilly", value="hilly")
-                    ]
-                ),
-                app_commands.Parameter(
-                    name="duration",
-                    description="Duration category (short, medium, long)",
-                    type=app_commands.transformers.AppCommandOptionType.string,
-                    required=False,
-                    choices=[
-                        app_commands.Choice(name="short", value="short"),
-                        app_commands.Choice(name="medium", value="medium"),
-                        app_commands.Choice(name="long", value="long")
-                    ]
-                )
-            ]
+        @self.tree.command(name="worldroutes", description="List all routes in a specific Zwift world")
+        @app_commands.describe(
+            world="Zwift world to show routes for",
+            sort_by="How to sort the routes"
         )
-        self.tree.add_command(findroute_cmd)
+        async def worldroutes_command(
+            interaction: discord.Interaction, 
+            world: str, 
+            sort_by: Literal["distance", "elevation", "name"] = "distance"
+        ):
+            await self.world_routes(interaction, world, sort_by)
         
-        # Random route command
-        random_cmd = create_command_wrapper(
-            name="random",
-            description="Get a random Zwift route",
-            callback=self.random_route,
-            parameters=[
-                app_commands.Parameter(
-                    name="world",
-                    description="Filter by Zwift world (e.g., Watopia, London)",
-                    type=app_commands.transformers.AppCommandOptionType.string,
-                    required=False
-                ),
-                app_commands.Parameter(
-                    name="route_type",
-                    description="Type of route (flat, mixed, hilly)",
-                    type=app_commands.transformers.AppCommandOptionType.string,
-                    required=False,
-                    choices=[
-                        app_commands.Choice(name="flat", value="flat"),
-                        app_commands.Choice(name="mixed", value="mixed"),
-                        app_commands.Choice(name="hilly", value="hilly")
-                    ]
-                ),
-                app_commands.Parameter(
-                    name="duration",
-                    description="Duration category (short, medium, long)",
-                    type=app_commands.transformers.AppCommandOptionType.string,
-                    required=False,
-                    choices=[
-                        app_commands.Choice(name="short", value="short"),
-                        app_commands.Choice(name="medium", value="medium"),
-                        app_commands.Choice(name="long", value="long")
-                    ]
-                )
-            ]
-        )
-        self.tree.add_command(random_cmd)
-        
-        # Stats command
-        stats_cmd = create_command_wrapper(
-            name="stats",
-            description="Get statistics about Zwift routes",
-            callback=self.route_stats,
-            parameters=[
-                app_commands.Parameter(
-                    name="category",
-                    description="Rider category for time estimates (A/B/C/D)",
-                    type=app_commands.transformers.AppCommandOptionType.string,
-                    required=False,
-                    choices=[
-                        app_commands.Choice(name="A", value="A"),
-                        app_commands.Choice(name="B", value="B"),
-                        app_commands.Choice(name="C", value="C"),
-                        app_commands.Choice(name="D", value="D")
-                    ]
-                ),
-                app_commands.Parameter(
-                    name="focus",
-                    description="Choose which stats to highlight",
-                    type=app_commands.transformers.AppCommandOptionType.string,
-                    required=False,
-                    choices=[
-                        app_commands.Choice(name="general", value="general"),
-                        app_commands.Choice(name="distance", value="distance"),
-                        app_commands.Choice(name="climbing", value="climbing"),
-                        app_commands.Choice(name="time", value="time")
-                    ]
-                )
-            ]
-        )
-        self.tree.add_command(stats_cmd)
-        
-        # World routes command
-        worldroutes_cmd = create_command_wrapper(
-            name="worldroutes",
-            description="List all routes in a specific Zwift world",
-            callback=self.world_routes,
-            parameters=[
-                app_commands.Parameter(
-                    name="world",
-                    description="Zwift world to show routes for",
-                    type=app_commands.transformers.AppCommandOptionType.string,
-                    required=True
-                ),
-                app_commands.Parameter(
-                    name="sort_by",
-                    description="How to sort the routes",
-                    type=app_commands.transformers.AppCommandOptionType.string,
-                    required=False,
-                    choices=[
-                        app_commands.Choice(name="distance", value="distance"),
-                        app_commands.Choice(name="elevation", value="elevation"),
-                        app_commands.Choice(name="name", value="name")
-                    ]
-                )
-            ]
-        )
-        self.tree.add_command(worldroutes_cmd)
-        
-        # Cache info command
-        cache_info_cmd = create_command_wrapper(
-            name="cacheinfo",
-            description="Show information about the route cache",
-            callback=self.cache_info
-        )
-        self.tree.add_command(cache_info_cmd)
+        @self.tree.command(name="cacheinfo", description="Show information about the route cache")
+        async def cacheinfo_command(interaction: discord.Interaction):
+            await self.cache_info(interaction)
 
         # Sync the command tree
         await self.tree.sync()
