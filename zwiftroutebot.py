@@ -1092,222 +1092,11 @@ class ZwiftBot(discord.Client):
                 logger.error(traceback.format_exc())
                 await asyncio.sleep(60)  # Short sleep on error before retry
                 
-# ==========================================
-    # Random Route Command
-    # ==========================================
-    # Features:
-    # - Provides a randomly selected route
-    # - Supports optional filters for world, type, and duration
-    # - Uses route cache for quick responses
-    # - Includes route images when available
-    # ==========================================
-    
-    @app_commands.command(name="random", description="Get a random Zwift route")
-    @app_commands.describe(
-        world="Filter by Zwift world (e.g., Watopia, London)",
-        route_type="Type of route (flat, mixed, hilly)",
-        duration="Duration category (short, medium, long)"
-    )
-    async def random_route(self, interaction: discord.Interaction, 
-                         world: str = None,
-                         route_type: Literal["flat", "mixed", "hilly"] = None,
-                         duration: Literal["short", "medium", "long"] = None):
-        """Get a random Zwift route with optional filters (Ephemeral with share button)"""
-        if not interaction.user:
-            return
-            
-        await interaction.response.defer(thinking=True, ephemeral=True)
-        loading_message = await bike_loading_animation(interaction)
-        
-        try:
-            # Check if cache is initialized
-            if not hasattr(self, 'route_cache') or not self.route_cache:
-                logger.warning("Route cache not initialized, loading now...")
-                self.route_cache = await self.load_or_update_route_cache()
-            
-            # Filter routes based on criteria
-            filtered_routes = []
-            
-            for route_name, data in self.route_cache.items():
-                # Skip routes with missing core data
-                if 'distance_km' not in data or 'elevation_m' not in data:
-                    continue
-                    
-                # World filter (case insensitive)
-                if world and world.lower() not in data['world'].lower():
-                    continue
-                
-                # Route type filter
-                if route_type:
-                    route_type_cap = route_type.capitalize()
-                    if route_type_cap not in data.get('badges', []):
-                        continue
-                
-                # Duration filter
-                if duration:
-                    duration_cap = duration.capitalize()
-                    if duration_cap not in data.get('badges', []):
-                        continue
-                
-                # All filters passed, add to results
-                filtered_routes.append(data)
-            
-            if not filtered_routes:
-                await interaction.followup.send(
-                    embed=discord.Embed(
-                        title="❌ No Matching Routes",
-                        description="No routes match your filters. Try different criteria.",
-                        color=discord.Color.red()
-                    ),
-                    ephemeral=True
-                )
-                
-                # Delete loading animation
-                if loading_message:
-                    try:
-                        await loading_message.delete()
-                    except Exception as e:
-                        logger.error(f"Error deleting loading animation: {e}")
-                return
-            
-            # Select a random route
-            selected_route = random.choice(filtered_routes)
-            
-            # Create response embed
-            embed = discord.Embed(
-                title=f"🎲 Random Route: {selected_route['route_name']}",
-                url=selected_route['url'],
-                description="Your randomly selected route:",
-                color=0x9B59B6
-            )
-            
-            # Format estimated time
-            est_time = selected_route.get('estimated_time_min', 0)
-            if est_time >= 60:
-                time_str = f"{est_time // 60}h {est_time % 60}m"
-            else:
-                time_str = f"{est_time}m"
-            
-            # Add route details
-            embed.add_field(
-                name="Details",
-                value=f"🌎 {selected_route.get('world', 'Unknown')}\n"
-                      f"📏 {selected_route.get('distance_km', '?')} km "
-                      f"({selected_route.get('distance_miles', '?')} mi)\n"
-                      f"⛰️ {selected_route.get('elevation_m', '?')} m "
-                      f"({selected_route.get('elevation_ft', '?')} ft)\n"
-                      f"⏱️ Est. time: {time_str}",
-                inline=False
-            )
-            
-            # Add badges if available
-            badges = selected_route.get('badges', [])
-            if badges:
-                embed.add_field(
-                    name="Type",
-                    value=", ".join(badges),
-                    inline=False
-                )
-            
-            # Setup for file attachments
-            files_to_send = []
-            
-            # Try to get an image from original route data
-            route_data = next((r for r in zwift_routes if r['Route'] == selected_route['route_name']), None)
-            if route_data and route_data.get("ImageURL") and 'github' in route_data["ImageURL"].lower():
-                embed.set_image(url=route_data["ImageURL"])
-            else:
-                # Try local image
-                local_path = self.get_local_svg(selected_route['route_name'])
-                if local_path:
-                    image_file, _ = self.handle_local_image(local_path, embed)
-                    if image_file:
-                        files_to_send.append(image_file)
-            
-            # Always try to add ZwiftHacks map
-            zwifthacks_map_path = self.get_zwifthacks_map(selected_route['route_name'])
-            if zwifthacks_map_path:
-                map_file = self.handle_zwifthacks_map(zwifthacks_map_path)
-                if map_file:
-                    files_to_send.append(map_file)
-            
-            # Add footer based on filters
-            footer_text = "ZwiftGuy • Use /random for a surprise route"
-            if world or route_type or duration:
-                filter_parts = []
-                if world:
-                    filter_parts.append(f"World: {world}")
-                if route_type:
-                    filter_parts.append(f"Type: {route_type}")
-                if duration:
-                    filter_parts.append(f"Duration: {duration}")
-                filters_text = ", ".join(filter_parts)
-                footer_text += f" • Filters: {filters_text}"
-            
-            embed.set_footer(text=footer_text)
-            
-            # Send ephemeral response with share button
-            await self.send_ephemeral_response(
-                interaction, 
-                embed, 
-                files_to_send if files_to_send else None,
-                command_type="random"
-            )
-            
-        except Exception as e:
-            logger.error(f"Error in random route command: {e}")
-            import traceback
-            logger.error(traceback.format_exc())
-            
-            await interaction.followup.send(
-                embed=discord.Embed(
-                    title="❌ Error",
-                    description="An error occurred while selecting a random route. Please try again later.",
-                    color=discord.Color.red()
-                ),
-                ephemeral=True
-            )
-        finally:
-            # Delete loading animation
-            if loading_message:
-                try:
-                    await loading_message.delete()
-                except Exception as e:
-                    logger.error(f"Error deleting loading animation: {e}")
+
                     
                     
 
-# ==========================================
-    # Updated Setup Hook Method
-    # ==========================================
-    # Features:
-    # - Registers all original and new commands
-    # - Initializes the route cache
-    # - Starts periodic cache update task
-    # ==========================================
-    
-    async def setup_hook(self):
-        """Initialize command tree and cache when bot starts up"""
-        # Register original commands (public)
-        self.tree.command(name="route", description="Get a Zwift route URL by name")(self.route)
-        self.tree.command(name="sprint", description="Get information about a Zwift sprint segment")(self.sprint)
-        self.tree.command(name="kom", description="Get information about a Zwift KOM segment")(self.kom)
-        
-        # Register new commands (ephemeral with share buttons)
-        self.tree.command(name="findroute", description="Find routes matching your criteria")(self.findroute)
-        self.tree.command(name="random", description="Get a random Zwift route")(self.random_route)
-        self.tree.command(name="stats", description="Get statistics about Zwift routes")(self.route_stats)
-        self.tree.command(name="worldroutes", description="List all routes in a specific Zwift world")(self.world_routes)
-        self.tree.command(name="cacheinfo", description="Show information about the route cache")(self.cache_info)
-        
-        await self.tree.sync()
-        
-        # Initialize route cache
-        logger.info("Initializing route cache...")
-        os.makedirs(CACHE_DIR, exist_ok=True)
-        self.route_cache = await self.load_or_update_route_cache()
-        logger.info(f"Route cache initialized with {len(self.route_cache)} routes")
-        self.bg_task = self.loop.create_task(self.periodic_cache_update())
+
 
     async def check_rate_limit(self, user_id):
         """Check and enforce rate limits"""
@@ -1799,6 +1588,222 @@ class ZwiftBot(discord.Client):
                     )
             except Exception as err:
                 logger.error(f"Failed to send error message: {err}")
+                
+                
+# ==========================================
+    # Random Route Command
+    # ==========================================
+    # Features:
+    # - Provides a randomly selected route
+    # - Supports optional filters for world, type, and duration
+    # - Uses route cache for quick responses
+    # - Includes route images when available
+    # ==========================================
+    
+    @app_commands.command(name="random", description="Get a random Zwift route")
+    @app_commands.describe(
+        world="Filter by Zwift world (e.g., Watopia, London)",
+        route_type="Type of route (flat, mixed, hilly)",
+        duration="Duration category (short, medium, long)"
+    )
+    async def random_route(self, interaction: discord.Interaction, 
+                         world: str = None,
+                         route_type: Literal["flat", "mixed", "hilly"] = None,
+                         duration: Literal["short", "medium", "long"] = None):
+        """Get a random Zwift route with optional filters (Ephemeral with share button)"""
+        if not interaction.user:
+            return
+            
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        loading_message = await bike_loading_animation(interaction)
+        
+        try:
+            # Check if cache is initialized
+            if not hasattr(self, 'route_cache') or not self.route_cache:
+                logger.warning("Route cache not initialized, loading now...")
+                self.route_cache = await self.load_or_update_route_cache()
+            
+            # Filter routes based on criteria
+            filtered_routes = []
+            
+            for route_name, data in self.route_cache.items():
+                # Skip routes with missing core data
+                if 'distance_km' not in data or 'elevation_m' not in data:
+                    continue
+                    
+                # World filter (case insensitive)
+                if world and world.lower() not in data['world'].lower():
+                    continue
+                
+                # Route type filter
+                if route_type:
+                    route_type_cap = route_type.capitalize()
+                    if route_type_cap not in data.get('badges', []):
+                        continue
+                
+                # Duration filter
+                if duration:
+                    duration_cap = duration.capitalize()
+                    if duration_cap not in data.get('badges', []):
+                        continue
+                
+                # All filters passed, add to results
+                filtered_routes.append(data)
+            
+            if not filtered_routes:
+                await interaction.followup.send(
+                    embed=discord.Embed(
+                        title="❌ No Matching Routes",
+                        description="No routes match your filters. Try different criteria.",
+                        color=discord.Color.red()
+                    ),
+                    ephemeral=True
+                )
+                
+                # Delete loading animation
+                if loading_message:
+                    try:
+                        await loading_message.delete()
+                    except Exception as e:
+                        logger.error(f"Error deleting loading animation: {e}")
+                return
+            
+            # Select a random route
+            selected_route = random.choice(filtered_routes)
+            
+            # Create response embed
+            embed = discord.Embed(
+                title=f"🎲 Random Route: {selected_route['route_name']}",
+                url=selected_route['url'],
+                description="Your randomly selected route:",
+                color=0x9B59B6
+            )
+            
+            # Format estimated time
+            est_time = selected_route.get('estimated_time_min', 0)
+            if est_time >= 60:
+                time_str = f"{est_time // 60}h {est_time % 60}m"
+            else:
+                time_str = f"{est_time}m"
+            
+            # Add route details
+            embed.add_field(
+                name="Details",
+                value=f"🌎 {selected_route.get('world', 'Unknown')}\n"
+                      f"📏 {selected_route.get('distance_km', '?')} km "
+                      f"({selected_route.get('distance_miles', '?')} mi)\n"
+                      f"⛰️ {selected_route.get('elevation_m', '?')} m "
+                      f"({selected_route.get('elevation_ft', '?')} ft)\n"
+                      f"⏱️ Est. time: {time_str}",
+                inline=False
+            )
+            
+            # Add badges if available
+            badges = selected_route.get('badges', [])
+            if badges:
+                embed.add_field(
+                    name="Type",
+                    value=", ".join(badges),
+                    inline=False
+                )
+            
+            # Setup for file attachments
+            files_to_send = []
+            
+            # Try to get an image from original route data
+            route_data = next((r for r in zwift_routes if r['Route'] == selected_route['route_name']), None)
+            if route_data and route_data.get("ImageURL") and 'github' in route_data["ImageURL"].lower():
+                embed.set_image(url=route_data["ImageURL"])
+            else:
+                # Try local image
+                local_path = self.get_local_svg(selected_route['route_name'])
+                if local_path:
+                    image_file, _ = self.handle_local_image(local_path, embed)
+                    if image_file:
+                        files_to_send.append(image_file)
+            
+            # Always try to add ZwiftHacks map
+            zwifthacks_map_path = self.get_zwifthacks_map(selected_route['route_name'])
+            if zwifthacks_map_path:
+                map_file = self.handle_zwifthacks_map(zwifthacks_map_path)
+                if map_file:
+                    files_to_send.append(map_file)
+            
+            # Add footer based on filters
+            footer_text = "ZwiftGuy • Use /random for a surprise route"
+            if world or route_type or duration:
+                filter_parts = []
+                if world:
+                    filter_parts.append(f"World: {world}")
+                if route_type:
+                    filter_parts.append(f"Type: {route_type}")
+                if duration:
+                    filter_parts.append(f"Duration: {duration}")
+                filters_text = ", ".join(filter_parts)
+                footer_text += f" • Filters: {filters_text}"
+            
+            embed.set_footer(text=footer_text)
+            
+            # Send ephemeral response with share button
+            await self.send_ephemeral_response(
+                interaction, 
+                embed, 
+                files_to_send if files_to_send else None,
+                command_type="random"
+            )
+            
+        except Exception as e:
+            logger.error(f"Error in random route command: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    title="❌ Error",
+                    description="An error occurred while selecting a random route. Please try again later.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+        finally:
+            # Delete loading animation
+            if loading_message:
+                try:
+                    await loading_message.delete()
+                except Exception as e:
+                    logger.error(f"Error deleting loading animation: {e}")
+                
+# ==========================================
+    # Updated Setup Hook Method
+    # ==========================================
+    # Features:
+    # - Registers all original and new commands
+    # - Initializes the route cache
+    # - Starts periodic cache update task
+    # ==========================================
+    
+    async def setup_hook(self):
+        """Initialize command tree and cache when bot starts up"""
+        # Register original commands (public)
+        self.tree.command(name="route", description="Get a Zwift route URL by name")(self.route)
+        self.tree.command(name="sprint", description="Get information about a Zwift sprint segment")(self.sprint)
+        self.tree.command(name="kom", description="Get information about a Zwift KOM segment")(self.kom)
+        
+        # Register new commands (ephemeral with share buttons)
+        self.tree.command(name="findroute", description="Find routes matching your criteria")(self.findroute)
+        self.tree.command(name="random", description="Get a random Zwift route")(self.random_route)
+        self.tree.command(name="stats", description="Get statistics about Zwift routes")(self.route_stats)
+        self.tree.command(name="worldroutes", description="List all routes in a specific Zwift world")(self.world_routes)
+        self.tree.command(name="cacheinfo", description="Show information about the route cache")(self.cache_info)
+        
+        await self.tree.sync()
+        
+        # Initialize route cache
+        logger.info("Initializing route cache...")
+        os.makedirs(CACHE_DIR, exist_ok=True)
+        self.route_cache = await self.load_or_update_route_cache()
+        logger.info(f"Route cache initialized with {len(self.route_cache)} routes")
+        self.bg_task = self.loop.create_task(self.periodic_cache_update())
                 
 
 
