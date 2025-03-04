@@ -254,6 +254,11 @@ class ZwiftBot(discord.Client):
         self.USER_COOLDOWN = 5.0
         self.GLOBAL_RATE_LIMIT = 20
         
+        # Constants for cache management
+        self.CACHE_DIR = "/app/data"
+        self.CACHE_FILE = os.path.join(self.CACHE_DIR, "route_details_cache.json")
+        self.CACHE_AGE_DAYS = 14  # How many days before refreshing the cache
+        
 # ==========================================
     # Route Image Finder Function
     # ==========================================
@@ -803,19 +808,16 @@ class ZwiftBot(discord.Client):
     # - Enables fast filtering for enhanced bot commands
     # ==========================================
 
-    # Constants for cache management
-    CACHE_DIR = "/app/data"
-    CACHE_FILE = os.path.join(CACHE_DIR, "route_details_cache.json")
-    CACHE_AGE_DAYS = 14  # How many days before refreshing the cache
+
 
     async def load_or_update_route_cache(self):
         """Load existing route cache or create a new one if needed"""
         try:
-            if os.path.exists(CACHE_FILE):
+            if os.path.exists(self.CACHE_FILE):
                 # Check if cache is recent
-                cache_age = time.time() - os.path.getmtime(CACHE_FILE)
-                if cache_age < CACHE_AGE_DAYS * 24 * 60 * 60:
-                    with open(CACHE_FILE, 'r', encoding='utf-8') as f:
+                cache_age = time.time() - os.path.getmtime(self.CACHE_FILE)
+                if cache_age < self.CACHE_AGE_DAYS * 24 * 60 * 60:
+                    with open(self.CACHE_FILE, 'r', encoding='utf-8') as f:
                         route_cache = json.load(f)
                         logger.info(f"Loaded cache with {len(route_cache)} routes")
                         return route_cache
@@ -875,7 +877,7 @@ class ZwiftBot(discord.Client):
         
         # Save cache to file
         try:
-            with open(CACHE_FILE, 'w', encoding='utf-8') as f:
+            with open(self.CACHE_FILE, 'w', encoding='utf-8') as f:
                 json.dump(route_cache, f, indent=2)
             logger.info(f"Successfully cached details for {len(route_cache)} routes")
         except Exception as e:
@@ -1079,9 +1081,9 @@ class ZwiftBot(discord.Client):
                 await asyncio.sleep(24 * 60 * 60)
                 
                 # Check if cache needs update
-                if os.path.exists(CACHE_FILE):
-                    cache_age = time.time() - os.path.getmtime(CACHE_FILE)
-                    if cache_age > CACHE_AGE_DAYS * 24 * 60 * 60:
+                if os.path.exists(self.CACHE_FILE):
+                    cache_age = time.time() - os.path.getmtime(self.CACHE_FILE)
+                    if cache_age > self.CACHE_AGE_DAYS * 24 * 60 * 60:
                         logger.info("Starting scheduled cache update...")
                         self.route_cache = await self.cache_route_details()
                         logger.info(f"Cache updated with {len(self.route_cache)} routes")
@@ -2304,8 +2306,8 @@ class ZwiftBot(discord.Client):
             
             # Add cache info
             cache_date = None
-            if os.path.exists(CACHE_FILE):
-                cache_mtime = os.path.getmtime(CACHE_FILE)
+            if os.path.exists(self.CACHE_FILE):
+                cache_mtime = os.path.getmtime(self.CACHE_FILE)
                 cache_date = datetime.datetime.fromtimestamp(cache_mtime).strftime("%Y-%m-%d")
             
             footer_text = f"ZwiftGuy • Cache last updated: {cache_date or 'Unknown'} • Category {category} selected"
@@ -2519,9 +2521,9 @@ class ZwiftBot(discord.Client):
             cache_size = "0 KB"
             cache_date = "Never"
             
-            if os.path.exists(CACHE_FILE):
+            if os.path.exists(self.CACHE_FILE):
                 # Get file stats
-                cache_stats = os.stat(CACHE_FILE)
+                cache_stats = os.stat(self.CACHE_FILE)
                 cache_size = f"{cache_stats.st_size / 1024:.1f} KB"
                 cache_date = datetime.datetime.fromtimestamp(cache_stats.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
                 cache_status = "Found"
@@ -2599,9 +2601,9 @@ class ZwiftBot(discord.Client):
             cache_dir_status = "Not Found"
             cache_dir_contents = "Empty"
             
-            if os.path.exists(CACHE_DIR):
+            if os.path.exists(self.CACHE_DIR):
                 cache_dir_status = "Found"
-                dir_contents = os.listdir(CACHE_DIR)
+                dir_contents = os.listdir(self.CACHE_DIR)
                 if dir_contents:
                     cache_dir_contents = ", ".join(dir_contents[:5])
                     if len(dir_contents) > 5:
@@ -2611,7 +2613,7 @@ class ZwiftBot(discord.Client):
             
             embed.add_field(
                 name="Cache Directory",
-                value=f"Path: {CACHE_DIR}\n"
+                value=f"Path: {self.CACHE_DIR}\n"
                       f"Status: {cache_dir_status}\n"
                       f"Contents: {cache_dir_contents}",
                 inline=False
