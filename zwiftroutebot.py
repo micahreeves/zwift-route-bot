@@ -1986,7 +1986,7 @@ class ZwiftBot(discord.Client):
         category="Rider category for time estimates (A/B/C/D)",
         focus="Choose which stats to highlight"
     )
-    async def route_stats(self, interaction: discord.Interaction, 
+    async def generate_route_stats(self, interaction: discord.Interaction, 
                         category: Literal["A", "B", "C", "D"] = "B",
                         focus: Literal["general", "distance", "climbing", "time"] = "general"):
         """Display statistics about Zwift routes with time estimates (Ephemeral with share button)"""
@@ -2707,7 +2707,7 @@ class ZwiftBot(discord.Client):
         @self.tree.command(name="stats", description="Get statistics about Zwift routes")
         async def stats_command(interaction, category: Literal["A", "B", "C", "D"] = "B",
                          focus: Literal["general", "distance", "climbing", "time"] = "general"):
-            await self.route_stats(interaction, category, focus)
+            await self.generate_route_stats(interaction, category, focus)
         
         @self.tree.command(name="worldroutes", description="List all routes in a specific Zwift world")
         async def worldroutes_command(interaction, world: str,
