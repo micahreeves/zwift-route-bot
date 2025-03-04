@@ -13,6 +13,10 @@ import time
 from collections import deque
 import logging
 from urllib.parse import quote
+import io  # For handling file data in memory
+import re  # For pattern matching in route details
+import datetime  # For timestamp formatting
+from typing import Literal, Optional  # For command parameter types
 
 # ==========================================
 # Configure logging
@@ -705,14 +709,605 @@ class ZwiftBot(discord.Client):
             import traceback
             logger.error(traceback.format_exc())
             return None
- 
+            
+# ==========================================
+    # Discord View for Share Buttons
+    # ==========================================
+    # Features:
+    # - Adds a "Share to Channel" button to ephemeral messages
+    # - Allows users to make private results public
+    # - Customizes the share message based on command type
+    # ==========================================
+    
+    class ShareButtonView(discord.ui.View):
+        def __init__(self, embed, files=None, command_type="route"):
+            super().__init__(timeout=300)  # 5 minute timeout
+            self.embed = embed
+            self.files = files if files else []
+            self.command_type = command_type
+            
+            # Store file data since files can only be sent once
+            self.file_data = []
+            for file in self.files:
+                # Get file data and reset cursor
+                file.fp.seek(0)
+                self.file_data.append((file.filename, file.fp.read()))
+            
+        @discord.ui.button(label="Share to Channel", style=discord.ButtonStyle.primary, emoji="📢")
+        
+        async def share_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+            """Share the current result to the channel"""
+            # Create a new set of files from the stored data
+            new_files = []
+            for filename, data in self.file_data:
+                new_file = discord.File(io.BytesIO(data), filename=filename)
+                new_files.append(new_file)
+            
+            # Clone the embed
+            new_embed = discord.Embed.from_dict(self.embed.to_dict())
+            
+            # Add footer to indicate who shared it
+            existing_footer = new_embed.footer.text if new_embed.footer else ""
+            new_embed.set_footer(text=f"Shared by {interaction.user.display_name} • {existing_footer}")
+            
+            # Create share message based on command type
+            share_messages = {
+                "findroute": "shared route search results",
+                "random": "shared a random Zwift route",
+                "stats": "shared Zwift route statistics",
+                "worldroutes": "shared routes from a Zwift world"
+            }
+            share_message = share_messages.get(self.command_type, "shared Zwift information")
+            
+            # Send to channel
+            await interaction.channel.send(
+                content=f"{interaction.user.mention} {share_message}:",
+                embed=new_embed,
+                files=new_files if new_files else None
+            )
+            
+            # Confirm to user
+            await interaction.response.send_message("Shared to channel!", ephemeral=True)
 
+    # ==========================================
+    # Helper Function for Sending Ephemeral Responses
+    # ==========================================
+    
+    async def send_ephemeral_response(self, interaction, embed, files=None, command_type="route"):
+        """
+        Send an ephemeral response with a share button
+        
+        Args:
+            interaction: The Discord interaction
+            embed: The embed to send
+            files: List of discord.File objects
+            command_type: Type of command for customizing share message
+        """
+        # Create view with share button
+        view = ShareButtonView(embed, files, command_type)
+        
+        # Send the response
+        await interaction.followup.send(
+            embed=embed,
+            files=files if files else None,
+            view=view,
+            ephemeral=True
+        )
+ 
+ # ==========================================
+    # Route Cache System
+    # ==========================================
+    # Features:
+    # - Fetches and stores detailed route information from ZwiftInsider
+    # - Persists data across container restarts using volume mounts
+    # - Automatically refreshes cache when it becomes outdated
+    # - Enables fast filtering for enhanced bot commands
+    # ==========================================
+
+    # Constants for cache management
+    CACHE_DIR = "/app/data"
+    CACHE_FILE = os.path.join(CACHE_DIR, "route_details_cache.json")
+    CACHE_AGE_DAYS = 14  # How many days before refreshing the cache
+
+    async def load_or_update_route_cache(self):
+        """Load existing route cache or create a new one if needed"""
+        try:
+            if os.path.exists(CACHE_FILE):
+                # Check if cache is recent
+                cache_age = time.time() - os.path.getmtime(CACHE_FILE)
+                if cache_age < CACHE_AGE_DAYS * 24 * 60 * 60:
+                    with open(CACHE_FILE, 'r', encoding='utf-8') as f:
+                        route_cache = json.load(f)
+                        logger.info(f"Loaded cache with {len(route_cache)} routes")
+                        return route_cache
+                else:
+                    logger.info(f"Cache is {cache_age/86400:.1f} days old, refreshing...")
+            else:
+                logger.info("No cache file found, creating new cache...")
+            
+            # Create a new cache
+            return await self.cache_route_details()
+            
+        except Exception as e:
+            logger.error(f"Error loading route cache: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return {}
+
+    async def cache_route_details(self):
+        """Fetch and cache detailed route information from ZwiftInsider"""
+        logger.info("Starting route data cache update...")
+        
+        # Create a cache dictionary
+        route_cache = {}
+        
+        # Counter for progress tracking
+        total_routes = len(zwift_routes)
+        processed = 0
+        
+        # Use aiohttp for parallel requests
+        async with aiohttp.ClientSession() as session:
+            # Create tasks for all routes (with rate limiting)
+            tasks = []
+            for route in zwift_routes:
+                # Avoid overloading the server
+                if processed > 0 and processed % 5 == 0:
+                    await asyncio.sleep(2)  # Sleep between batches
+                
+                task = asyncio.create_task(self.fetch_route_details(session, route))
+                tasks.append(task)
+                processed += 1
+                
+                # Log progress
+                if processed % 10 == 0:
+                    logger.info(f"Created tasks for {processed}/{total_routes} routes")
+            
+            # Wait for all tasks to complete
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            
+            # Process results
+            for route_data in results:
+                if isinstance(route_data, Exception):
+                    logger.error(f"Error fetching route data: {route_data}")
+                    continue
+                    
+                if route_data and 'route_name' in route_data:
+                    route_cache[route_data['route_name']] = route_data
+        
+        # Save cache to file
+        try:
+            with open(CACHE_FILE, 'w', encoding='utf-8') as f:
+                json.dump(route_cache, f, indent=2)
+            logger.info(f"Successfully cached details for {len(route_cache)} routes")
+        except Exception as e:
+            logger.error(f"Error saving route cache: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+        
+        return route_cache
+        
+    async def fetch_route_details(self, session, route):
+        """Fetch detailed information for a single route including time estimates"""
+        try:
+            route_name = route['Route']
+            url = route['URL']
+            
+            logger.info(f"Fetching details for {route_name}")
+            
+            async with session.get(url, timeout=15) as response:
+                if response.status != 200:
+                    logger.error(f"Error {response.status} fetching {url}")
+                    return None
+                
+                html = await response.text()
+                soup = BeautifulSoup(html, 'html.parser')
+                
+                # Extract relevant information
+                route_data = {
+                    'route_name': route_name,
+                    'url': url,
+                    'world': get_world_for_route(route_name),
+                    'last_updated': datetime.datetime.now().strftime("%Y-%m-%d")
+                }
+                
+                # Find distance and elevation
+                distance_km = None
+                distance_miles = None
+                elevation_m = None
+                elevation_ft = None
+                
+                # Try to extract lead-in distance
+                lead_in_km = 0
+                
+                for p in soup.find_all('p'):
+                    text = p.get_text().lower()
+                    
+                    # Check for distance information
+                    if 'distance:' in text:
+                        distance_text = text.split('distance:')[1].strip().split('\n')[0]
+                        
+                        # Extract km value
+                        km_match = re.search(r'(\d+\.?\d*)\s*km', distance_text)
+                        if km_match:
+                            distance_km = float(km_match.group(1))
+                        
+                        # Extract miles value
+                        miles_match = re.search(r'(\d+\.?\d*)\s*mi', distance_text)
+                        if miles_match:
+                            distance_miles = float(miles_match.group(1))
+                            
+                        # If only one unit is found, calculate the other
+                        if distance_km and not distance_miles:
+                            distance_miles = round(distance_km * 0.621371, 1)
+                        elif distance_miles and not distance_km:
+                            distance_km = round(distance_miles * 1.60934, 1)
+                    
+                    # Check for elevation information
+                    if 'elevation:' in text or 'climbing:' in text:
+                        elev_key = 'elevation:' if 'elevation:' in text else 'climbing:'
+                        elev_text = text.split(elev_key)[1].strip().split('\n')[0]
+                        
+                        # Extract meters value
+                        m_match = re.search(r'(\d+\.?\d*)\s*m', elev_text)
+                        if m_match:
+                            elevation_m = float(m_match.group(1))
+                        
+                        # Extract feet value
+                        ft_match = re.search(r'(\d+\.?\d*)\s*ft', elev_text)
+                        if ft_match:
+                            elevation_ft = float(ft_match.group(1))
+                            
+                        # If only one unit is found, calculate the other
+                        if elevation_m and not elevation_ft:
+                            elevation_ft = round(elevation_m * 3.28084, 1)
+                        elif elevation_ft and not elevation_m:
+                            elevation_m = round(elevation_ft * 0.3048, 1)
+                    
+                    # Check for lead-in information
+                    lead_in_match = re.search(r'lead-in:?\s*(\d+\.?\d*)\s*km', text, re.IGNORECASE)
+                    if lead_in_match:
+                        lead_in_km = float(lead_in_match.group(1))
+                
+                # Add extracted data to route_data
+                if distance_km:
+                    route_data['distance_km'] = distance_km
+                if distance_miles:
+                    route_data['distance_miles'] = distance_miles
+                if elevation_m:
+                    route_data['elevation_m'] = elevation_m
+                if elevation_ft:
+                    route_data['elevation_ft'] = elevation_ft
+                if lead_in_km:
+                    route_data['lead_in_km'] = lead_in_km
+                
+                # Extract time estimates from ZwiftInsider table - just for stats display
+                time_estimates = {}
+                
+                # Look for the time estimate table
+                tables = soup.find_all('table')
+                for table in tables:
+                    # Check if it's the time estimate table
+                    headers = table.find_all('th')
+                    header_text = ' '.join([h.get_text().strip().lower() for h in headers])
+                    
+                    if 'time' in header_text and ('experience' in header_text or 'level' in header_text):
+                        # This is likely the time estimate table
+                        rows = table.find_all('tr')
+                        
+                        for row in rows[1:]:  # Skip header row
+                            cols = row.find_all(['td', 'th'])
+                            if len(cols) >= 2:
+                                level = cols[0].get_text().strip()
+                                time_text = cols[1].get_text().strip()
+                                
+                                # Extract hours and minutes from time format (e.g., "1:15:00" or "32:30")
+                                time_parts = time_text.split(':')
+                                minutes = 0
+                                
+                                if len(time_parts) == 3:  # HH:MM:SS format
+                                    minutes = int(time_parts[0]) * 60 + int(time_parts[1])
+                                elif len(time_parts) == 2:  # MM:SS format
+                                    minutes = int(time_parts[0])
+                                
+                                if level.lower() in ['a', 'a+', 'b', 'c', 'd', 'e']:
+                                    time_estimates[level.upper()] = minutes
+                
+                # Add time estimates if found
+                if time_estimates:
+                    route_data['time_estimates'] = time_estimates
+                    logger.info(f"Found time estimates for {route_name}: {time_estimates}")
+                
+                # Calculate route badges/type
+                badges = []
+                
+                # Check if route exists and has distance/elevation data
+                if distance_km and elevation_m:
+                    # Calculate elevation per km
+                    elev_per_km = elevation_m / distance_km
+                    
+                    # Determine if route is flat, mixed, or hilly
+                    if elev_per_km < 8:
+                        badges.append("Flat")
+                    elif elev_per_km < 15:
+                        badges.append("Mixed")
+                    else:
+                        badges.append("Hilly")
+                    
+                    # Determine if route is short, medium, or long
+                    if distance_km < 15:
+                        badges.append("Short")
+                    elif distance_km < 30:
+                        badges.append("Medium")
+                    else:
+                        badges.append("Long")
+                    
+                    # Check if route is epic (over 40km or over 400m climbing)
+                    if distance_km > 40 or elevation_m > 400:
+                        badges.append("Epic")
+                    
+                    # Use B category time if available or use a rough estimate
+                    if 'time_estimates' in route_data and 'B' in route_data['time_estimates']:
+                        route_data['estimated_time_min'] = route_data['time_estimates']['B']
+                    else:
+                        # Fallback calculation
+                        speed = 30  # Average B rider speed in km/h
+                        
+                        # Adjust for elevation - reduce speed by 1 km/h per 100m of climbing per 10km
+                        elevation_factor = 1.0
+                        elev_per_10km = (elevation_m / distance_km) * 10
+                        elevation_factor = max(0.7, 1.0 - (elev_per_10km / 100) * 0.1)
+                        
+                        adjusted_speed = speed * elevation_factor
+                        time_hours = distance_km / adjusted_speed
+                        route_data['estimated_time_min'] = round(time_hours * 60)
+                
+                route_data['badges'] = badges
+                
+                return route_data
+                
+        except Exception as e:
+            logger.error(f"Error processing {route.get('Route', 'unknown')}: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return None
+
+    async def periodic_cache_update(self):
+        """Periodically update the route cache"""
+        await self.wait_until_ready()
+        while not self.is_closed():
+            try:
+                # Sleep for 24 hours
+                await asyncio.sleep(24 * 60 * 60)
+                
+                # Check if cache needs update
+                if os.path.exists(CACHE_FILE):
+                    cache_age = time.time() - os.path.getmtime(CACHE_FILE)
+                    if cache_age > CACHE_AGE_DAYS * 24 * 60 * 60:
+                        logger.info("Starting scheduled cache update...")
+                        self.route_cache = await self.cache_route_details()
+                        logger.info(f"Cache updated with {len(self.route_cache)} routes")
+            except Exception as e:
+                logger.error(f"Error in periodic cache update: {e}")
+                import traceback
+                logger.error(traceback.format_exc())
+                await asyncio.sleep(60)  # Short sleep on error before retry
+                
+# ==========================================
+    # Random Route Command
+    # ==========================================
+    # Features:
+    # - Provides a randomly selected route
+    # - Supports optional filters for world, type, and duration
+    # - Uses route cache for quick responses
+    # - Includes route images when available
+    # ==========================================
+    
+    @app_commands.command(name="random", description="Get a random Zwift route")
+    @app_commands.describe(
+        world="Filter by Zwift world (e.g., Watopia, London)",
+        route_type="Type of route (flat, mixed, hilly)",
+        duration="Duration category (short, medium, long)"
+    )
+    async def random_route(self, interaction: discord.Interaction, 
+                         world: str = None,
+                         route_type: Literal["flat", "mixed", "hilly"] = None,
+                         duration: Literal["short", "medium", "long"] = None):
+        """Get a random Zwift route with optional filters (Ephemeral with share button)"""
+        if not interaction.user:
+            return
+            
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        loading_message = await bike_loading_animation(interaction)
+        
+        try:
+            # Check if cache is initialized
+            if not hasattr(self, 'route_cache') or not self.route_cache:
+                logger.warning("Route cache not initialized, loading now...")
+                self.route_cache = await self.load_or_update_route_cache()
+            
+            # Filter routes based on criteria
+            filtered_routes = []
+            
+            for route_name, data in self.route_cache.items():
+                # Skip routes with missing core data
+                if 'distance_km' not in data or 'elevation_m' not in data:
+                    continue
+                    
+                # World filter (case insensitive)
+                if world and world.lower() not in data['world'].lower():
+                    continue
+                
+                # Route type filter
+                if route_type:
+                    route_type_cap = route_type.capitalize()
+                    if route_type_cap not in data.get('badges', []):
+                        continue
+                
+                # Duration filter
+                if duration:
+                    duration_cap = duration.capitalize()
+                    if duration_cap not in data.get('badges', []):
+                        continue
+                
+                # All filters passed, add to results
+                filtered_routes.append(data)
+            
+            if not filtered_routes:
+                await interaction.followup.send(
+                    embed=discord.Embed(
+                        title="❌ No Matching Routes",
+                        description="No routes match your filters. Try different criteria.",
+                        color=discord.Color.red()
+                    ),
+                    ephemeral=True
+                )
+                
+                # Delete loading animation
+                if loading_message:
+                    try:
+                        await loading_message.delete()
+                    except Exception as e:
+                        logger.error(f"Error deleting loading animation: {e}")
+                return
+            
+            # Select a random route
+            selected_route = random.choice(filtered_routes)
+            
+            # Create response embed
+            embed = discord.Embed(
+                title=f"🎲 Random Route: {selected_route['route_name']}",
+                url=selected_route['url'],
+                description="Your randomly selected route:",
+                color=0x9B59B6
+            )
+            
+            # Format estimated time
+            est_time = selected_route.get('estimated_time_min', 0)
+            if est_time >= 60:
+                time_str = f"{est_time // 60}h {est_time % 60}m"
+            else:
+                time_str = f"{est_time}m"
+            
+            # Add route details
+            embed.add_field(
+                name="Details",
+                value=f"🌎 {selected_route.get('world', 'Unknown')}\n"
+                      f"📏 {selected_route.get('distance_km', '?')} km "
+                      f"({selected_route.get('distance_miles', '?')} mi)\n"
+                      f"⛰️ {selected_route.get('elevation_m', '?')} m "
+                      f"({selected_route.get('elevation_ft', '?')} ft)\n"
+                      f"⏱️ Est. time: {time_str}",
+                inline=False
+            )
+            
+            # Add badges if available
+            badges = selected_route.get('badges', [])
+            if badges:
+                embed.add_field(
+                    name="Type",
+                    value=", ".join(badges),
+                    inline=False
+                )
+            
+            # Setup for file attachments
+            files_to_send = []
+            
+            # Try to get an image from original route data
+            route_data = next((r for r in zwift_routes if r['Route'] == selected_route['route_name']), None)
+            if route_data and route_data.get("ImageURL") and 'github' in route_data["ImageURL"].lower():
+                embed.set_image(url=route_data["ImageURL"])
+            else:
+                # Try local image
+                local_path = self.get_local_svg(selected_route['route_name'])
+                if local_path:
+                    image_file, _ = self.handle_local_image(local_path, embed)
+                    if image_file:
+                        files_to_send.append(image_file)
+            
+            # Always try to add ZwiftHacks map
+            zwifthacks_map_path = self.get_zwifthacks_map(selected_route['route_name'])
+            if zwifthacks_map_path:
+                map_file = self.handle_zwifthacks_map(zwifthacks_map_path)
+                if map_file:
+                    files_to_send.append(map_file)
+            
+            # Add footer based on filters
+            footer_text = "ZwiftGuy • Use /random for a surprise route"
+            if world or route_type or duration:
+                filter_parts = []
+                if world:
+                    filter_parts.append(f"World: {world}")
+                if route_type:
+                    filter_parts.append(f"Type: {route_type}")
+                if duration:
+                    filter_parts.append(f"Duration: {duration}")
+                filters_text = ", ".join(filter_parts)
+                footer_text += f" • Filters: {filters_text}"
+            
+            embed.set_footer(text=footer_text)
+            
+            # Send ephemeral response with share button
+            await self.send_ephemeral_response(
+                interaction, 
+                embed, 
+                files_to_send if files_to_send else None,
+                command_type="random"
+            )
+            
+        except Exception as e:
+            logger.error(f"Error in random route command: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    title="❌ Error",
+                    description="An error occurred while selecting a random route. Please try again later.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+        finally:
+            # Delete loading animation
+            if loading_message:
+                try:
+                    await loading_message.delete()
+                except Exception as e:
+                    logger.error(f"Error deleting loading animation: {e}")
+                    
+                    
+
+# ==========================================
+    # Updated Setup Hook Method
+    # ==========================================
+    # Features:
+    # - Registers all original and new commands
+    # - Initializes the route cache
+    # - Starts periodic cache update task
+    # ==========================================
+    
     async def setup_hook(self):
-        """Initialize command tree when bot starts up"""
+        """Initialize command tree and cache when bot starts up"""
+        # Register original commands (public)
         self.tree.command(name="route", description="Get a Zwift route URL by name")(self.route)
         self.tree.command(name="sprint", description="Get information about a Zwift sprint segment")(self.sprint)
         self.tree.command(name="kom", description="Get information about a Zwift KOM segment")(self.kom)
+        
+        # Register new commands (ephemeral with share buttons)
+        self.tree.command(name="findroute", description="Find routes matching your criteria")(self.findroute)
+        self.tree.command(name="random", description="Get a random Zwift route")(self.random_route)
+        self.tree.command(name="stats", description="Get statistics about Zwift routes")(self.route_stats)
+        self.tree.command(name="worldroutes", description="List all routes in a specific Zwift world")(self.world_routes)
+        self.tree.command(name="cacheinfo", description="Show information about the route cache")(self.cache_info)
+        
         await self.tree.sync()
+        
+        # Initialize route cache
+        logger.info("Initializing route cache...")
+        os.makedirs(CACHE_DIR, exist_ok=True)
+        self.route_cache = await self.load_or_update_route_cache()
+        logger.info(f"Route cache initialized with {len(self.route_cache)} routes")
+        self.bg_task = self.loop.create_task(self.periodic_cache_update())
 
     async def check_rate_limit(self, user_id):
         """Check and enforce rate limits"""

@@ -8,9 +8,11 @@ services:
       - DISCORD_BOT_TOKEN
     restart: unless-stopped
     volumes:
-      # Mount the entire route_images directory
+      # Mount the route_images directory
       - /home/micah-reeves/Desktop/zwift-route-bot/route_images:/app/route_images
-    # Add listing of mounted directories on startup for verification
+      # Add dedicated volume for cache persistence
+      - /home/micah-reeves/Desktop/zwift-route-bot/data:/app/data
+    # Update entrypoint to initialize and verify directories
     entrypoint: >
       sh -c "
         echo 'Listing mounted directories:' &&
@@ -18,5 +20,9 @@ services:
         ls -la /app/route_images/profiles &&
         echo 'Maps directory:' &&
         ls -la /app/route_images/maps &&
+        echo 'Setting up data directory for cache:' &&
+        mkdir -p /app/data &&
+        echo 'Data directory contents:' &&
+        ls -la /app/data &&
         python zwiftroutebot.py
       "
