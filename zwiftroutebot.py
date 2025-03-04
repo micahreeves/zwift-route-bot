@@ -2673,23 +2673,55 @@ class ZwiftBot(discord.Client):
     
     async def setup_hook(self):
         """Initialize command tree and cache when bot starts up"""
-        # Register original commands (public)
-        self.tree.command(name="route", description="Get a Zwift route URL by name")(self.route)
-        self.tree.command(name="sprint", description="Get information about a Zwift sprint segment")(self.sprint)
-        self.tree.command(name="kom", description="Get information about a Zwift KOM segment")(self.kom)
+        # Register commands as coroutines
+        @self.tree.command(name="route", description="Get a Zwift route URL by name")
+        async def route_command(interaction, name: str):
+            await self.route(interaction, name)
         
-        # Register new commands (ephemeral with share buttons)
-        self.tree.command(name="findroute", description="Find routes matching your criteria")(self.findroute)
-        self.tree.command(name="random", description="Get a random Zwift route")(self.random_route)
-        self.tree.command(name="stats", description="Get statistics about Zwift routes")(self.route_stats)
-        self.tree.command(name="worldroutes", description="List all routes in a specific Zwift world")(self.world_routes)
-        self.tree.command(name="cacheinfo", description="Show information about the route cache")(self.cache_info)
+        @self.tree.command(name="sprint", description="Get information about a Zwift sprint segment")
+        async def sprint_command(interaction, name: str):
+            await self.sprint(interaction, name)
         
+        @self.tree.command(name="kom", description="Get information about a Zwift KOM segment")
+        async def kom_command(interaction, name: str):
+            await self.kom(interaction, name)
+    
+        @self.tree.command(name="findroute", description="Find routes matching your criteria")
+        async def findroute_command(interaction, min_km: app_commands.Range[int, 0, 100] = None, 
+                                 max_km: app_commands.Range[int, 0, 100] = None,
+                                 min_elev: app_commands.Range[int, 0, 2000] = None,
+                                 max_elev: app_commands.Range[int, 0, 2000] = None,
+                                 world: str = None,
+                                 route_type: Literal["flat", "mixed", "hilly"] = None,
+                                 duration: Literal["short", "medium", "long"] = None):
+            await self.findroute(interaction, min_km, max_km, min_elev, max_elev, world, route_type, duration)
+        
+        @self.tree.command(name="random", description="Get a random Zwift route")
+        async def random_command(interaction, world: str = None,
+                              route_type: Literal["flat", "mixed", "hilly"] = None,
+                              duration: Literal["short", "medium", "long"] = None):
+            await self.random_route(interaction, world, route_type, duration)
+        
+        @self.tree.command(name="stats", description="Get statistics about Zwift routes")
+        async def stats_command(interaction, category: Literal["A", "B", "C", "D"] = "B",
+                         focus: Literal["general", "distance", "climbing", "time"] = "general"):
+            await self.route_stats(interaction, category, focus)
+        
+        @self.tree.command(name="worldroutes", description="List all routes in a specific Zwift world")
+        async def worldroutes_command(interaction, world: str,
+                               sort_by: Literal["distance", "elevation", "name"] = "distance"):
+            await self.world_routes(interaction, world, sort_by)
+        
+        @self.tree.command(name="cacheinfo", description="Show information about the route cache")
+        async def cacheinfo_command(interaction):
+            await self.cache_info(interaction)
+    
+        # Sync the command tree
         await self.tree.sync()
-        
+    
         # Initialize route cache
         logger.info("Initializing route cache...")
-        os.makedirs(CACHE_DIR, exist_ok=True)
+        os.makedirs(self.CACHE_DIR, exist_ok=True)
         self.route_cache = await self.load_or_update_route_cache()
         logger.info(f"Route cache initialized with {len(self.route_cache)} routes")
         self.bg_task = self.loop.create_task(self.periodic_cache_update())
