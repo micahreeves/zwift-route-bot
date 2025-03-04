@@ -734,7 +734,6 @@ class ZwiftBot(discord.Client):
                 self.file_data.append((file.filename, file.fp.read()))
             
         @discord.ui.button(label="Share to Channel", style=discord.ButtonStyle.primary, emoji="📢")
-        
         async def share_button(self, interaction: discord.Interaction, button: discord.ui.Button):
             """Share the current result to the channel"""
             # Create a new set of files from the stored data
