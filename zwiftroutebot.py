@@ -2665,62 +2665,98 @@ class ZwiftBot(discord.Client):
             )
                 
 # ==========================================
-    # Updated Setup Hook Method
-    # ==========================================
-    # Features:
-    # - Registers all original and new commands
-    # - Initializes the route cache
-    # - Starts periodic cache update task
-    # ==========================================
-    
+# Setup Hook Method
+# ==========================================
+# Features:
+# - Registers all commands with proper parameter handling
+# - Avoids decorator approach to prevent command registration issues
+# - Initializes the route cache for data access
+# - Starts periodic cache update background task
+# ==========================================
+
     async def setup_hook(self):
         """Initialize command tree and cache when bot starts up"""
-        # Register commands as coroutines
-        @self.tree.command(name="route", description="Get a Zwift route URL by name")
-        async def route_command(interaction, name: str):
-            await self.route(interaction, name)
+        # Register commands directly - no decorators
         
-        @self.tree.command(name="sprint", description="Get information about a Zwift sprint segment")
-        async def sprint_command(interaction, name: str):
-            await self.sprint(interaction, name)
+        # Route command
+        self.tree.add_command(
+            app_commands.Command(
+                name="route",
+                description="Get a Zwift route URL by name",
+                callback=lambda interaction, name: self.route(interaction, name)
+            )
+        )
         
-        @self.tree.command(name="kom", description="Get information about a Zwift KOM segment")
-        async def kom_command(interaction, name: str):
-            await self.kom(interaction, name)
-    
-        @self.tree.command(name="findroute", description="Find routes matching your criteria")
-        async def findroute_command(interaction, min_km: app_commands.Range[int, 0, 100] = None, 
-                                 max_km: app_commands.Range[int, 0, 100] = None,
-                                 min_elev: app_commands.Range[int, 0, 2000] = None,
-                                 max_elev: app_commands.Range[int, 0, 2000] = None,
-                                 world: str = None,
-                                 route_type: Literal["flat", "mixed", "hilly"] = None,
-                                 duration: Literal["short", "medium", "long"] = None):
-            await self.findroute(interaction, min_km, max_km, min_elev, max_elev, world, route_type, duration)
+        # Sprint command
+        self.tree.add_command(
+            app_commands.Command(
+                name="sprint",
+                description="Get information about a Zwift sprint segment",
+                callback=lambda interaction, name: self.sprint(interaction, name)
+            )
+        )
         
-        @self.tree.command(name="random", description="Get a random Zwift route")
-        async def random_command(interaction, world: str = None,
-                              route_type: Literal["flat", "mixed", "hilly"] = None,
-                              duration: Literal["short", "medium", "long"] = None):
-            await self.random_route(interaction, world, route_type, duration)
+        # KOM command
+        self.tree.add_command(
+            app_commands.Command(
+                name="kom",
+                description="Get information about a Zwift KOM segment",
+                callback=lambda interaction, name: self.kom(interaction, name)
+            )
+        )
         
-        @self.tree.command(name="stats", description="Get statistics about Zwift routes")
-        async def stats_command(interaction, category: Literal["A", "B", "C", "D"] = "B",
-                         focus: Literal["general", "distance", "climbing", "time"] = "general"):
-            await self.generate_route_stats(interaction, category, focus)
+        # Find route command
+        self.tree.add_command(
+            app_commands.Command(
+                name="findroute",
+                description="Find routes matching your criteria",
+                callback=lambda interaction, min_km=None, max_km=None, min_elev=None, max_elev=None, world=None, route_type=None, duration=None: 
+                    self.findroute(interaction, min_km, max_km, min_elev, max_elev, world, route_type, duration)
+            )
+        )
         
-        @self.tree.command(name="worldroutes", description="List all routes in a specific Zwift world")
-        async def worldroutes_command(interaction, world: str,
-                               sort_by: Literal["distance", "elevation", "name"] = "distance"):
-            await self.world_routes(interaction, world, sort_by)
+        # Random route command
+        self.tree.add_command(
+            app_commands.Command(
+                name="random",
+                description="Get a random Zwift route",
+                callback=lambda interaction, world=None, route_type=None, duration=None: 
+                    self.random_route(interaction, world, route_type, duration)
+            )
+        )
         
-        @self.tree.command(name="cacheinfo", description="Show information about the route cache")
-        async def cacheinfo_command(interaction):
-            await self.cache_info(interaction)
-    
+        # Stats command
+        self.tree.add_command(
+            app_commands.Command(
+                name="stats",
+                description="Get statistics about Zwift routes",
+                callback=lambda interaction, category="B", focus="general": 
+                    self.route_stats(interaction, category, focus)
+            )
+        )
+        
+        # World routes command
+        self.tree.add_command(
+            app_commands.Command(
+                name="worldroutes",
+                description="List all routes in a specific Zwift world",
+                callback=lambda interaction, world, sort_by="distance": 
+                    self.world_routes(interaction, world, sort_by)
+            )
+        )
+        
+        # Cache info command
+        self.tree.add_command(
+            app_commands.Command(
+                name="cacheinfo",
+                description="Show information about the route cache",
+                callback=lambda interaction: self.cache_info(interaction)
+            )
+        )
+
         # Sync the command tree
         await self.tree.sync()
-    
+
         # Initialize route cache
         logger.info("Initializing route cache...")
         os.makedirs(self.CACHE_DIR, exist_ok=True)
