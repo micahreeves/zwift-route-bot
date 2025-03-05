@@ -773,8 +773,13 @@ class ZwiftBot(discord.Client):
             # Confirm to user
             await interaction.response.send_message("Shared to channel!", ephemeral=True)
 
-    # ==========================================
+ # ==========================================
     # Helper Function for Sending Ephemeral Responses
+    # ==========================================
+    # Features:
+    # - Sends an ephemeral response with a share button
+    # - Safely handles files and attachments
+    # - Customizes share message based on command type
     # ==========================================
     
     async def send_ephemeral_response(self, interaction, embed, files=None, command_type="route"):
@@ -787,17 +792,44 @@ class ZwiftBot(discord.Client):
             files: List of discord.File objects
             command_type: Type of command for customizing share message
         """
-        # Create view with share button
-        view = self.ShareButtonView(embed, files, command_type)
-        
-        # Send the response
-        await interaction.followup.send(
-            embed=embed,
-            files=files if files else None,
-            view=view,
-            ephemeral=True
-        )
- 
+        try:
+            # Ensure files is a list or None
+            file_list = [] if files is None else files if isinstance(files, list) else [files]
+            
+            # Create view with share button - use self.ShareButtonView to access the nested class
+            view = self.ShareButtonView(embed, file_list, command_type)
+            
+            # Send the response
+            await interaction.followup.send(
+                embed=embed,
+                files=file_list if file_list else None,
+                view=view,
+                ephemeral=True
+            )
+        except Exception as e:
+            logger.error(f"Error in send_ephemeral_response: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            
+            # Try a simplified response without view or files
+            try:
+                await interaction.followup.send(
+                    embed=embed,
+                    ephemeral=True
+                )
+            except Exception as fallback_error:
+                logger.error(f"Fallback response also failed: {fallback_error}")
+                
+                # Last resort - send a simple message
+                try:
+                    simple_embed = discord.Embed(
+                        title="Response Error",
+                        description="An error occurred while formatting the response. Please try again.",
+                        color=discord.Color.red()
+                    )
+                    await interaction.followup.send(embed=simple_embed, ephemeral=True)
+                except:
+                    logger.error("All response attempts failed")
  # ==========================================
     # Route Cache System
     # ==========================================
