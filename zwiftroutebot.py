@@ -788,7 +788,7 @@ class ZwiftBot(discord.Client):
             command_type: Type of command for customizing share message
         """
         # Create view with share button
-        view = ShareButtonView(embed, files, command_type)
+        view = self.ShareButtonView(embed, files, command_type)
         
         # Send the response
         await interaction.followup.send(
