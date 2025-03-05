@@ -1136,8 +1136,84 @@ class ZwiftBot(discord.Client):
                 await asyncio.sleep(60)  # Short sleep on error before retry
                 
 
-                    
-                    
+ # ==========================================
+    # Cache Refresh Command
+    # ==========================================
+    # Features:
+    # - Force a complete refresh of the route cache
+    # - Restricted to admin users
+    # - Provides progress feedback
+    # - Shows summary statistics after completion
+    # ==========================================
+    
+    async def refresh_cache(self, interaction: discord.Interaction):
+        """Force a refresh of the route cache (Admin only)"""
+        if not interaction.user:
+            return
+        
+        # Check if user is admin
+        ADMIN_IDS = [182621539539025920]  # Replace with actual admin IDs
+        is_admin = interaction.user.id in ADMIN_IDS
+        
+        if not is_admin:
+            await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="⛔ Permission Denied",
+                    description="This command is only available to bot administrators.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+            return
+            
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        
+        # Create a progress embed
+        progress_embed = discord.Embed(
+            title="🔄 Cache Refresh Started",
+            description="Starting a complete refresh of the route cache...",
+            color=discord.Color.blue()
+        )
+        progress_message = await interaction.followup.send(embed=progress_embed, ephemeral=True)
+        
+        try:
+            # Force a cache rebuild
+            start_time = time.time()
+            new_cache = await self.cache_route_details()
+            end_time = time.time()
+            
+            # Update the bot's cache
+            self.route_cache = new_cache
+            
+            # Calculate statistics
+            elapsed_time = end_time - start_time
+            routes_count = len(new_cache)
+            routes_with_times = sum(1 for data in new_cache.values() if 'time_estimates' in data and data['time_estimates'])
+            time_coverage = (routes_with_times / max(1, routes_count)) * 100
+            
+            # Update the progress message
+            success_embed = discord.Embed(
+                title="✅ Cache Refresh Complete",
+                description=f"Successfully refreshed the route cache in {elapsed_time:.1f} seconds.\n\n"
+                          f"**Stats:**\n"
+                          f"• Routes: {routes_count}\n"
+                          f"• Routes with time estimates: {routes_with_times} ({time_coverage:.1f}%)",
+                color=discord.Color.green()
+            )
+            await progress_message.edit(embed=success_embed)
+            
+        except Exception as e:
+            logger.error(f"Error in cache refresh: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            
+            # Update with error message
+            error_embed = discord.Embed(
+                title="❌ Cache Refresh Failed",
+                description=f"An error occurred while refreshing the cache: {str(e)}",
+                color=discord.Color.red()
+            )
+            await progress_message.edit(embed=error_embed)             
 
 
 
