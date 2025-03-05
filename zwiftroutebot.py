@@ -1601,12 +1601,7 @@ class ZwiftBot(discord.Client):
     # - Includes route images when available
     # ==========================================
     
-    @app_commands.command(name="random", description="Get a random Zwift route")
-    @app_commands.describe(
-        world="Filter by Zwift world (e.g., Watopia, London)",
-        route_type="Type of route (flat, mixed, hilly)",
-        duration="Duration category (short, medium, long)"
-    )
+    
     async def random_route(self, interaction: discord.Interaction, 
                          world: str = None,
                          route_type: Literal["flat", "mixed", "hilly"] = None,
@@ -1784,16 +1779,7 @@ class ZwiftBot(discord.Client):
     # - Presents results in an organized Discord embed with share button
     # ==========================================
 
-    @app_commands.command(name="findroute", description="Find routes matching your criteria")
-    @app_commands.describe(
-        min_km="Minimum route distance in kilometers",
-        max_km="Maximum route distance in kilometers",
-        min_elev="Minimum elevation in meters",
-        max_elev="Maximum elevation in meters",
-        world="Zwift world (e.g., Watopia, London, Makuri)",
-        route_type="Type of route (flat, mixed, hilly)",
-        duration="Duration category (short, medium, long)"
-    )
+    
     async def findroute(self, interaction: discord.Interaction, 
                       min_km: app_commands.Range[int, 0, 100] = None, 
                       max_km: app_commands.Range[int, 0, 100] = None,
@@ -1981,11 +1967,7 @@ class ZwiftBot(discord.Client):
     # - Displays time-related fun facts
     # ==========================================
     
-    @app_commands.command(name="stats", description="Get statistics about Zwift routes")
-    @app_commands.describe(
-        category="Rider category for time estimates (A/B/C/D)",
-        focus="Choose which stats to highlight"
-    )
+    
     async def generate_route_stats(self, interaction: discord.Interaction, 
                         category: Literal["A", "B", "C", "D"] = "B",
                         focus: Literal["general", "distance", "climbing", "time"] = "general"):
@@ -2347,11 +2329,7 @@ class ZwiftBot(discord.Client):
     # - Displays results in an organized format with share button
     # ==========================================
     
-    @app_commands.command(name="worldroutes", description="List all routes in a specific Zwift world")
-    @app_commands.describe(
-        world="Zwift world to show routes for",
-        sort_by="How to sort the routes"
-    )
+    
     async def world_routes(self, interaction: discord.Interaction, 
                          world: str,
                          sort_by: Literal["distance", "elevation", "name"] = "distance"):
@@ -2492,7 +2470,7 @@ class ZwiftBot(discord.Client):
     # - Admin-only command for monitoring
     # ==========================================
     
-    @app_commands.command(name="cacheinfo", description="Show information about the route cache")
+    
     async def cache_info(self, interaction: discord.Interaction):
         """Display information about the route cache (Admin only)"""
         if not interaction.user:
