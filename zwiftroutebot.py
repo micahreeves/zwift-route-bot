@@ -887,6 +887,18 @@ class ZwiftBot(discord.Client):
         
         return route_cache
         
+# ==========================================
+    # Route Details Fetching Method
+    # ==========================================
+    # Features:
+    # - Extracts comprehensive route details from ZwiftInsider
+    # - Captures distance, elevation, and lead-in information
+    # - Parses ZI Metrics and time estimates for different W/kg levels
+    # - Maps W/kg values to rider categories (A/B/C/D)
+    # - Identifies route type badges (flat/mixed/hilly, short/medium/long)
+    # - Extracts sprint and KOM segment information
+    # ==========================================
+    
     async def fetch_route_details(self, session, route):
         """Fetch detailed information for a single route including time estimates"""
         try:
@@ -916,56 +928,34 @@ class ZwiftBot(discord.Client):
                 distance_miles = None
                 elevation_m = None
                 elevation_ft = None
-                
-                # Try to extract lead-in distance
                 lead_in_km = 0
                 
-                for p in soup.find_all('p'):
+                # Extract basic route details
+                for p in soup.find_all(['p', 'div', 'li']):
                     text = p.get_text().lower()
                     
-                    # Check for distance information
-                    if 'distance:' in text:
-                        distance_text = text.split('distance:')[1].strip().split('\n')[0]
-                        
-                        # Extract km value
-                        km_match = re.search(r'(\d+\.?\d*)\s*km', distance_text)
+                    # Looking for patterns like "Length: 19.4 km (12.1 miles)"
+                    if 'length:' in text or 'distance:' in text:
+                        km_match = re.search(r'(\d+\.?\d*)\s*km', text)
                         if km_match:
                             distance_km = float(km_match.group(1))
                         
-                        # Extract miles value
-                        miles_match = re.search(r'(\d+\.?\d*)\s*mi', distance_text)
+                        miles_match = re.search(r'(\d+\.?\d*)\s*miles', text)
                         if miles_match:
                             distance_miles = float(miles_match.group(1))
-                            
-                        # If only one unit is found, calculate the other
-                        if distance_km and not distance_miles:
-                            distance_miles = round(distance_km * 0.621371, 1)
-                        elif distance_miles and not distance_km:
-                            distance_km = round(distance_miles * 1.60934, 1)
                     
-                    # Check for elevation information
+                    # Looking for patterns like "Elevation: 275m (902')"
                     if 'elevation:' in text or 'climbing:' in text:
-                        elev_key = 'elevation:' if 'elevation:' in text else 'climbing:'
-                        elev_text = text.split(elev_key)[1].strip().split('\n')[0]
-                        
-                        # Extract meters value
-                        m_match = re.search(r'(\d+\.?\d*)\s*m', elev_text)
+                        m_match = re.search(r'(\d+\.?\d*)\s*m', text)
                         if m_match:
                             elevation_m = float(m_match.group(1))
                         
-                        # Extract feet value
-                        ft_match = re.search(r'(\d+\.?\d*)\s*ft', elev_text)
+                        ft_match = re.search(r'(\d+\.?\d*)\s*(?:ft|\')', text)
                         if ft_match:
                             elevation_ft = float(ft_match.group(1))
-                            
-                        # If only one unit is found, calculate the other
-                        if elevation_m and not elevation_ft:
-                            elevation_ft = round(elevation_m * 3.28084, 1)
-                        elif elevation_ft and not elevation_m:
-                            elevation_m = round(elevation_ft * 0.3048, 1)
                     
-                    # Check for lead-in information
-                    lead_in_match = re.search(r'lead-in:?\s*(\d+\.?\d*)\s*km', text, re.IGNORECASE)
+                    # Look for lead-in information like "+0.5km (0.3 miles) lead-in"
+                    lead_in_match = re.search(r'(?:\+\s*)?(\d+\.?\d*)\s*km.*?lead-in', text)
                     if lead_in_match:
                         lead_in_km = float(lead_in_match.group(1))
                 
@@ -981,39 +971,82 @@ class ZwiftBot(discord.Client):
                 if lead_in_km:
                     route_data['lead_in_km'] = lead_in_km
                 
-                # Extract time estimates from ZwiftInsider table - just for stats display
+                # Look for ZI Metrics and time estimates
+                # Match pattern like "Time Estimates 🛈 2 W/kg: 44 minutes 3 W/kg: 35 minutes 4 W/kg: 32 minutes"
                 time_estimates = {}
                 
-                # Look for the time estimate table
-                tables = soup.find_all('table')
-                for table in tables:
-                    # Check if it's the time estimate table
-                    headers = table.find_all('th')
-                    header_text = ' '.join([h.get_text().strip().lower() for h in headers])
+                # Try to find the time estimates section
+                for element in soup.find_all(['p', 'div']):
+                    text = element.get_text()
                     
-                    if 'time' in header_text and ('experience' in header_text or 'level' in header_text):
-                        # This is likely the time estimate table
-                        rows = table.find_all('tr')
+                    # Check if this is the time estimates section
+                    if 'time estimates' in text.lower() or 'w/kg' in text.lower():
+                        logger.info(f"Found potential time estimates text: {text[:100]}...")
                         
-                        for row in rows[1:]:  # Skip header row
-                            cols = row.find_all(['td', 'th'])
-                            if len(cols) >= 2:
-                                level = cols[0].get_text().strip()
-                                time_text = cols[1].get_text().strip()
+                        # Extract all wattage-based estimates
+                        wkg_matches = re.findall(r'(\d+)\s*W/kg:\s*(\d+)\s*minutes', text)
+                        
+                        if wkg_matches:
+                            for wkg, minutes in wkg_matches:
+                                category = None
                                 
-                                # Extract hours and minutes from time format (e.g., "1:15:00" or "32:30")
-                                time_parts = time_text.split(':')
-                                minutes = 0
+                                # Map W/kg to rider categories based on common Zwift standards
+                                wkg_float = float(wkg)
+                                if wkg_float >= 4.0:
+                                    category = 'A'
+                                elif wkg_float >= 3.2:
+                                    category = 'B'
+                                elif wkg_float >= 2.5:
+                                    category = 'C'
+                                elif wkg_float >= 1.0:
+                                    category = 'D'
                                 
-                                if len(time_parts) == 3:  # HH:MM:SS format
-                                    minutes = int(time_parts[0]) * 60 + int(time_parts[1])
-                                elif len(time_parts) == 2:  # MM:SS format
-                                    minutes = int(time_parts[0])
-                                
-                                if level.lower() in ['a', 'a+', 'b', 'c', 'd', 'e']:
-                                    time_estimates[level.upper()] = minutes
+                                if category:
+                                    time_estimates[category] = int(minutes)
+                                    
+                                    # Also store the raw W/kg value
+                                    if 'wkg_times' not in route_data:
+                                        route_data['wkg_times'] = {}
+                                    route_data['wkg_times'][wkg] = int(minutes)
+                                    
+                                    logger.info(f"Mapped {wkg} W/kg ({minutes} min) to category {category}")
+                    
+                    # Try to find ZI Metrics/rating
+                    if 'zimetrics' in text.lower() or 'rating:' in text.lower():
+                        rating_match = re.search(r'rating:\s*(\d+\.?\d*)\/100', text.lower())
+                        if rating_match:
+                            route_data['zi_rating'] = float(rating_match.group(1))
+                            logger.info(f"Found ZI Rating: {route_data['zi_rating']}")
                 
-                # Add time estimates if found
+                # If we don't have time estimates from the W/kg parsing, try tables
+                if not time_estimates:
+                    # Find tables that might have time data
+                    tables = soup.find_all('table')
+                    
+                    for table in tables:
+                        table_text = table.get_text().lower()
+                        if 'time' in table_text or 'category' in table_text or 'level' in table_text:
+                            # Process rows
+                            for row in table.find_all('tr')[1:]:  # Skip header
+                                cols = row.find_all(['td', 'th'])
+                                if len(cols) >= 2:
+                                    # Try to identify category
+                                    cat_text = cols[0].get_text().strip().upper()
+                                    time_text = cols[1].get_text().strip()
+                                    
+                                    # Check if this looks like a category (A, B, C, D)
+                                    if cat_text in ['A', 'B', 'C', 'D'] and re.search(r'\d+', time_text):
+                                        # Parse time - handle formats like "35:20" or "1:15:00"
+                                        time_match = re.search(r'(\d+):(\d+)(?::(\d+))?', time_text)
+                                        if time_match:
+                                            if time_match.group(3):  # HH:MM:SS
+                                                minutes = int(time_match.group(1)) * 60 + int(time_match.group(2))
+                                            else:  # MM:SS
+                                                minutes = int(time_match.group(1))
+                                                
+                                            time_estimates[cat_text] = minutes
+                
+                # Add time estimates to route data
                 if time_estimates:
                     route_data['time_estimates'] = time_estimates
                     logger.info(f"Found time estimates for {route_name}: {time_estimates}")
@@ -1021,7 +1054,6 @@ class ZwiftBot(discord.Client):
                 # Calculate route badges/type
                 badges = []
                 
-                # Check if route exists and has distance/elevation data
                 if distance_km and elevation_m:
                     # Calculate elevation per km
                     elev_per_km = elevation_m / distance_km
@@ -1046,26 +1078,36 @@ class ZwiftBot(discord.Client):
                     if distance_km > 40 or elevation_m > 400:
                         badges.append("Epic")
                     
-                    # Use B category time if available or use a rough estimate
+                    # Use B category time or estimate based on speed
                     if 'time_estimates' in route_data and 'B' in route_data['time_estimates']:
                         route_data['estimated_time_min'] = route_data['time_estimates']['B']
                     else:
-                        # Fallback calculation
-                        speed = 30  # Average B rider speed in km/h
-                        
-                        # Adjust for elevation - reduce speed by 1 km/h per 100m of climbing per 10km
-                        elevation_factor = 1.0
-                        elev_per_10km = (elevation_m / distance_km) * 10
-                        elevation_factor = max(0.7, 1.0 - (elev_per_10km / 100) * 0.1)
-                        
-                        adjusted_speed = speed * elevation_factor
-                        time_hours = distance_km / adjusted_speed
-                        route_data['estimated_time_min'] = round(time_hours * 60)
+                        # Try to use 3 W/kg time if available (typical B rider)
+                        if 'wkg_times' in route_data and '3' in route_data['wkg_times']:
+                            route_data['estimated_time_min'] = route_data['wkg_times']['3']
+                        else:
+                            # Fallback calculation based on distance and elevation
+                            speed = 30  # Average B rider speed in km/h
+                            elevation_factor = max(0.7, 1.0 - ((elevation_m / distance_km) * 10 / 100) * 0.1)
+                            adjusted_speed = speed * elevation_factor
+                            time_hours = distance_km / adjusted_speed
+                            route_data['estimated_time_min'] = round(time_hours * 60)
                 
                 route_data['badges'] = badges
                 
-                return route_data
+                # Find segments (sprint and KOM)
+                segments_section = None
+                for h in soup.find_all(['h2', 'h3', 'h4']):
+                    if 'segment' in h.get_text().lower() or 'sprint' in h.get_text().lower() or 'kom' in h.get_text().lower():
+                        segments_section = h.find_next('p')
+                        break
                 
+                if segments_section:
+                    segment_text = segments_section.get_text()
+                    route_data['segments'] = segment_text
+                
+                return route_data
+                    
         except Exception as e:
             logger.error(f"Error processing {route.get('Route', 'unknown')}: {e}")
             import traceback
@@ -2658,6 +2700,9 @@ class ZwiftBot(discord.Client):
         world_routes_method = self.world_routes
         cache_info_method = self.cache_info
         
+        # Add the refresh cache method
+        refresh_cache_method = self.refresh_cache
+        
         # Route command
         @self.tree.command(name="route", description="Get a Zwift route URL by name")
         async def route_command(interaction, name: str):
@@ -2733,6 +2778,11 @@ class ZwiftBot(discord.Client):
         @self.tree.command(name="cacheinfo", description="Show information about the route cache")
         async def cacheinfo_command(interaction):
             await cache_info_method(interaction)
+            
+        # Cache refresh command
+        @self.tree.command(name="refreshcache", description="Force a refresh of the route cache")
+        async def refreshcache_command(interaction):
+            await refresh_cache_method(interaction)
 
         # Sync the command tree
         await self.tree.sync()
