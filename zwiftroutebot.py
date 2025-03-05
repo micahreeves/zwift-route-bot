@@ -2665,37 +2665,37 @@ class ZwiftBot(discord.Client):
             )
                 
 # ==========================================
-    # Setup Hook Method
-    # ==========================================
-    # Features:
-    # - Registers all Discord slash commands
-    # - Links command handlers to their implementation methods
-    # - Initializes the route cache for data access
-    # - Starts periodic cache update background task
+    # Setup Hook Method with direct method references
     # ==========================================
 
     async def setup_hook(self):
         """Initialize command tree and cache when bot starts up"""
-        # Register commands directly by creating the command decorators
-        # and leaving the implementation to the class methods
+        # Store direct method references to avoid any issues with self referencing
+        route_method = self.route
+        sprint_method = self.sprint
+        kom_method = self.kom
+        random_route_method = self.random_route
+        findroute_method = self.findroute
+        generate_route_stats_method = self.generate_route_stats
+        world_routes_method = self.world_routes
+        cache_info_method = self.cache_info
         
         # Route command
         @self.tree.command(name="route", description="Get a Zwift route URL by name")
         async def route_command(interaction, name: str):
-            # Call the instance method directly
-            await self.route(interaction, name)
+            await route_method(interaction, name)
         
         # Sprint command
         @self.tree.command(name="sprint", description="Get information about a Zwift sprint segment")
         async def sprint_command(interaction, name: str):
-            await self.sprint(interaction, name)
+            await sprint_method(interaction, name)
         
         # KOM command
         @self.tree.command(name="kom", description="Get information about a Zwift KOM segment")
         async def kom_command(interaction, name: str):
-            await self.kom(interaction, name)
+            await kom_method(interaction, name)
         
-        # Random route command - fix this to call the method directly
+        # Random route command
         @self.tree.command(name="random", description="Get a random Zwift route")
         @app_commands.describe(
             world="Filter by Zwift world (e.g., Watopia, London)",
@@ -2706,8 +2706,7 @@ class ZwiftBot(discord.Client):
                                world: str = None,
                                route_type: Literal["flat", "mixed", "hilly"] = None,
                                duration: Literal["short", "medium", "long"] = None):
-            # Call the class method directly
-            await self.random_route(interaction, world, route_type, duration)
+            await random_route_method(interaction, world, route_type, duration)
         
         # Find route command
         @self.tree.command(name="findroute", description="Find routes matching your criteria")
@@ -2728,9 +2727,9 @@ class ZwiftBot(discord.Client):
                                   world: str = None,
                                   route_type: Literal["flat", "mixed", "hilly"] = None,
                                   duration: Literal["short", "medium", "long"] = None):
-            await self.findroute(interaction, min_km, max_km, min_elev, max_elev, world, route_type, duration)
+            await findroute_method(interaction, min_km, max_km, min_elev, max_elev, world, route_type, duration)
         
-        # Stats command - fix to call the class method directly
+        # Stats command
         @self.tree.command(name="stats", description="Get statistics about Zwift routes")
         @app_commands.describe(
             category="Rider category for time estimates (A/B/C/D)",
@@ -2739,8 +2738,7 @@ class ZwiftBot(discord.Client):
         async def stats_command(interaction, 
                               category: Literal["A", "B", "C", "D"] = "B",
                               focus: Literal["general", "distance", "climbing", "time"] = "general"):
-            # Call the class method directly
-            await self.generate_route_stats(interaction, category, focus)
+            await generate_route_stats_method(interaction, category, focus)
         
         # World routes command
         @self.tree.command(name="worldroutes", description="List all routes in a specific Zwift world")
@@ -2751,12 +2749,12 @@ class ZwiftBot(discord.Client):
         async def worldroutes_command(interaction, 
                                    world: str,
                                    sort_by: Literal["distance", "elevation", "name"] = "distance"):
-            await self.world_routes(interaction, world, sort_by)
+            await world_routes_method(interaction, world, sort_by)
         
         # Cache info command
         @self.tree.command(name="cacheinfo", description="Show information about the route cache")
         async def cacheinfo_command(interaction):
-            await self.cache_info(interaction)
+            await cache_info_method(interaction)
 
         # Sync the command tree
         await self.tree.sync()
@@ -2766,7 +2764,7 @@ class ZwiftBot(discord.Client):
         os.makedirs(self.CACHE_DIR, exist_ok=True)
         self.route_cache = await self.load_or_update_route_cache()
         logger.info(f"Route cache initialized with {len(self.route_cache)} routes")
-        self.bg_task = self.loop.create_task(self.periodic_cache_update())          
+        self.bg_task = self.loop.create_task(self.periodic_cache_update())
 
 
 # ==========================================
