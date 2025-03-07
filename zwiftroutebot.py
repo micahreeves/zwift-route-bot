@@ -770,7 +770,7 @@ class ZwiftBot(discord.Client):
             
             try:
                 # Send to channel
-                await interaction.channel.send(
+                await interaction.response.send_message(
                     content=f"{interaction.user.mention} {share_message}:",
                     embed=new_embed,
                     files=new_files if new_files else None
