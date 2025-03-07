@@ -775,9 +775,9 @@ class ZwiftBot(discord.Client):
                     embed=new_embed,
                     files=new_files if new_files else None
                 )
-                except discord.Forbidden as e:
-                    logger.error(f"Forbidden error sharing to channel: {e}")
-                    logger.error(f"Error details: {e.response}, {e.text}")
+            except discord.Forbidden as e:
+                logger.error(f"Forbidden error sharing to channel: {e}")
+                logger.error(f"Error details: {e.response}, {e.text}")
                 
                 # Confirm to user
                 await interaction.response.send_message("Shared to channel!", ephemeral=True)
