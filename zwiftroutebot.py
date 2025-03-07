@@ -983,44 +983,99 @@ class ZwiftBot(discord.Client):
                 elevation_ft = None
                 lead_in_km = 0
                 
-                # Extract basic route details
+# ==========================================
+                # Route Data Extraction with Improved Pattern Matching
+                # ==========================================
+                # Features:
+                # - More specific regex patterns to avoid confusing miles and meters
+                # - Explicit check for distance values before elevation
+                # - Pattern ordering to prevent capturing the wrong values
+                # - Improved error handling and validation
+                # ==========================================
+                
+                # Process each paragraph for route data
                 for p in soup.find_all(['p', 'div', 'li']):
                     text = p.get_text().lower()
                     
-                    # Looking for patterns like "Length: 19.4 km (12.1 miles)"
-                    if 'length:' in text or 'distance:' in text:
-                        km_match = re.search(r'(\d+\.?\d*)\s*km', text)
+                    # Check for distance information first - be more specific with pattern
+                    if 'distance:' in text or 'length:' in text:
+                        # Extract kilometers value
+                        km_match = re.search(r'(?:distance|length):\s*(\d+\.?\d*)\s*km', text, re.IGNORECASE)
                         if km_match:
                             distance_km = float(km_match.group(1))
+                            logger.info(f"Found distance: {distance_km} km")
                         
-                        miles_match = re.search(r'(\d+\.?\d*)\s*miles', text)
+                        # Extract miles value - look specifically for parenthetical pattern
+                        miles_match = re.search(r'(?:distance|length):[^(]*\(\s*(\d+\.?\d*)\s*(?:mi|miles)\)', text, re.IGNORECASE)
                         if miles_match:
                             distance_miles = float(miles_match.group(1))
+                            logger.info(f"Found distance: {distance_miles} miles")
+                        
+                        # If only one unit is found, calculate the other - with validation check
+                        if distance_km and not distance_miles:
+                            distance_miles = round(distance_km * 0.621371, 1)
+                            logger.info(f"Calculated miles from km: {distance_miles}")
+                        elif distance_miles and not distance_km:
+                            distance_km = round(distance_miles * 1.60934, 1)
+                            logger.info(f"Calculated km from miles: {distance_km}")
                     
-                    # Looking for patterns like "Elevation: 275m (902')"
+                    # Now check for elevation - after distance to avoid confusion
                     if 'elevation:' in text or 'climbing:' in text:
-                        m_match = re.search(r'(\d+\.?\d*)\s*m', text)
+                        # Extract meters value - explicitly look for 'm' unit
+                        m_match = re.search(r'(?:elevation|climbing):\s*(\d+\.?\d*)\s*(?:m|meters)\b', text, re.IGNORECASE)
                         if m_match:
                             elevation_m = float(m_match.group(1))
+                            logger.info(f"Found elevation: {elevation_m} m")
                         
-                        ft_match = re.search(r'(\d+\.?\d*)\s*(?:ft|\')', text)
+                        # Extract feet value - look for ft unit or measurement symbol
+                        ft_match = re.search(r'(?:elevation|climbing):[^(]*\(\s*(\d+\.?\d*)\s*(?:ft|feet|\')\)', text, re.IGNORECASE)
                         if ft_match:
                             elevation_ft = float(ft_match.group(1))
+                            logger.info(f"Found elevation: {elevation_ft} feet")
+                        
+                        # If only one unit is found, calculate the other - with validation
+                        if elevation_m and not elevation_ft:
+                            elevation_ft = round(elevation_m * 3.28084, 1)
+                            logger.info(f"Calculated feet from meters: {elevation_ft}")
+                        elif elevation_ft and not elevation_m:
+                            elevation_m = round(elevation_ft * 0.3048, 1)
+                            logger.info(f"Calculated meters from feet: {elevation_m}")
                     
-                    # Look for lead-in information like "+0.5km (0.3 miles) lead-in"
-                    lead_in_match = re.search(r'(?:\+\s*)?(\d+\.?\d*)\s*km.*?lead-in', text)
+                    # Check for lead-in information with specific pattern
+                    lead_in_match = re.search(r'(?:lead-in|lead in):\s*(\d+\.?\d*)\s*km', text, re.IGNORECASE)
                     if lead_in_match:
                         lead_in_km = float(lead_in_match.group(1))
+                        logger.info(f"Found lead-in: {lead_in_km} km")
                 
-                # Add extracted data to route_data
+                # Validate the extracted values
                 if distance_km:
-                    route_data['distance_km'] = distance_km
+                    # Check for reasonable distance range (0.1 - 150 km)
+                    if 0.1 <= distance_km <= 150:
+                        route_data['distance_km'] = distance_km
+                    else:
+                        logger.warning(f"Distance value out of expected range: {distance_km}km")
+                        if 0.1 <= distance_km * 0.621371 <= 150:
+                            logger.info("Distance might be in miles, converting")
+                            distance_km = distance_km * 0.621371 * 1.60934
+                            route_data['distance_km'] = distance_km
+                            
                 if distance_miles:
                     route_data['distance_miles'] = distance_miles
+                    
                 if elevation_m:
-                    route_data['elevation_m'] = elevation_m
+                    # Check for reasonable elevation range (0 - 3000 m)
+                    if 0 <= elevation_m <= 3000:
+                        route_data['elevation_m'] = elevation_m
+                    else:
+                        logger.warning(f"Elevation value out of expected range: {elevation_m}m")
+                        if 0 <= elevation_m * 0.3048 <= 3000:
+                            logger.info("Elevation might be in feet, converting")
+                            elevation_m = elevation_m * 0.3048
+                            route_data['elevation_m'] = elevation_m
+                            
                 if elevation_ft:
                     route_data['elevation_ft'] = elevation_ft
+                    
                 if lead_in_km:
                     route_data['lead_in_km'] = lead_in_km
                 
