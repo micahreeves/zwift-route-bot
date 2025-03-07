@@ -1974,8 +1974,12 @@ class ZwiftBot(discord.Client):
                     # Important: ensure the file pointer is at the beginning before reading
                     if hasattr(map_file, 'fp') and hasattr(map_file.fp, 'seek'):
                         map_file.fp.seek(0)
+                   
                     
                     files_to_send.append(map_file)
+                     # After adding the map file to files_to_send
+                    if map_file and not embed.image.url:
+                        embed.set_image(url=f"attachment://{map_file.filename}")
                     image_sources.append("ZwiftHacks Map")
             
             # Try ZwiftInsider as last resort
