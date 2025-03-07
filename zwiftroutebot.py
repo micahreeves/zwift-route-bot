@@ -741,8 +741,8 @@ class ZwiftBot(discord.Client):
                     file.fp.seek(0)
                     self.file_data.append((file.filename, file.fp.read()))
             
-        # Using standard Unicode emoji (📋) that works everywhere without extra permissions
-        @discord.ui.button(label="Share to Channel", style=discord.ButtonStyle.primary, emoji="📋")
+        
+        @discord.ui.button(label="Share to Channel", style=discord.ButtonStyle.primary)
         async def share_button(self, interaction: discord.Interaction, button: discord.ui.Button):
             """Share the current result to the channel"""
             # Create a new set of files from the stored data
@@ -1977,9 +1977,6 @@ class ZwiftBot(discord.Client):
                    
                     
                     files_to_send.append(map_file)
-                     # After adding the map file to files_to_send
-                    if map_file and not embed.image.url:
-                        embed.set_image(url=f"attachment://{map_file.filename}")
                     image_sources.append("ZwiftHacks Map")
             
             # Try ZwiftInsider as last resort
