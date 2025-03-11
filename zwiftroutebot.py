@@ -716,6 +716,162 @@ class ZwiftBot(discord.Client):
             return None
             
 # ==========================================
+# ZwiftHub Map Finder Method
+# ==========================================
+# Features:
+# - Dedicated method for finding ZwiftHub maps
+# - Focuses specifically on the route_images/maps directory
+# - Uses multiple name normalization approaches
+# - Implements fuzzy matching for better results
+# - Provides detailed logging for troubleshooting
+# ==========================================
+
+    def get_zwifthub_map(self, route_name: str) -> str:
+        """
+        Find a ZwiftHub map specifically from the maps directory.
+        
+        Args:
+            route_name (str): The name of the route to find a map for
+            
+        Returns:
+            str or None: Path to the map file if found, None otherwise
+        """
+        try:
+            # Try to import RapidFuzz for better matching
+            try:
+                from rapidfuzz import process, fuzz
+            except ImportError:
+                logger.warning("RapidFuzz not installed for ZwiftHub maps.")
+                try:
+                    import pip
+                    pip.main(['install', 'rapidfuzz'])
+                    from rapidfuzz import process, fuzz
+                    logger.info("Successfully installed RapidFuzz for map matching")
+                except Exception as install_err:
+                    logger.error(f"Failed to install RapidFuzz: {install_err}")
+                    return None
+            
+            import os
+            
+            # Check if route_name is valid
+            if not route_name or len(route_name) < 2:
+                logger.error("Invalid route name provided to get_zwifthub_map")
+                return None
+            
+            # Potential directories for ZwiftHub maps
+            map_dirs = [
+                "/app/route_images/maps",
+                "/app/data/route_images/maps",
+                "/app/route_images"
+            ]
+            
+            # Find valid directories
+            valid_dirs = []
+            for dir_path in map_dirs:
+                if os.path.exists(dir_path) and os.path.isdir(dir_path):
+                    files = os.listdir(dir_path)
+                    if files:
+                        valid_dirs.append(dir_path)
+                        logger.info(f"Found valid map directory: {dir_path} with {len(files)} files")
+            
+            if not valid_dirs:
+                logger.warning("No valid ZwiftHub map directories found")
+                return None
+            
+            # Generate multiple variations of the route name for matching
+            # This is key to improving matches
+            route_variations = []
+            
+            # Original name
+            route_variations.append(route_name)
+            
+            # Lowercase with spaces
+            route_variations.append(route_name.lower())
+            
+            # Replace spaces with underscores
+            route_variations.append(route_name.lower().replace(' ', '_'))
+            
+            # Replace spaces with hyphens
+            route_variations.append(route_name.lower().replace(' ', '-'))
+            
+            # Alphanumeric only
+            alphanum = ''.join(c.lower() for c in route_name if c.isalnum() or c.isspace())
+            route_variations.append(alphanum)
+            route_variations.append(alphanum.replace(' ', '_'))
+            
+            # Remove short words like "the", "and", "of"
+            words = route_name.lower().split()
+            filtered_words = [w for w in words if len(w) > 2 and w not in ('the', 'and', 'of', 'to')]
+            if filtered_words:
+                route_variations.append('_'.join(filtered_words))
+                route_variations.append('-'.join(filtered_words))
+            
+            logger.info(f"Generated variations for matching: {route_variations}")
+            
+            # Search each directory for matching files
+            for dir_path in valid_dirs:
+                map_files = [f for f in os.listdir(dir_path) if f.lower().endswith(('.png', '.svg', '.webp'))]
+                
+                if not map_files:
+                    logger.info(f"No map files found in {dir_path}")
+                    continue
+                
+                logger.info(f"Searching among {len(map_files)} map files in {dir_path}")
+                
+                # First try direct matching with variations
+                for variation in route_variations:
+                    for map_file in map_files:
+                        map_lower = map_file.lower()
+                        
+                        if variation in map_lower:
+                            # Direct match found
+                            map_path = os.path.join(dir_path, map_file)
+                            logger.info(f"Direct match found: {map_path}")
+                            return map_path
+                
+                # If no direct match, try fuzzy matching
+                best_match = None
+                best_score = 0
+                
+                # Extract filenames without extensions for better matching
+                file_names = [os.path.splitext(f)[0].lower() for f in map_files]
+                
+                # Try to match each variation
+                for variation in route_variations:
+                    match_result = process.extractOne(
+                        query=variation,
+                        choices=file_names,
+                        scorer=fuzz.token_sort_ratio,
+                        score_cutoff=70
+                    )
+                    
+                    if match_result and isinstance(match_result, tuple) and len(match_result) >= 2:
+                        match_name, score = match_result[0], match_result[1]
+                        
+                        if score > best_score:
+                            # Find the original filename with extension
+                            for map_file in map_files:
+                                if os.path.splitext(map_file)[0].lower() == match_name:
+                                    best_match = os.path.join(dir_path, map_file)
+                                    best_score = score
+                                    logger.info(f"Fuzzy match: {best_match} with score {best_score}")
+                
+                # Return the best fuzzy match if found
+                if best_match and best_score >= 75:
+                    logger.info(f"Best fuzzy match: {best_match} with score {best_score}")
+                    return best_match
+            
+            # If we got here, no match was found
+            logger.warning(f"No ZwiftHub map found for route: {route_name}")
+            return None
+            
+        except Exception as e:
+            logger.error(f"Error in get_zwifthub_map: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return None
+            
+# ==========================================
     # Discord View for Share Buttons
     # ==========================================
     # Features:
@@ -942,17 +1098,17 @@ class ZwiftBot(discord.Client):
         return route_cache
         
 # ==========================================
-    # Route Details Fetching Method
-    # ==========================================
-    # Features:
-    # - Extracts comprehensive route details from ZwiftInsider
-    # - Captures distance, elevation, and lead-in information
-    # - Parses ZI Metrics and time estimates for different W/kg levels
-    # - Maps W/kg values to rider categories (A/B/C/D)
-    # - Identifies route type badges (flat/mixed/hilly, short/medium/long)
-    # - Extracts sprint and KOM segment information
-    # ==========================================
-    
+# Route Details Fetching Method
+# ==========================================
+# Features:
+# - Extracts comprehensive route details from ZwiftInsider
+# - Captures distance, elevation, and lead-in information
+# - Parses ZI Metrics and time estimates for different W/kg levels
+# - Maps W/kg values to rider categories (A/B/C/D)
+# - Identifies route type badges (flat/mixed/hilly, short/medium/long)
+# - Extracts sprint and KOM segment information
+# ==========================================
+
     async def fetch_route_details(self, session, route):
         """Fetch detailed information for a single route including time estimates"""
         try:
@@ -984,7 +1140,7 @@ class ZwiftBot(discord.Client):
                 elevation_ft = None
                 lead_in_km = 0
                 
-# ==========================================
+                # ==========================================
                 # Route Data Extraction with Improved Pattern Matching
                 # ==========================================
                 # Features:
@@ -1204,16 +1360,55 @@ class ZwiftBot(discord.Client):
                 
                 route_data['badges'] = badges
                 
-                # Find segments (sprint and KOM)
-                segments_section = None
-                for h in soup.find_all(['h2', 'h3', 'h4']):
-                    if 'segment' in h.get_text().lower() or 'sprint' in h.get_text().lower() or 'kom' in h.get_text().lower():
-                        segments_section = h.find_next('p')
-                        break
+                # ==========================================
+                # Enhanced Segment Extraction
+                # ==========================================
+                # Features:
+                # - Separately extracts Sprint & KOM/QOM segments
+                # - Captures Strava segments as a distinct category
+                # - Improves accuracy with more specific heading detection
+                # - Adds detailed logging for troubleshooting
+                # ==========================================
                 
-                if segments_section:
-                    segment_text = segments_section.get_text()
-                    route_data['segments'] = segment_text
+                # Find segments (sprint and KOM) and Strava segments separately
+                sprint_kom_segments = None
+                strava_segments = None
+                
+                # Search through headings for segment information
+                for heading in soup.find_all(['h2', 'h3', 'h4']):
+                    heading_text = heading.get_text().strip().lower()
+                    
+                    # Check for Sprint & KOM/QOM Segments section
+                    if ('sprint' in heading_text and ('kom' in heading_text or 'qom' in heading_text or 'kqom' in heading_text)) or \
+                       ('sprint' in heading_text and 'segment' in heading_text):
+                        logger.info(f"Found Sprint & KOM heading: {heading.get_text()}")
+                        next_element = heading.find_next(['p', 'ul', 'div'])
+                        if next_element:
+                            sprint_kom_segments = next_element.get_text().strip()
+                            logger.info(f"Found Sprint & KOM segments: {sprint_kom_segments[:100]}...")
+                    
+                    # Check for Strava Segments section
+                    elif 'strava' in heading_text and 'segment' in heading_text:
+                        logger.info(f"Found Strava heading: {heading.get_text()}")
+                        next_element = heading.find_next(['p', 'ul', 'div'])
+                        if next_element:
+                            strava_segments = next_element.get_text().strip()
+                            logger.info(f"Found Strava segments: {strava_segments[:100]}...")
+                
+                # Add segments to route data - with backward compatibility
+                if sprint_kom_segments:
+                    route_data['sprint_kom_segments'] = sprint_kom_segments
+                    # Also keep the original 'segments' field for backward compatibility
+                    if not route_data.get('segments'):
+                        route_data['segments'] = sprint_kom_segments
+                    
+                if strava_segments:
+                    route_data['strava_segments'] = strava_segments
+                    # Append to 'segments' field if it exists, otherwise create it
+                    if 'segments' in route_data:
+                        route_data['segments'] += "\n\nStrava Segments:\n" + strava_segments
+                    else:
+                        route_data['segments'] = "Strava Segments:\n" + strava_segments
                 
                 return route_data
                     
@@ -1222,7 +1417,7 @@ class ZwiftBot(discord.Client):
             import traceback
             logger.error(traceback.format_exc())
             return None
-
+                
     async def periodic_cache_update(self):
         """Periodically update the route cache"""
         await self.wait_until_ready()
@@ -2387,14 +2582,52 @@ class ZwiftBot(discord.Client):
                     inline=True
                 )
             
-            # Add segment information if available
-            if detailed_info and 'segments' in detailed_info:
-                segments = detailed_info['segments']
-                embed.add_field(
-                    name="Segments",
-                    value=segments,
-                    inline=True
-                )
+            # Display segments appropriately based on available data
+            if detailed_info:
+                # Check for the enhanced segment fields first
+                if 'sprint_kom_segments' in detailed_info and detailed_info['sprint_kom_segments']:
+                    # Display Sprint & KOM segments
+                    sprint_kom = detailed_info['sprint_kom_segments']
+                    # Truncate if too long for Discord embed field
+                    if len(sprint_kom) >= 1024:
+                        sprint_kom = sprint_kom[:1020] + "..."
+                    embed.add_field(
+                        name="Sprint & KOM Segments",
+                        value=sprint_kom,
+                        inline=False
+                    )
+                
+                # Check for Strava segments
+                if 'strava_segments' in detailed_info and detailed_info['strava_segments']:
+                    # Display Strava segments
+                    strava = detailed_info['strava_segments']
+                    # Truncate if too long for Discord embed field
+                    if len(strava) >= 1024:
+                        strava = strava[:1020] + "..."
+                    embed.add_field(
+                        name="Strava Segments",
+                        value=strava,
+                        inline=False
+                    )
+                
+                # Fallback to original segments field if the new fields aren't available
+                elif 'segments' in detailed_info and detailed_info['segments']:
+                    segments = detailed_info['segments']
+                    # Truncate if too long for Discord embed field
+                    if len(segments) >= 1024:
+                        segments = segments[:1020] + "..."
+                    
+                    # Try to detect if this is a Strava-only segment list
+                    if segments.lower().startswith('strava'):
+                        field_name = "Strava Segments"
+                    else:
+                        field_name = "Segments"
+                    
+                    embed.add_field(
+                        name=field_name,
+                        value=segments,
+                        inline=False
+                    )
             
             # Setup for file attachments
             files_to_send = []
@@ -2479,7 +2712,7 @@ class ZwiftBot(discord.Client):
             logger.info(f"Sending response with {len(files_to_send)} files")
             if files_to_send:
                 for i, file in enumerate(files_to_send):
-                    logger.info(f"File {i+1}: {file.filename} (from {getattr(file, 'fp', 'unknown')})")
+                    logger.info(f"File {i+1}: {file.filename}")
             
             # Ensure we have a list for files
             files_list = files_to_send if files_to_send else None
@@ -2512,6 +2745,8 @@ class ZwiftBot(discord.Client):
                     await loading_message.delete()
                 except Exception as e:
                     logger.error(f"Error deleting loading animation: {e}")
+            
+
 
     # ==========================================
     # World Routes Command
