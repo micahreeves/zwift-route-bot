@@ -2687,6 +2687,15 @@ class ZwiftBot(discord.Client):
                 if map_file:
                     files_to_send.append(map_file)
                     image_sources.append("ZwiftHacks Map")
+                    
+            # 3.5. Try to add ZwiftHub maps as well
+            zwifthub_map_path = self.get_zwifthub_map(route_name)
+            if zwifthub_map_path:
+                logger.info(f"Found ZwiftHub map: {zwifthub_map_path}")
+                hub_map_file = self.handle_zwifthacks_map(zwifthub_map_path)  # Reuse the handler
+                if hub_map_file:
+                    files_to_send.append(hub_map_file)
+                    image_sources.append("ZwiftHub Map")
             
             # 4. Fall back to ZwiftInsider image if no other images found
             if not has_github_image and not files_to_send:
