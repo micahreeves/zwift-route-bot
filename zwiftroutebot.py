@@ -1371,6 +1371,10 @@ class ZwiftBot(discord.Client):
                 # ==========================================
 
                 try:
+                    # Define navigation terms that indicate we've picked up the wrong content
+                    navigation_terms = ['get started', 'zwift account', 'how to get started', 
+                                        'course maps', 'calendar', 'exhaustive', 'tiny races']
+                    
                     # First, try to isolate the main article content to avoid navigation
                     article_content = soup.find('article') or soup.find('div', class_='entry-content')
                     
@@ -1443,7 +1447,7 @@ class ZwiftBot(discord.Client):
                             if ((('sprint' in text.lower() or 'kom' in text.lower() or 'qom' in text.lower()) and
                                 ('km' in text.lower() or 'm)' in text.lower())) and
                                 # Must NOT contain navigation terms
-                                not any(x in text.lower() for x in ['get started', 'account', 'how to', 'login'])):
+                                not any(x in text.lower() for x in navigation_terms)):
                                 segment_items.append(text)
                                 
                         if segment_items:
@@ -1452,8 +1456,6 @@ class ZwiftBot(discord.Client):
                     
                     # Validate that what we found doesn't look like navigation
                     if sprint_kom_segments:
-                        navigation_terms = ['get started', 'zwift account', 'how to get started', 
-                                           'course maps', 'calendar', 'exhaustive', 'tiny races']
                         if any(term in sprint_kom_segments.lower() for term in navigation_terms):
                             logger.warning("Segment data appears to contain navigation elements - discarding")
                             sprint_kom_segments = None
