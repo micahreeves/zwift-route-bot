@@ -1360,7 +1360,7 @@ class ZwiftBot(discord.Client):
                 
                 route_data['badges'] = badges
                 
-                # ==========================================
+# ==========================================
                 # Improved Segment Extraction Implementation
                 # ==========================================
                 # Features:
@@ -2634,14 +2634,7 @@ class ZwiftBot(discord.Client):
             if detailed_info and 'time_estimates' in detailed_info:
                 estimates = detailed_info['time_estimates']
                 
-                # Add the selected category first (highlighted)
-                if category in estimates:
-                    time_estimates.append(f"**Category {category}:** {format_time(estimates[category])}")
-                
-                # Add other categories
-                for cat in ['A', 'B', 'C', 'D']:
-                    if cat != category and cat in estimates:
-                        time_estimates.append(f"Category {cat}: {format_time(estimates[cat])}")
+    
             
             # Add W/kg estimates if available
             if detailed_info and 'wkg_times' in detailed_info:
