@@ -898,6 +898,15 @@ class ZwiftBot(discord.Client):
                     self.file_data.append((file.filename, file.fp.read()))
             
         
+# ==========================================
+        # Share Button Method with Improved Response Handling
+        # ==========================================
+        # Features:
+        # - Uses interaction.response for better permission handling
+        # - Avoids "already responded to" errors
+        # - Customizes share message based on command type
+        # - Adds attribution in the footer of shared content
+        # ==========================================
         @discord.ui.button(label="Share to Channel", style=discord.ButtonStyle.primary)
         async def share_button(self, interaction: discord.Interaction, button: discord.ui.Button):
             """Share the current result to the channel"""
@@ -925,16 +934,13 @@ class ZwiftBot(discord.Client):
             share_message = share_messages.get(self.command_type, "shared Zwift information")
             
             try:
-                # Send to channel
+                # Send to channel using the original interaction with ephemeral=False
                 await interaction.response.send_message(
                     content=f"{interaction.user.mention} {share_message}:",
                     embed=new_embed,
-                    files=new_files if new_files else None
+                    files=new_files if new_files else None,
+                    ephemeral=False  # Make this visible to everyone
                 )
-        
-                
-                # Confirm to user
-                await interaction.response.send_message("Shared to channel!", ephemeral=True)
                 
             except Exception as e:
                 # Log the error
@@ -2696,14 +2702,15 @@ class ZwiftBot(discord.Client):
                         inline=False
                     )
             
+
 # ==========================================
             # Enhanced Image Collection for Route Stats
             # ==========================================
             # Features:
             # - Displays ALL available images for a route
+            # - Sets embed image according to priority: ZwiftHacks > Cyccal > ZwiftHub
             # - Searches all directories for route images
             # - Includes profile images, maps, and any other found images
-            # - Uses specialized functions to maximize image coverage
             # - Adds all images as attachments alongside the primary embed
             # - Reports the total number of images found to the user
             # ==========================================
@@ -2712,25 +2719,20 @@ class ZwiftBot(discord.Client):
             files_to_send = []
             image_sources = []
             image_count = 0
+            main_image_set = False
 
-            # COMPREHENSIVE IMAGE COLLECTION (show ALL available images)
-            # 1. Try Cyccal GitHub image
-            if route_result.get("ImageURL") and 'github' in route_result["ImageURL"].lower():
-                logger.info(f"Using GitHub image: {route_result['ImageURL']}")
-                embed.set_image(url=route_result["ImageURL"])
-                image_sources.append("Cyccal")
-                image_count += 1
-                
-                # Add Cyccal link
-                cyccal_url = f"https://cyccal.com/{route_name.lower().replace(' ', '-')}/"
-                embed.add_field(
-                    name="Additional Resources",
-                    value=f"[View on Cyccal]({cyccal_url})",
-                    inline=False
-                )
-
-            # 2. Search all volumes for SVG/PNG/WEBP files
-            # Check multiple directories for images
+            # First collect all potential image sources
+            cyccal_url = route_result.get("ImageURL") if route_result.get("ImageURL") and 'github' in route_result.get("ImageURL", "").lower() else None
+            
+            # Get ZwiftHacks profile image using specialized function
+            zwifthacks_path = self.get_local_svg(route_name)
+            logger.info(f"ZwiftHacks path from get_local_svg: {zwifthacks_path}")
+            
+            # Get ZwiftHub map image using specialized function
+            zwifthub_path = self.get_zwifthub_map(route_name)
+            logger.info(f"ZwiftHub path from get_zwifthub_map: {zwifthub_path}")
+            
+            # Search all volumes for route-related images
             dirs_to_check = [
                 "/app/route_images/maps",
                 "/app/route_images/profiles",
@@ -2754,43 +2756,81 @@ class ZwiftBot(discord.Client):
                                 # Use our fuzzy matching functions to identify route-related images
                                 if (route_name.lower() in file.lower() or 
                                     normalize_route_name(route_name) in normalize_route_name(file)):
-                                    all_images.append(file_path)
-                                    logger.info(f"Found potential image: {file_path}")
+                                    # Avoid adding duplicates
+                                    if file_path not in all_images:
+                                        all_images.append(file_path)
+                                        logger.info(f"Found potential image: {file_path}")
 
-            # Get SVG profile images separately using our specialized function
-            local_path = self.get_local_svg(route_name)
-            if local_path and local_path not in all_images:
-                all_images.append(local_path)
-                logger.info(f"Found SVG profile via specialized function: {local_path}")
-
-            # Add ZwiftHacks map explicitly
-            zwifthacks_map_path = self.get_zwifthacks_map(route_name)
-            if zwifthacks_map_path and zwifthacks_map_path not in all_images:
-                all_images.append(zwifthacks_map_path)
-                logger.info(f"Found ZwiftHacks map: {zwifthacks_map_path}")
-
-            # Add ZwiftHub map explicitly
-            zwifthub_map_path = self.get_zwifthub_map(route_name)
-            if zwifthub_map_path and zwifthub_map_path not in all_images:
-                all_images.append(zwifthub_map_path)
-                logger.info(f"Found ZwiftHub map: {zwifthub_map_path}")
-
-            # Process all found images and add them to files_to_send
-            used_main_embed = False  # Track if we've used the main embed image slot
+            # Add specialized paths if they weren't already found
+            if zwifthacks_path and zwifthacks_path not in all_images:
+                all_images.append(zwifthacks_path)
+                logger.info(f"Added ZwiftHacks profile: {zwifthacks_path}")
+                
+            if zwifthub_path and zwifthub_path not in all_images:
+                all_images.append(zwifthub_path)
+                logger.info(f"Added ZwiftHub map: {zwifthub_path}")
+            
+            # Set the main embed image according to priority order
+            # 1. ZwiftHacks profile (priority highest)
+            if zwifthacks_path and not main_image_set:
+                logger.info(f"Setting ZwiftHacks as primary embed image: {zwifthacks_path}")
+                profile_file, image_source = self.handle_local_image(zwifthacks_path, embed)
+                if profile_file:
+                    files_to_send.append(profile_file)
+                    image_sources.append(image_source or "ZwiftHacks")
+                    main_image_set = True
+                    image_count += 1
+                    
+                    # Remove from all_images to avoid adding it twice
+                    if zwifthacks_path in all_images:
+                        all_images.remove(zwifthacks_path)
+            
+            # 2. Cyccal GitHub (priority second)
+            if cyccal_url and not main_image_set:
+                logger.info(f"Setting Cyccal as primary embed image: {cyccal_url}")
+                embed.set_image(url=cyccal_url)
+                image_sources.append("Cyccal")
+                main_image_set = True
+                image_count += 1
+            
+            # Always add Cyccal link if it exists
+            if cyccal_url:
+                cyccal_url = f"https://cyccal.com/{route_name.lower().replace(' ', '-')}/"
+                embed.add_field(
+                    name="Additional Resources",
+                    value=f"[View on Cyccal]({cyccal_url})",
+                    inline=False
+                )
+            
+            # 3. ZwiftHub map (priority third)
+            if zwifthub_path and not main_image_set:
+                logger.info(f"Setting ZwiftHub as primary embed image: {zwifthub_path}")
+                try:
+                    if zwifthub_path.lower().endswith('.svg'):
+                        map_file = discord.File(zwifthub_path, filename="route.svg")
+                        embed.set_image(url="attachment://route.svg")
+                    else:
+                        map_file = discord.File(zwifthub_path, filename="route.png")
+                        embed.set_image(url="attachment://route.png")
+                    files_to_send.append(map_file)
+                    image_sources.append("ZwiftHub")
+                    main_image_set = True
+                    image_count += 1
+                    
+                    # Remove from all_images to avoid adding it twice
+                    if zwifthub_path in all_images:
+                        all_images.remove(zwifthub_path)
+                except Exception as img_err:
+                    logger.error(f"Error setting ZwiftHub as primary image: {img_err}")
+            
+            # Process all other found images and add them as attachments
             for i, img_path in enumerate(all_images):
                 try:
-                    # For the first image, try to set it as the main embed image
-                    if not used_main_embed:
-                        image_file, image_source = self.handle_local_image(img_path, embed)
-                        if image_file:
-                            files_to_send.append(image_file)
-                            if image_source:
-                                image_sources.append(image_source)
-                            used_main_embed = True
-                            image_count += 1
-                            continue  # Skip to next image
-                    
-                    # For additional images, add them as attachments with unique filenames
+                    # Skip if this image was already used as the main embed image
+                    if main_image_set and (img_path == zwifthacks_path or img_path == zwifthub_path):
+                        continue
+                        
+                    # Add as attachment with unique filename
                     file_lower = img_path.lower()
                     if file_lower.endswith('.svg') or '_svg' in file_lower:
                         # SVG handling
@@ -2828,8 +2868,8 @@ class ZwiftBot(discord.Client):
                 except Exception as img_err:
                     logger.error(f"Error processing image {img_path}: {img_err}")
 
-            # 3. Fall back to ZwiftInsider image if no other images have been added
-            if image_count == 0:
+            # Fall back to ZwiftInsider image if no other images have been added
+            if not main_image_set:
                 try:
                     stats, zwift_img_url = await fetch_route_info(route_result["URL"])
                     if zwift_img_url:
@@ -2898,8 +2938,7 @@ class ZwiftBot(discord.Client):
                 try:
                     await loading_message.delete()
                 except Exception as e:
-                    logger.error(f"Error deleting loading animation: {e}")
-            
+                    logger.error(f"Error deleting loading animation: {e}")          
 
 
     # ==========================================
