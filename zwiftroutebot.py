@@ -1098,16 +1098,16 @@ class ZwiftBot(discord.Client):
         return route_cache
         
 # ==========================================
-# Route Details Fetching Method
-# ==========================================
-# Features:
-# - Extracts comprehensive route details from ZwiftInsider
-# - Captures distance, elevation, and lead-in information
-# - Parses ZI Metrics and time estimates for different W/kg levels
-# - Maps W/kg values to rider categories (A/B/C/D)
-# - Identifies route type badges (flat/mixed/hilly, short/medium/long)
-# - Extracts sprint and KOM segment information
-# ==========================================
+    # Route Details Fetching Method
+    # ==========================================
+    # Features:
+    # - Extracts comprehensive route details from ZwiftInsider
+    # - Captures distance, elevation, and lead-in information
+    # - Parses ZI Metrics and time estimates for different W/kg levels
+    # - Maps W/kg values to rider categories (A/B/C/D)
+    # - Identifies route type badges (flat/mixed/hilly, short/medium/long)
+    # - Extracts sprint and KOM segment information
+    # ==========================================
 
     async def fetch_route_details(self, session, route):
         """Fetch detailed information for a single route including time estimates"""
@@ -1361,62 +1361,139 @@ class ZwiftBot(discord.Client):
                 route_data['badges'] = badges
                 
                 # ==========================================
-                # Enhanced Segment Extraction
+                # Improved Segment Extraction Implementation
                 # ==========================================
                 # Features:
-                # - Separately extracts Sprint & KOM/QOM segments
-                # - Captures Strava segments as a distinct category
-                # - Improves accuracy with more specific heading detection
-                # - Adds detailed logging for troubleshooting
+                # - Enhanced heading detection for segments
+                # - Better content parsing strategy
+                # - Fixes "Related Posts" issue
+                # - More specific element targeting
+                # - Additional validation of segment content
+                # - Complete try/except error handling
                 # ==========================================
-                
-                # Find segments (sprint and KOM) and Strava segments separately
-                sprint_kom_segments = None
-                strava_segments = None
-                
-                # Search through headings for segment information
-                for heading in soup.find_all(['h2', 'h3', 'h4']):
-                    heading_text = heading.get_text().strip().lower()
+
+                try:
+                    # Find segments (sprint and KOM) and Strava segments separately
+                    sprint_kom_segments = None
+                    strava_segments = None
+
+                    # First, try to find specific segments in a more targeted way
+                    segment_headings = soup.find_all(['h2', 'h3', 'h4'])
+                    for heading in segment_headings:
+                        heading_text = heading.get_text().strip().lower()
+                        
+                        # Check for Sprint & KOM/QOM Segments section with more specific patterns
+                        if ('sprint' in heading_text and ('kom' in heading_text or 'qom' in heading_text or 'kqom' in heading_text)) or \
+                           ('sprint' in heading_text and 'segment' in heading_text) or \
+                           ('segment' in heading_text and ('kom' in heading_text or 'qom' in heading_text)):
+                            
+                            logger.info(f"Found segment heading: {heading.get_text()}")
+                            
+                            # Look at the next elements until we find something that looks like segment data
+                            segment_text = ""
+                            current = heading.next_sibling
+                            
+                            # Examine the next 5 elements after the heading
+                            for _ in range(5):
+                                if not current:
+                                    break
+                                    
+                                # If it's a string, check if it contains useful information
+                                if isinstance(current, str):
+                                    if len(current.strip()) > 10 and any(x in current.lower() for x in ['sprint', 'kom', 'qom', 'km', '%']):
+                                        segment_text += current.strip() + "\n"
+                                
+                                # If it's a tag, extract text if it looks like segment data
+                                elif hasattr(current, 'name') and current.name in ['p', 'ul', 'ol', 'div', 'li']:
+                                    content = current.get_text().strip()
+                                    
+                                    # Skip if it's a heading or clearly not segment data
+                                    if content.lower().startswith(('related', 'strava', 'comment', 'leave a')):
+                                        logger.info(f"Skipping non-segment content: {content[:40]}...")
+                                        current = current.next_sibling
+                                        continue
+                                    
+                                    # Look for segment patterns (distance and grade)
+                                    if ('km' in content.lower() or 'm)' in content.lower()) and '%' in content:
+                                        segment_text += content + "\n"
+                                    # Also accept lists of segments
+                                    elif any(segment in content.lower() for segment in ['sprint', 'kom', 'climb', 'qom']) and len(content) < 200:
+                                        segment_text += content + "\n"
+                                
+                                current = current.next_sibling
+                            
+                            # Validate that we found actual segment data and not just headings
+                            if segment_text and any(x in segment_text.lower() for x in ['km', '%', 'sprint', 'kom']):
+                                sprint_kom_segments = segment_text.strip()
+                                logger.info(f"Extracted segment data: {sprint_kom_segments[:100]}...")
+                                break
                     
-                    # Check for Sprint & KOM/QOM Segments section
-                    if ('sprint' in heading_text and ('kom' in heading_text or 'qom' in heading_text or 'kqom' in heading_text)) or \
-                       ('sprint' in heading_text and 'segment' in heading_text):
-                        logger.info(f"Found Sprint & KOM heading: {heading.get_text()}")
-                        next_element = heading.find_next(['p', 'ul', 'div'])
-                        if next_element:
-                            sprint_kom_segments = next_element.get_text().strip()
-                            logger.info(f"Found Sprint & KOM segments: {sprint_kom_segments[:100]}...")
+                    # If we didn't find segments using the targeted approach, try a broader approach
+                    if not sprint_kom_segments:
+                        # Look for paragraphs that contain segment information
+                        for p in soup.find_all(['p', 'div']):
+                            content = p.get_text().strip()
+                            if 'sprint' in content.lower() and ('km' in content.lower() or 'm)' in content.lower()) and '%' in content:
+                                # This likely contains sprint info
+                                if not sprint_kom_segments:
+                                    sprint_kom_segments = content
+                                else:
+                                    sprint_kom_segments += "\n" + content
                     
-                    # Check for Strava Segments section
-                    elif 'strava' in heading_text and 'segment' in heading_text:
-                        logger.info(f"Found Strava heading: {heading.get_text()}")
-                        next_element = heading.find_next(['p', 'ul', 'div'])
-                        if next_element:
-                            strava_segments = next_element.get_text().strip()
-                            logger.info(f"Found Strava segments: {strava_segments[:100]}...")
+                    # If we still don't have segments, try one last approach
+                    if not sprint_kom_segments:
+                        # Try lists which might contain segment data
+                        for ul in soup.find_all('ul'):
+                            list_items = ul.find_all('li')
+                            segment_items = []
+                            
+                            for li in list_items:
+                                item_text = li.get_text().strip()
+                                # Check if it looks like a segment
+                                if ('sprint' in item_text.lower() or 'kom' in item_text.lower() or 'qom' in item_text.lower()) and \
+                                   (('km' in item_text.lower() or 'm)' in item_text.lower()) and '%' in item_text):
+                                    segment_items.append(item_text)
+                            
+                            if segment_items:
+                                sprint_kom_segments = "\n".join(segment_items)
+                                break
+                    
+                    # Look for Strava segments separately
+                    for heading in soup.find_all(['h2', 'h3', 'h4']):
+                        if 'strava' in heading.get_text().lower() and 'segment' in heading.get_text().lower():
+                            next_el = heading.find_next(['p', 'ul', 'div'])
+                            if next_el:
+                                strava_segments = next_el.get_text().strip()
+                    
+                    # Add segments to route data
+                    if sprint_kom_segments:
+                        route_data['sprint_kom_segments'] = sprint_kom_segments
+                        # Also keep the original 'segments' field for backward compatibility
+                        if not route_data.get('segments'):
+                            route_data['segments'] = sprint_kom_segments
+                        
+                    if strava_segments:
+                        route_data['strava_segments'] = strava_segments
+                        # Append to 'segments' field if it exists, otherwise create it
+                        if 'segments' in route_data:
+                            route_data['segments'] += "\n\nStrava Segments:\n" + strava_segments
+                        else:
+                            route_data['segments'] = "Strava Segments:\n" + strava_segments
                 
-                # Add segments to route data - with backward compatibility
-                if sprint_kom_segments:
-                    route_data['sprint_kom_segments'] = sprint_kom_segments
-                    # Also keep the original 'segments' field for backward compatibility
-                    if not route_data.get('segments'):
-                        route_data['segments'] = sprint_kom_segments
-                    
-                if strava_segments:
-                    route_data['strava_segments'] = strava_segments
-                    # Append to 'segments' field if it exists, otherwise create it
-                    if 'segments' in route_data:
-                        route_data['segments'] += "\n\nStrava Segments:\n" + strava_segments
-                    else:
-                        route_data['segments'] = "Strava Segments:\n" + strava_segments
+                except Exception as e:
+                    logger.error(f"Error extracting segments for {route_name}: {e}")
+                    import traceback
+                    logger.error(traceback.format_exc())
                 
                 return route_data
-                    
+                
         except Exception as e:
-            logger.error(f"Error processing {route.get('Route', 'unknown')}: {e}")
+            logger.error(f"Error in fetch_route_details for {route.get('Route', 'unknown')}: {e}")
             import traceback
             logger.error(traceback.format_exc())
             return None
+                
+                    
                 
     async def periodic_cache_update(self):
         """Periodically update the route cache"""
@@ -2629,18 +2706,30 @@ class ZwiftBot(discord.Client):
                         inline=False
                     )
             
+# ==========================================
+            # Enhanced Image Collection for Route Stats
+            # ==========================================
+            # Features:
+            # - Displays ALL available images for a route
+            # - Searches all directories for route images
+            # - Includes profile images, maps, and any other found images
+            # - Uses specialized functions to maximize image coverage
+            # - Adds all images as attachments alongside the primary embed
+            # - Reports the total number of images found to the user
+            # ==========================================
+            
             # Setup for file attachments
             files_to_send = []
             image_sources = []
-            
-            # COMPREHENSIVE IMAGE SEARCH
-            # 1. Try Cyccal GitHub image first (highest quality)
-            has_github_image = False
+            image_count = 0
+
+            # COMPREHENSIVE IMAGE COLLECTION (show ALL available images)
+            # 1. Try Cyccal GitHub image
             if route_result.get("ImageURL") and 'github' in route_result["ImageURL"].lower():
                 logger.info(f"Using GitHub image: {route_result['ImageURL']}")
                 embed.set_image(url=route_result["ImageURL"])
-                has_github_image = True
                 image_sources.append("Cyccal")
+                image_count += 1
                 
                 # Add Cyccal link
                 cyccal_url = f"https://cyccal.com/{route_name.lower().replace(' ', '-')}/"
@@ -2649,9 +2738,9 @@ class ZwiftBot(discord.Client):
                     value=f"[View on Cyccal]({cyccal_url})",
                     inline=False
                 )
-            
+
             # 2. Search all volumes for SVG/PNG/WEBP files
-            # Try multiple directories based on Docker volume mapping
+            # Check multiple directories for images
             dirs_to_check = [
                 "/app/route_images/maps",
                 "/app/route_images/profiles",
@@ -2659,66 +2748,132 @@ class ZwiftBot(discord.Client):
                 "/app/data/route_images",
                 "/app/images"
             ]
-            
-            # Log all directories being searched
+
+            # Find all matching images in all directories
+            all_images = []
             for dir_path in dirs_to_check:
-                if os.path.exists(dir_path):
+                if os.path.exists(dir_path) and os.path.isdir(dir_path):
                     logger.info(f"Searching for images in: {dir_path}")
-                    if os.path.isdir(dir_path):
-                        files = os.listdir(dir_path)
-                        logger.info(f"Directory {dir_path} contains {len(files)} files")
-            
-            # First try local SVG for route profile if no GitHub image
-            if not has_github_image:
-                local_path = self.get_local_svg(route_name)
-                if local_path:
-                    logger.info(f"Found local SVG: {local_path}")
-                    image_file, image_source = self.handle_local_image(local_path, embed)
-                    if image_file:
-                        files_to_send.append(image_file)
-                        if image_source:
-                            image_sources.append(image_source)
-            
-            # 3. Try to add ZwiftHacks map (should work in all cases)
-            zwifthacks_map_path = self.get_zwifthacks_map(route_name)
-            if zwifthacks_map_path:
-                logger.info(f"Found ZwiftHacks map: {zwifthacks_map_path}")
-                map_file = self.handle_zwifthacks_map(zwifthacks_map_path)
-                if map_file:
-                    files_to_send.append(map_file)
-                    image_sources.append("ZwiftHacks Map")
                     
-            # 3.5. Try to add ZwiftHub maps as well
+                    # Search all files in this directory
+                    for root, _, files in os.walk(dir_path):
+                        for file in files:
+                            if file.lower().endswith(('.png', '.svg', '.webp')):
+                                file_path = os.path.join(root, file)
+                                
+                                # Use our fuzzy matching functions to identify route-related images
+                                if (route_name.lower() in file.lower() or 
+                                    normalize_route_name(route_name) in normalize_route_name(file)):
+                                    all_images.append(file_path)
+                                    logger.info(f"Found potential image: {file_path}")
+
+            # Get SVG profile images separately using our specialized function
+            local_path = self.get_local_svg(route_name)
+            if local_path and local_path not in all_images:
+                all_images.append(local_path)
+                logger.info(f"Found SVG profile via specialized function: {local_path}")
+
+            # Add ZwiftHacks map explicitly
+            zwifthacks_map_path = self.get_zwifthacks_map(route_name)
+            if zwifthacks_map_path and zwifthacks_map_path not in all_images:
+                all_images.append(zwifthacks_map_path)
+                logger.info(f"Found ZwiftHacks map: {zwifthacks_map_path}")
+
+            # Add ZwiftHub map explicitly
             zwifthub_map_path = self.get_zwifthub_map(route_name)
-            if zwifthub_map_path:
+            if zwifthub_map_path and zwifthub_map_path not in all_images:
+                all_images.append(zwifthub_map_path)
                 logger.info(f"Found ZwiftHub map: {zwifthub_map_path}")
-                hub_map_file = self.handle_zwifthacks_map(zwifthub_map_path)  # Reuse the handler
-                if hub_map_file:
-                    files_to_send.append(hub_map_file)
-                    image_sources.append("ZwiftHub Map")
-            
-            # 4. Fall back to ZwiftInsider image if no other images found
-            if not has_github_image and not files_to_send:
-                stats, zwift_img_url = await fetch_route_info(route_result["URL"])
-                if zwift_img_url:
-                    logger.info(f"Using ZwiftInsider image: {zwift_img_url}")
-                    embed.set_image(url=zwift_img_url)
-                    image_sources.append("ZwiftInsider")
-            
+
+            # Process all found images and add them to files_to_send
+            used_main_embed = False  # Track if we've used the main embed image slot
+            for i, img_path in enumerate(all_images):
+                try:
+                    # For the first image, try to set it as the main embed image
+                    if not used_main_embed:
+                        image_file, image_source = self.handle_local_image(img_path, embed)
+                        if image_file:
+                            files_to_send.append(image_file)
+                            if image_source:
+                                image_sources.append(image_source)
+                            used_main_embed = True
+                            image_count += 1
+                            continue  # Skip to next image
+                    
+                    # For additional images, add them as attachments with unique filenames
+                    file_lower = img_path.lower()
+                    if file_lower.endswith('.svg') or '_svg' in file_lower:
+                        # SVG handling
+                        image_file = discord.File(img_path, filename=f"route_image_{i}.svg")
+                        files_to_send.append(image_file)
+                        image_count += 1
+                        image_sources.append("SVG")
+                    elif file_lower.endswith('.png') or '_png' in file_lower:
+                        # PNG handling
+                        image_file = discord.File(img_path, filename=f"route_image_{i}.png")
+                        files_to_send.append(image_file)
+                        image_count += 1
+                        image_sources.append("PNG")
+                    elif file_lower.endswith('.webp'):
+                        # WEBP handling
+                        image_file = discord.File(img_path, filename=f"route_image_{i}.webp")
+                        files_to_send.append(image_file)
+                        image_count += 1
+                        image_sources.append("WEBP")
+                    else:
+                        # Try to detect by content
+                        with open(img_path, 'rb') as f:
+                            header = f.read(10)
+                            f.seek(0)  # Reset file pointer
+                            if header.startswith(b'<svg') or header.startswith(b'<?xml'):
+                                image_file = discord.File(img_path, filename=f"route_image_{i}.svg")
+                                files_to_send.append(image_file)
+                                image_count += 1
+                                image_sources.append("SVG")
+                            elif header.startswith(b'\x89PNG'):
+                                image_file = discord.File(img_path, filename=f"route_image_{i}.png")
+                                files_to_send.append(image_file)
+                                image_count += 1
+                                image_sources.append("PNG")
+                except Exception as img_err:
+                    logger.error(f"Error processing image {img_path}: {img_err}")
+
+            # 3. Fall back to ZwiftInsider image if no other images have been added
+            if image_count == 0:
+                try:
+                    stats, zwift_img_url = await fetch_route_info(route_result["URL"])
+                    if zwift_img_url:
+                        logger.info(f"Using ZwiftInsider image: {zwift_img_url}")
+                        embed.set_image(url=zwift_img_url)
+                        image_sources.append("ZwiftInsider")
+                        image_count += 1
+                except Exception as img_err:
+                    logger.error(f"Error fetching ZwiftInsider image: {img_err}")
+
+            # Add image count to description
+            if image_count > 0:
+                # Modify description to include image count
+                if embed.description:
+                    embed.description += f"\n\n**{image_count} images found for this route.**"
+                else:
+                    embed.description = f"**{image_count} images found for this route.**"
+
             # Add custom thumbnail
             embed.set_thumbnail(url="https://zwiftinsider.com/wp-content/uploads/2022/12/zwift-logo.png")
-            
+
             # Set footer with image sources if any
             footer_text = "ZwiftGuy"
             if image_sources:
-                sources_text = ", ".join(image_sources)
+                # Make the list of sources unique to avoid duplicates
+                unique_sources = list(dict.fromkeys(image_sources))
+                sources_text = ", ".join(unique_sources)
                 footer_text += f" • Images from: {sources_text}"
             footer_text += " • Use /routestats for detailed route information"
-            
+
             embed.set_footer(text=footer_text)
-            
+
             # Log what's being sent
-            logger.info(f"Sending response with {len(files_to_send)} files")
+            logger.info(f"Sending response with {len(files_to_send)} files out of {image_count} total images")
             if files_to_send:
                 for i, file in enumerate(files_to_send):
                     logger.info(f"File {i+1}: {file.filename}")
