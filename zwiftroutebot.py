@@ -1361,109 +1361,102 @@ class ZwiftBot(discord.Client):
                 route_data['badges'] = badges
                 
 # ==========================================
-                # Improved Segment Extraction Implementation
+                # Complete Rewrite of Segment Extraction Logic
                 # ==========================================
                 # Features:
-                # - Enhanced heading detection for segments
-                # - Better content parsing strategy
-                # - Fixes "Related Posts" issue
-                # - More specific element targeting
-                # - Additional validation of segment content
-                # - Complete try/except error handling
+                # - Uses article content isolation to avoid navigation
+                # - Targets specific content structure of ZwiftInsider
+                # - Multiple fallback strategies with content validation
+                # - Excludes navigation and sidebar content
                 # ==========================================
 
                 try:
+                    # First, try to isolate the main article content to avoid navigation
+                    article_content = soup.find('article') or soup.find('div', class_='entry-content')
+                    
                     # Find segments (sprint and KOM) and Strava segments separately
                     sprint_kom_segments = None
                     strava_segments = None
-
-                    # First, try to find specific segments in a more targeted way
-                    segment_headings = soup.find_all(['h2', 'h3', 'h4'])
-                    for heading in segment_headings:
-                        heading_text = heading.get_text().strip().lower()
+                    
+                    if article_content:
+                        logger.info("Found article content container, searching within it")
                         
-                        # Check for Sprint & KOM/QOM Segments section with more specific patterns
-                        if ('sprint' in heading_text and ('kom' in heading_text or 'qom' in heading_text or 'kqom' in heading_text)) or \
-                           ('sprint' in heading_text and 'segment' in heading_text) or \
-                           ('segment' in heading_text and ('kom' in heading_text or 'qom' in heading_text)):
+                        # Look for segments section within article content only
+                        segment_headings = article_content.find_all(['h2', 'h3', 'h4'])
+                        for heading in segment_headings:
+                            heading_text = heading.get_text().strip().lower()
                             
-                            logger.info(f"Found segment heading: {heading.get_text()}")
-                            
-                            # Look at the next elements until we find something that looks like segment data
-                            segment_text = ""
-                            current = heading.next_sibling
-                            
-                            # Examine the next 5 elements after the heading
-                            for _ in range(5):
-                                if not current:
+                            # Only process headings that look like segment headers
+                            if ('sprint' in heading_text and ('kom' in heading_text or 'qom' in heading_text)) or \
+                               ('segment' in heading_text and any(x in heading_text for x in ['sprint', 'kom', 'qom'])):
+                                
+                                logger.info(f"Found segment heading in article: {heading.get_text()}")
+                                
+                                # Find the next paragraph or list after this heading
+                                next_content = None
+                                current = heading.next_sibling
+                                
+                                # Look through next elements until we find content
+                                while current and not next_content:
+                                    if isinstance(current, str) and current.strip():
+                                        next_content = current.strip()
+                                    elif hasattr(current, 'name'):
+                                        if current.name in ['p', 'ul', 'ol']:
+                                            next_content = current.get_text().strip()
+                                    current = current.next_sibling
+                                
+                                if next_content and any(x in next_content.lower() for x in ['km', 'miles', 'sprint', 'kom', '%']):
+                                    sprint_kom_segments = next_content
                                     break
-                                    
-                                # If it's a string, check if it contains useful information
-                                if isinstance(current, str):
-                                    if len(current.strip()) > 10 and any(x in current.lower() for x in ['sprint', 'kom', 'qom', 'km', '%']):
-                                        segment_text += current.strip() + "\n"
-                                
-                                # If it's a tag, extract text if it looks like segment data
-                                elif hasattr(current, 'name') and current.name in ['p', 'ul', 'ol', 'div', 'li']:
-                                    content = current.get_text().strip()
-                                    
-                                    # Skip if it's a heading or clearly not segment data
-                                    if content.lower().startswith(('related', 'strava', 'comment', 'leave a')):
-                                        logger.info(f"Skipping non-segment content: {content[:40]}...")
-                                        current = current.next_sibling
-                                        continue
-                                    
-                                    # Look for segment patterns (distance and grade)
-                                    if ('km' in content.lower() or 'm)' in content.lower()) and '%' in content:
-                                        segment_text += content + "\n"
-                                    # Also accept lists of segments
-                                    elif any(segment in content.lower() for segment in ['sprint', 'kom', 'climb', 'qom']) and len(content) < 200:
-                                        segment_text += content + "\n"
-                                
-                                current = current.next_sibling
-                            
-                            # Validate that we found actual segment data and not just headings
-                            if segment_text and any(x in segment_text.lower() for x in ['km', '%', 'sprint', 'kom']):
-                                sprint_kom_segments = segment_text.strip()
-                                logger.info(f"Extracted segment data: {sprint_kom_segments[:100]}...")
-                                break
+                        
+                        # If no segments found yet, try looking for specific patterns in all paragraphs
+                        if not sprint_kom_segments:
+                            # Look for paragraphs that contain both sprint/KOM terms and measurements
+                            for p in article_content.find_all(['p']):
+                                text = p.get_text().strip()
+                                # Must contain a segment name AND distance/grade info to be valid
+                                if (('sprint' in text.lower() or 'kom' in text.lower() or 'qom' in text.lower()) and 
+                                    ('km' in text.lower() or 'm)' in text.lower()) and 
+                                    ('%' in text or 'grade' in text.lower())):
+                                    sprint_kom_segments = text
+                                    logger.info(f"Found segment data in paragraph: {text[:50]}...")
+                                    break
+                        
+                        # Look for Strava segments
+                        for heading in article_content.find_all(['h2', 'h3', 'h4']):
+                            if 'strava' in heading.get_text().lower() and 'segment' in heading.get_text().lower():
+                                # Get the next paragraph or list
+                                next_el = heading.find_next(['p', 'ul', 'ol'])
+                                if next_el:
+                                    strava_segments = next_el.get_text().strip()
+                                    logger.info(f"Found Strava segments: {strava_segments[:50]}...")
                     
-                    # If we didn't find segments using the targeted approach, try a broader approach
+                    # If we still don't have segments, try a more aggressive approach
                     if not sprint_kom_segments:
-                        # Look for paragraphs that contain segment information
-                        for p in soup.find_all(['p', 'div']):
-                            content = p.get_text().strip()
-                            if 'sprint' in content.lower() and ('km' in content.lower() or 'm)' in content.lower()) and '%' in content:
-                                # This likely contains sprint info
-                                if not sprint_kom_segments:
-                                    sprint_kom_segments = content
-                                else:
-                                    sprint_kom_segments += "\n" + content
+                        logger.info("Trying aggressive segment search...")
+                        
+                        # Look for any list items that contain segment-like information
+                        segment_items = []
+                        for li in soup.find_all('li'):
+                            text = li.get_text().strip()
+                            # Check for segment patterns - must have segment name AND measurements
+                            if ((('sprint' in text.lower() or 'kom' in text.lower() or 'qom' in text.lower()) and
+                                ('km' in text.lower() or 'm)' in text.lower())) and
+                                # Must NOT contain navigation terms
+                                not any(x in text.lower() for x in ['get started', 'account', 'how to', 'login'])):
+                                segment_items.append(text)
+                                
+                        if segment_items:
+                            sprint_kom_segments = "\n".join(segment_items)
+                            logger.info(f"Found {len(segment_items)} segment items from list elements")
                     
-                    # If we still don't have segments, try one last approach
-                    if not sprint_kom_segments:
-                        # Try lists which might contain segment data
-                        for ul in soup.find_all('ul'):
-                            list_items = ul.find_all('li')
-                            segment_items = []
-                            
-                            for li in list_items:
-                                item_text = li.get_text().strip()
-                                # Check if it looks like a segment
-                                if ('sprint' in item_text.lower() or 'kom' in item_text.lower() or 'qom' in item_text.lower()) and \
-                                   (('km' in item_text.lower() or 'm)' in item_text.lower()) and '%' in item_text):
-                                    segment_items.append(item_text)
-                            
-                            if segment_items:
-                                sprint_kom_segments = "\n".join(segment_items)
-                                break
-                    
-                    # Look for Strava segments separately
-                    for heading in soup.find_all(['h2', 'h3', 'h4']):
-                        if 'strava' in heading.get_text().lower() and 'segment' in heading.get_text().lower():
-                            next_el = heading.find_next(['p', 'ul', 'div'])
-                            if next_el:
-                                strava_segments = next_el.get_text().strip()
+                    # Validate that what we found doesn't look like navigation
+                    if sprint_kom_segments:
+                        navigation_terms = ['get started', 'zwift account', 'how to get started', 
+                                           'course maps', 'calendar', 'exhaustive', 'tiny races']
+                        if any(term in sprint_kom_segments.lower() for term in navigation_terms):
+                            logger.warning("Segment data appears to contain navigation elements - discarding")
+                            sprint_kom_segments = None
                     
                     # Add segments to route data
                     if sprint_kom_segments:
@@ -1473,12 +1466,14 @@ class ZwiftBot(discord.Client):
                             route_data['segments'] = sprint_kom_segments
                         
                     if strava_segments:
-                        route_data['strava_segments'] = strava_segments
-                        # Append to 'segments' field if it exists, otherwise create it
-                        if 'segments' in route_data:
-                            route_data['segments'] += "\n\nStrava Segments:\n" + strava_segments
-                        else:
-                            route_data['segments'] = "Strava Segments:\n" + strava_segments
+                        # Validate Strava segments too
+                        if not any(term in strava_segments.lower() for term in navigation_terms):
+                            route_data['strava_segments'] = strava_segments
+                            # Append to 'segments' field if it exists, otherwise create it
+                            if 'segments' in route_data:
+                                route_data['segments'] += "\n\nStrava Segments:\n" + strava_segments
+                            else:
+                                route_data['segments'] = "Strava Segments:\n" + strava_segments
                 
                 except Exception as e:
                     logger.error(f"Error extracting segments for {route_name}: {e}")
