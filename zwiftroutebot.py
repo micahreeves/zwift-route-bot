@@ -2704,15 +2704,13 @@ class ZwiftBot(discord.Client):
             
 
 # ==========================================
-            # Enhanced Image Collection for Route Stats
+            # Enhanced Image Collection with Strict Priority and Complete Attachments
             # ==========================================
             # Features:
-            # - Displays ALL available images for a route
-            # - Sets embed image according to priority: ZwiftHacks > Cyccal > ZwiftHub
-            # - Searches all directories for route images
-            # - Includes profile images, maps, and any other found images
-            # - Adds all images as attachments alongside the primary embed
-            # - Reports the total number of images found to the user
+            # - Checks directories in EXPLICIT priority order for embed image
+            # - Ensures ALL images are added as attachments regardless of which was used for embed
+            # - Prevents duplicate images in the response
+            # - Reports accurate count of images found and sent
             # ==========================================
             
             # Setup for file attachments
@@ -2720,72 +2718,67 @@ class ZwiftBot(discord.Client):
             image_sources = []
             image_count = 0
             main_image_set = False
+            already_added_paths = set()  # Track which files we've already added
 
-            # First collect all potential image sources
+            # STRICT PRIORITY SEARCH
+            # Define priority order of directories
+            priority_dirs = [
+                "/app/route_images/profiles",  # Highest priority
+                "/app/route_images/maps",      # Medium priority 
+                "/app/route_images",           # Lower priority
+                "/app/data/route_images",      # Even lower
+                "/app/images"                  # Lowest priority
+            ]
+            
+            # First get Cyccal URL (separate from directory search)
             cyccal_url = route_result.get("ImageURL") if route_result.get("ImageURL") and 'github' in route_result.get("ImageURL", "").lower() else None
             
-            # Get ZwiftHacks profile image using specialized function
-            zwifthacks_path = self.get_local_svg(route_name)
-            logger.info(f"ZwiftHacks path from get_local_svg: {zwifthacks_path}")
+            # Find ALL route images in ALL directories - collect them based on priority
+            profile_images = []  # Highest priority (for embed)
+            map_images = []      # Medium priority
+            other_images = []    # Lowest priority
             
-            # Get ZwiftHub map image using specialized function
-            zwifthub_path = self.get_zwifthub_map(route_name)
-            logger.info(f"ZwiftHub path from get_zwifthub_map: {zwifthub_path}")
-            
-            # Search all volumes for route-related images
-            dirs_to_check = [
-                "/app/route_images/maps",
-                "/app/route_images/profiles",
-                "/app/route_images",
-                "/app/data/route_images",
-                "/app/images"
-            ]
-
-            # Find all matching images in all directories
-            all_images = []
-            for dir_path in dirs_to_check:
+            # Search each directory in priority order
+            for dir_path in priority_dirs:
                 if os.path.exists(dir_path) and os.path.isdir(dir_path):
-                    logger.info(f"Searching for images in: {dir_path}")
+                    logger.info(f"Searching in priority directory: {dir_path}")
                     
                     # Search all files in this directory
-                    for root, _, files in os.walk(dir_path):
-                        for file in files:
-                            if file.lower().endswith(('.png', '.svg', '.webp')):
-                                file_path = os.path.join(root, file)
+                    for file in os.listdir(dir_path):
+                        file_lower = file.lower()
+                        if file_lower.endswith(('.png', '.svg', '.webp')):
+                            # Check if this file matches our route
+                            if (route_name.lower() in file_lower or 
+                                normalize_route_name(route_name) in normalize_route_name(file)):
                                 
-                                # Use our fuzzy matching functions to identify route-related images
-                                if (route_name.lower() in file.lower() or 
-                                    normalize_route_name(route_name) in normalize_route_name(file)):
-                                    # Avoid adding duplicates
-                                    if file_path not in all_images:
-                                        all_images.append(file_path)
-                                        logger.info(f"Found potential image: {file_path}")
-
-            # Add specialized paths if they weren't already found
-            if zwifthacks_path and zwifthacks_path not in all_images:
-                all_images.append(zwifthacks_path)
-                logger.info(f"Added ZwiftHacks profile: {zwifthacks_path}")
-                
-            if zwifthub_path and zwifthub_path not in all_images:
-                all_images.append(zwifthub_path)
-                logger.info(f"Added ZwiftHub map: {zwifthub_path}")
+                                file_path = os.path.join(dir_path, file)
+                                
+                                # Categorize by directory
+                                if 'profiles' in dir_path.lower():
+                                    profile_images.append(file_path)
+                                    logger.info(f"Found PROFILE image: {file_path}")
+                                elif 'maps' in dir_path.lower():
+                                    map_images.append(file_path)
+                                    logger.info(f"Found MAP image: {file_path}")
+                                else:
+                                    other_images.append(file_path)
+                                    logger.info(f"Found OTHER image: {file_path}")
             
-            # Set the main embed image according to priority order
-            # 1. ZwiftHacks profile (priority highest)
-            if zwifthacks_path and not main_image_set:
-                logger.info(f"Setting ZwiftHacks as primary embed image: {zwifthacks_path}")
-                profile_file, image_source = self.handle_local_image(zwifthacks_path, embed)
+            # 1. FIRST SET THE EMBED IMAGE USING PRIORITY ORDER
+            
+            # Try profile images (highest priority)
+            if profile_images and not main_image_set:
+                profile_path = profile_images[0]  # Use the first profile image
+                logger.info(f"Setting PROFILE as primary embed image: {profile_path}")
+                profile_file, image_source = self.handle_local_image(profile_path, embed)
                 if profile_file:
                     files_to_send.append(profile_file)
-                    image_sources.append(image_source or "ZwiftHacks")
+                    image_sources.append("Profile")
                     main_image_set = True
                     image_count += 1
-                    
-                    # Remove from all_images to avoid adding it twice
-                    if zwifthacks_path in all_images:
-                        all_images.remove(zwifthacks_path)
+                    already_added_paths.add(profile_path)
             
-            # 2. Cyccal GitHub (priority second)
+            # Try Cyccal GitHub (second priority)
             if cyccal_url and not main_image_set:
                 logger.info(f"Setting Cyccal as primary embed image: {cyccal_url}")
                 embed.set_image(url=cyccal_url)
@@ -2793,81 +2786,86 @@ class ZwiftBot(discord.Client):
                 main_image_set = True
                 image_count += 1
             
+            # Try map images (third priority)
+            if map_images and not main_image_set:
+                map_path = map_images[0]  # Use the first map image
+                logger.info(f"Setting MAP as primary embed image: {map_path}")
+                map_file, image_source = self.handle_local_image(map_path, embed)
+                if map_file:
+                    files_to_send.append(map_file)
+                    image_sources.append("Map")
+                    main_image_set = True
+                    image_count += 1
+                    already_added_paths.add(map_path)
+            
             # Always add Cyccal link if it exists
             if cyccal_url:
-                cyccal_url = f"https://cyccal.com/{route_name.lower().replace(' ', '-')}/"
+                cyccal_web_url = f"https://cyccal.com/{route_name.lower().replace(' ', '-')}/"
                 embed.add_field(
                     name="Additional Resources",
-                    value=f"[View on Cyccal]({cyccal_url})",
+                    value=f"[View on Cyccal]({cyccal_web_url})",
                     inline=False
                 )
             
-            # 3. ZwiftHub map (priority third)
-            if zwifthub_path and not main_image_set:
-                logger.info(f"Setting ZwiftHub as primary embed image: {zwifthub_path}")
-                try:
-                    if zwifthub_path.lower().endswith('.svg'):
-                        map_file = discord.File(zwifthub_path, filename="route.svg")
-                        embed.set_image(url="attachment://route.svg")
-                    else:
-                        map_file = discord.File(zwifthub_path, filename="route.png")
-                        embed.set_image(url="attachment://route.png")
-                    files_to_send.append(map_file)
-                    image_sources.append("ZwiftHub")
-                    main_image_set = True
-                    image_count += 1
-                    
-                    # Remove from all_images to avoid adding it twice
-                    if zwifthub_path in all_images:
-                        all_images.remove(zwifthub_path)
-                except Exception as img_err:
-                    logger.error(f"Error setting ZwiftHub as primary image: {img_err}")
+            # 2. NOW ADD *ALL* REMAINING IMAGES AS ATTACHMENTS (regardless of which was used for embed)
             
-            # Process all other found images and add them as attachments
-            for i, img_path in enumerate(all_images):
-                try:
-                    # Skip if this image was already used as the main embed image
-                    if main_image_set and (img_path == zwifthacks_path or img_path == zwifthub_path):
-                        continue
-                        
-                    # Add as attachment with unique filename
-                    file_lower = img_path.lower()
-                    if file_lower.endswith('.svg') or '_svg' in file_lower:
-                        # SVG handling
-                        image_file = discord.File(img_path, filename=f"route_image_{i}.svg")
-                        files_to_send.append(image_file)
+            # Add all profile images that weren't used for embed
+            for i, img_path in enumerate(profile_images):
+                if img_path not in already_added_paths:
+                    try:
+                        file_lower = img_path.lower()
+                        if file_lower.endswith('.svg'):
+                            img_file = discord.File(img_path, filename=f"profile_{i}.svg")
+                        else:
+                            img_file = discord.File(img_path, filename=f"profile_{i}.png")
+                            
+                        files_to_send.append(img_file)
                         image_count += 1
-                        image_sources.append("SVG")
-                    elif file_lower.endswith('.png') or '_png' in file_lower:
-                        # PNG handling
-                        image_file = discord.File(img_path, filename=f"route_image_{i}.png")
-                        files_to_send.append(image_file)
+                        if "Profile" not in image_sources:
+                            image_sources.append("Profile")
+                        already_added_paths.add(img_path)
+                        logger.info(f"Added additional PROFILE image: {img_path}")
+                    except Exception as e:
+                        logger.error(f"Error adding profile image: {e}")
+            
+            # Add all map images that weren't used for embed
+            for i, img_path in enumerate(map_images):
+                if img_path not in already_added_paths:
+                    try:
+                        file_lower = img_path.lower()
+                        if file_lower.endswith('.svg'):
+                            img_file = discord.File(img_path, filename=f"map_{i}.svg")
+                        else:
+                            img_file = discord.File(img_path, filename=f"map_{i}.png")
+                            
+                        files_to_send.append(img_file)
                         image_count += 1
-                        image_sources.append("PNG")
-                    elif file_lower.endswith('.webp'):
-                        # WEBP handling
-                        image_file = discord.File(img_path, filename=f"route_image_{i}.webp")
-                        files_to_send.append(image_file)
+                        if "Map" not in image_sources:
+                            image_sources.append("Map")
+                        already_added_paths.add(img_path)
+                        logger.info(f"Added additional MAP image: {img_path}")
+                    except Exception as e:
+                        logger.error(f"Error adding map image: {e}")
+            
+            # Add all other images that weren't used for embed
+            for i, img_path in enumerate(other_images):
+                if img_path not in already_added_paths:
+                    try:
+                        file_lower = img_path.lower()
+                        if file_lower.endswith('.svg'):
+                            img_file = discord.File(img_path, filename=f"other_{i}.svg")
+                        else:
+                            img_file = discord.File(img_path, filename=f"other_{i}.png")
+                            
+                        files_to_send.append(img_file)
                         image_count += 1
-                        image_sources.append("WEBP")
-                    else:
-                        # Try to detect by content
-                        with open(img_path, 'rb') as f:
-                            header = f.read(10)
-                            f.seek(0)  # Reset file pointer
-                            if header.startswith(b'<svg') or header.startswith(b'<?xml'):
-                                image_file = discord.File(img_path, filename=f"route_image_{i}.svg")
-                                files_to_send.append(image_file)
-                                image_count += 1
-                                image_sources.append("SVG")
-                            elif header.startswith(b'\x89PNG'):
-                                image_file = discord.File(img_path, filename=f"route_image_{i}.png")
-                                files_to_send.append(image_file)
-                                image_count += 1
-                                image_sources.append("PNG")
-                except Exception as img_err:
-                    logger.error(f"Error processing image {img_path}: {img_err}")
-
+                        if "Other" not in image_sources:
+                            image_sources.append("Other")
+                        already_added_paths.add(img_path)
+                        logger.info(f"Added additional OTHER image: {img_path}")
+                    except Exception as e:
+                        logger.error(f"Error adding other image: {e}")
+            
             # Fall back to ZwiftInsider image if no other images have been added
             if not main_image_set:
                 try:
