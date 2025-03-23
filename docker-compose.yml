@@ -20,6 +20,8 @@ services:
         ls -la /app/route_images/profiles &&
         echo 'Maps directory:' &&
         ls -la /app/route_images/maps &&
+        echo 'Inclines directory:' &&
+        ls -la /app/route_images/inclines &&
         echo 'Setting up data directory for cache:' &&
         mkdir -p /app/data &&
         echo 'Data directory contents:' &&
