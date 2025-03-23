@@ -1084,13 +1084,15 @@ class ZwiftBot(discord.Client):
     # - Adds a "Share to Channel" button to ephemeral messages
     # - Uses standard Unicode emoji (compatible with all servers)
     # - Stores file data to allow sharing of attachments
+    # - Handles expired interaction tokens with fallback methods
     # - Customizes the share message based on command type
-    # - Includes robust error handling
+    # - Adds attribution in the footer of shared content
+    # - Includes comprehensive error handling for all scenarios
     # ==========================================
     
     class ShareButtonView(discord.ui.View):
         def __init__(self, embed, files=None, command_type="route"):
-            super().__init__(timeout=300)  # 5 minute timeout
+            super().__init__(timeout=300)  # 5 minute timeout (Discord interaction tokens expire after ~15 minutes)
             self.embed = embed
             self.files = files if files else []
             self.command_type = command_type
@@ -1102,52 +1104,100 @@ class ZwiftBot(discord.Client):
                 if hasattr(file, 'fp') and file.fp:
                     file.fp.seek(0)
                     self.file_data.append((file.filename, file.fp.read()))
-            
         
 # ==========================================
-        # Share Button Method with Improved Response Handling
+        # Share Button Method with Robust Error Handling
         # ==========================================
         # Features:
-        # - Uses interaction.response for better permission handling
-        # - Avoids "already responded to" errors
-        # - Customizes share message based on command type
-        # - Adds attribution in the footer of shared content
+        # - Uses interaction.response for primary response
+        # - Falls back to channel.send if interaction expired
+        # - Handles 404/10062 errors that occur with expired tokens
+        # - Disables buttons after successful fallback sharing
+        # - Provides informative error messages to users
+        # - Robust error logging for troubleshooting
         # ==========================================
         @discord.ui.button(label="Share to Channel", style=discord.ButtonStyle.primary)
         async def share_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-            """Share the current result to the channel"""
-            # Create a new set of files from the stored data
-            new_files = []
-            for filename, data in self.file_data:
-                new_file = discord.File(io.BytesIO(data), filename=filename)
-                new_files.append(new_file)
-            
-            # Clone the embed
-            new_embed = discord.Embed.from_dict(self.embed.to_dict())
-            
-            # Add footer to indicate who shared it
-            existing_footer = new_embed.footer.text if new_embed.footer else ""
-            new_embed.set_footer(text=f"Shared by {interaction.user.display_name} • {existing_footer}")
-            
-            # Create share message based on command type
-            share_messages = {
-                "findroute": "shared route search results",
-                "random": "shared a random Zwift route",
-                "stats": "shared Zwift route statistics",
-                "worldroutes": "shared routes from a Zwift world",
-                "routestats": "shared detailed route information"
-            }
-            share_message = share_messages.get(self.command_type, "shared Zwift information")
-            
+            """Share the current result to the channel with improved error handling"""
             try:
-                # Send to channel using the original interaction with ephemeral=False
-                await interaction.response.send_message(
-                    content=f"{interaction.user.mention} {share_message}:",
-                    embed=new_embed,
-                    files=new_files if new_files else None,
-                    ephemeral=False  # Make this visible to everyone
-                )
+                # Create a new set of files from the stored data
+                new_files = []
+                for filename, data in self.file_data:
+                    new_file = discord.File(io.BytesIO(data), filename=filename)
+                    new_files.append(new_file)
                 
+                # Clone the embed
+                new_embed = discord.Embed.from_dict(self.embed.to_dict())
+                
+                # Add footer to indicate who shared it
+                existing_footer = new_embed.footer.text if new_embed.footer else ""
+                new_embed.set_footer(text=f"Shared by {interaction.user.display_name} • {existing_footer}")
+                
+                # Create share message based on command type
+                share_messages = {
+                    "findroute": "shared route search results",
+                    "random": "shared a random Zwift route",
+                    "stats": "shared Zwift route statistics",
+                    "worldroutes": "shared routes from a Zwift world",
+                    "routestats": "shared detailed route information"
+                }
+                share_message = share_messages.get(self.command_type, "shared Zwift information")
+                
+                # Try sending with response first (for fresh interactions)
+                try:
+                    await interaction.response.send_message(
+                        content=f"{interaction.user.mention} {share_message}:",
+                        embed=new_embed,
+                        files=new_files if new_files else None,
+                        ephemeral=False  # Make this visible to everyone
+                    )
+                    return  # If successful, we're done
+                except discord.errors.NotFound as e:
+                    # If interaction expired (404 error), we'll try a different approach
+                    if "404" in str(e) or "10062" in str(e):
+                        logger.info("Interaction expired, trying alternate approach for sharing")
+                        # Continue to alternate method below
+                    else:
+                        # Re-raise if it's a different NotFound error
+                        raise
+                
+                # Alternate method: Use the channel directly
+                # This is a fallback if the interaction has expired
+                try:
+                    # We need the channel where this interaction took place
+                    channel = interaction.channel
+                    if channel:
+                        # Create new files again (since the previous attempt may have consumed them)
+                        channel_files = []
+                        for filename, data in self.file_data:
+                            channel_file = discord.File(io.BytesIO(data), filename=filename)
+                            channel_files.append(channel_file)
+                        
+                        await channel.send(
+                            content=f"{interaction.user.mention} {share_message}:",
+                            embed=new_embed,
+                            files=channel_files if channel_files else None
+                        )
+                        
+                        # Disable all buttons since we've handled this share
+                        for child in self.children:
+                            if isinstance(child, discord.ui.Button):
+                                child.disabled = True
+                        
+                        # Try to update the original message to show buttons as disabled
+                        try:
+                            await interaction.message.edit(view=self)
+                        except:
+                            pass
+                            
+                    else:
+                        logger.error("Could not determine channel for fallback sharing")
+                        raise ValueError("Channel not available")
+                        
+                except Exception as channel_err:
+                    logger.error(f"Error in fallback channel sharing: {channel_err}")
+                    raise
+                    
             except Exception as e:
                 # Log the error
                 logger.error(f"Error sharing to channel: {e}")
@@ -1156,13 +1206,22 @@ class ZwiftBot(discord.Client):
                 
                 # Try to inform the user
                 try:
-                    await interaction.response.send_message(
-                        "Error sharing to channel. I might not have permission to post in this channel.", 
-                        ephemeral=True
-                    )
+                    # We'll try both methods of responding, based on whether the interaction is still valid
+                    try:
+                        await interaction.response.send_message(
+                            "Error sharing to channel. The button may have expired or you might not have permission to post in this channel.",
+                            ephemeral=True
+                        )
+                    except:
+                        # If the above fails, the original message might still be available
+                        if hasattr(interaction, 'message') and interaction.message:
+                            await interaction.message.reply(
+                                "Error sharing to channel. The share button has expired. Please use the command again for a fresh response."
+                            )
                 except:
+                    # At this point, we've tried everything reasonable
                     pass
-
+                    
  # ==========================================
     # Helper Function for Sending Ephemeral Responses
     # ==========================================
@@ -1820,7 +1879,6 @@ class ZwiftBot(discord.Client):
                                      
                                      
     
-
 # ==========================================
 # Route Command
 # ==========================================
@@ -1832,6 +1890,7 @@ class ZwiftBot(discord.Client):
 # - Prioritizes image sources: ZwiftHacks (profiles) → Cyccal → ZwiftHub (maps)
 # - Shows similar routes as alternatives if available
 # - Provides proper error handling and loading animations
+# - Handles expired interactions gracefully
 # ==========================================
 
     async def route(self, interaction: discord.Interaction, name: str):
@@ -1842,13 +1901,25 @@ class ZwiftBot(discord.Client):
         try:
             logger.info(f"Route command started for: {name}")
             
+            # IMMEDIATE DEFER - do this first before any other processing
+            # This prevents the 3-second timeout from causing problems
+            try:
+                await interaction.response.defer(thinking=True)
+                logger.info("Interaction deferred")
+            except discord.errors.NotFound:
+                logger.error("Could not defer interaction - it may have expired")
+                return  # Exit early if we can't defer
+            except Exception as defer_error:
+                logger.error(f"Error deferring interaction: {defer_error}")
+                # Continue anyway, but later response attempts might fail
+            
             # Check rate limits
             try:
                 await self.check_rate_limit(interaction.user.id)
             except HTTPException as e:
                 logger.warning(f"Rate limit hit: {e}")
-                if not interaction.response.is_done():
-                    await interaction.response.send_message(
+                try:
+                    await interaction.followup.send(
                         embed=discord.Embed(
                             title="⏳ Rate Limited",
                             description=str(e),
@@ -1856,15 +1927,13 @@ class ZwiftBot(discord.Client):
                         ),
                         ephemeral=True
                     )
+                except Exception as followup_error:
+                    logger.error(f"Error sending rate limit message: {followup_error}")
                 return
 
-            # Find route and defer response
+            # Find route
             result, alternatives = find_route(name)
             logger.info(f"Route search result: {result['Route'] if result else 'Not found'}")
-            
-            if not interaction.response.is_done():
-                await interaction.response.defer(thinking=True)
-                logger.info("Interaction deferred")
             
             # Show loading animation
             loading_message = None
@@ -2064,7 +2133,10 @@ class ZwiftBot(discord.Client):
                 logger.error(f"Discord HTTP error when sending embed: {e}")
                 # Try without images as fallback
                 embed.set_image(url=None)
-                await interaction.followup.send(embed=embed)
+                try:
+                    await interaction.followup.send(embed=embed)
+                except Exception as followup_err:
+                    logger.error(f"Error in followup after HTTP error: {followup_err}")
                 
                 # Try to delete loading message even if main response failed
                 if loading_message:
@@ -2078,7 +2150,18 @@ class ZwiftBot(discord.Client):
             import traceback
             logger.error(traceback.format_exc())
             try:
-                if not interaction.response.is_done():
+                # Only try to send an error message if we haven't already responded
+                if interaction.response.is_done():
+                    await interaction.followup.send(
+                        embed=discord.Embed(
+                            title="❌ Error",
+                            description="An error occurred while processing your request.",
+                            color=discord.Color.red()
+                        ),
+                        ephemeral=True
+                    )
+                else:
+                    # Try to respond if we haven't already
                     await interaction.response.send_message(
                         embed=discord.Embed(
                             title="❌ Error",
@@ -2089,7 +2172,6 @@ class ZwiftBot(discord.Client):
                     )
             except Exception as err:
                 logger.error(f"Failed to send error message: {err}")
-
 
 
     # ==========================================
@@ -2373,6 +2455,18 @@ class ZwiftBot(discord.Client):
         """Get a random Zwift route with optional filters (Ephemeral with share button)"""
         if not interaction.user:
             return
+            
+        try:
+            await interaction.response.defer(thinking=True, ephemeral=True)
+            logger.info("Interaction deferred")
+        except discord.errors.NotFound:
+            logger.error("Could not defer interaction - it may have expired")
+            return  # Exit early if we can't defer
+        except Exception as defer_error:
+            logger.error(f"Error deferring interaction: {defer_error}")
+    
+        loading_message = await bike_loading_animation(interaction)
+        
             
         await interaction.response.defer(thinking=True, ephemeral=True)
         loading_message = await bike_loading_animation(interaction)
@@ -2673,6 +2767,17 @@ class ZwiftBot(discord.Client):
         if not interaction.user:
             return
             
+        try:
+            await interaction.response.defer(thinking=True, ephemeral=True)
+            logger.info("Interaction deferred")
+        except discord.errors.NotFound:
+            logger.error("Could not defer interaction - it may have expired")
+            return  # Exit early if we can't defer
+        except Exception as defer_error:
+            logger.error(f"Error deferring interaction: {defer_error}")
+    
+        loading_message = await bike_loading_animation(interaction)
+            
         # Defer response and show animation
         await interaction.response.defer(thinking=True, ephemeral=True)
         loading_message = await bike_loading_animation(interaction)
@@ -2857,6 +2962,17 @@ class ZwiftBot(discord.Client):
         """Display detailed statistics for a specific Zwift route with sharing option"""
         if not interaction.user:
             return
+            
+        try:
+            await interaction.response.defer(thinking=True, ephemeral=True)
+            logger.info("Interaction deferred")
+        except discord.errors.NotFound:
+            logger.error("Could not defer interaction - it may have expired")
+            return  # Exit early if we can't defer
+        except Exception as defer_error:
+            logger.error(f"Error deferring interaction: {defer_error}")
+    
+        loading_message = await bike_loading_animation(interaction)
             
         await interaction.response.defer(thinking=True, ephemeral=True)
         loading_message = await bike_loading_animation(interaction)
