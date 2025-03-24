@@ -9,6 +9,10 @@ RUN apt-get update && \
     gcc \
     python3-dev \
     && rm -rf /var/lib/apt/lists/*
+    
+# Create data directory and set proper permissions
+RUN mkdir -p /app/data && \
+    chmod -R 777 /app/data
 
 # Copy requirements first to leverage Docker cache
 COPY requirements.txt .
