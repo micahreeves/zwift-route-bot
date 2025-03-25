@@ -55,43 +55,37 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 
-# Load routes data
-try:
-    pass  # Add your code here
-except Exception as e:
-    logger.error(f"Error processing route details: {e}")
-    # Add your code here
-    pass  # Add your code here
-except Exception as e:
-    logger.error(f"Error processing route details: {e}")
-    # Add your code here
-    pass
-except Exception as e:
-    logger.error(f"Error in get_world_for_route: {e}")
-    with open("zwift_routes.json", "r", encoding='utf-8') as file:
-        zwift_routes = json.load(file)
-    logger.info(f"Loaded {len(zwift_routes)} routes")
-except Exception as e:
-    logger.error(f"Error loading routes file: {e}")
-    zwift_routes = []
+# Global variables
+zwift_routes = []
+zwift_koms = []
+zwift_sprints = []
 
-# Load KOMs data
-try:
-    with open("zwift_koms.json", "r", encoding='utf-8') as file:
-        zwift_koms = json.load(file)
-    logger.info(f"Loaded {len(zwift_koms)} KOMs")
-except Exception as e:
-    logger.error(f"Error loading KOMs file: {e}")
-    zwift_koms = []
+# Function to load JSON data
+def load_json_file(file_path, default_value=None):
+    """Load JSON data from a file with error handling"""
+    if default_value is None:
+        default_value = []
+    
+    try:
+        with open(file_path, "r", encoding='utf-8') as file:
+            data = json.load(file)
+        logger.info(f"Successfully loaded {file_path} with {len(data)} items")
+        return data
+    except FileNotFoundError:
+        logger.error(f"File not found: {file_path}")
+        return default_value
+    except json.JSONDecodeError:
+        logger.error(f"Invalid JSON in file: {file_path}")
+        return default_value
+    except Exception as e:
+        logger.error(f"Error loading {file_path}: {e}")
+        return default_value
 
-# Load sprints data
-try:
-    with open("zwift_sprint_segments.json", "r", encoding='utf-8') as file:
-        zwift_sprints = json.load(file)
-    logger.info(f"Loaded {len(zwift_sprints)} sprints")
-except Exception as e:
-    logger.error(f"Error loading sprints file: {e}")
-    zwift_sprints = []
+# Load all data files
+zwift_routes = load_json_file("zwift_routes.json")
+zwift_koms = load_json_file("zwift_koms.json")
+zwift_sprints = load_json_file("zwift_sprint_segments.json")
+
 # ==========================================
 # Core Utility Functions
 # ==========================================
@@ -295,6 +289,7 @@ def find_kom(search_term):
         tuple: (matched_kom, alternative_koms)
     """
     global zwift_koms
+    
     if not search_term or not zwift_koms:
         return None, []
     
