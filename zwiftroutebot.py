@@ -1054,6 +1054,31 @@ class RouteCache:
             import traceback
             logger.error(traceback.format_exc())
             return None
+    async def periodic_update(self, bot_instance):
+        try:
+            while True:
+            # Wait for update interval (once per day)
+                await asyncio.sleep(24 * 60 * 60)  # 24 hours
+            
+                logger.info("Starting periodic cache update...")
+                try:
+                # Refresh the cache
+                    updated_cache = await self.cache_route_details()
+                
+                # Update the bot's cached data
+                    if updated_cache:
+                        bot_instance.route_cache_data = updated_cache
+                        logger.info(f"Successfully updated route cache with {len(updated_cache)} routes")
+                except Exception as e:
+                    logger.error(f"Error during periodic cache update: {e}")
+                    import traceback
+                    logger.error(traceback.format_exc())
+        except asyncio.CancelledError:
+            logger.info("Periodic update task cancelled")
+        except Exception as e:
+            logger.error(f"Unexpected error in periodic update task: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
 
 
 # ==========================================
