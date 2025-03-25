@@ -1371,7 +1371,7 @@ class ZwiftBot(discord.Client):
                 route_world = get_world_for_route(result['Route'])
             
                 # Create view with quick reply buttons
-                view = RouteResponseButtonsWithImages(result['Route'], route_world, self)
+                view = RouteResponseButtons(result['Route'], route_world, self)
             
                 # If we have a file to attach, send it with the embed
                 if os.path.exists(profile_image_path):
@@ -1933,7 +1933,7 @@ class ZwiftBot(discord.Client):
             profile_image_path = f"route_images/profiles/{route_file_name}.png"
 
             # Create view with quick reply buttons including the More Images button
-            view = RouteResponseButtonsWithImages(result['Route'], route_world, self)
+            view = RouteResponseButtons(result['Route'], route_world, self)
 
             # Check if profile image exists to embed in the main response
             if os.path.exists(profile_image_path):
