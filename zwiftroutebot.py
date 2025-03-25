@@ -212,6 +212,9 @@ def find_route(search_term):
             matched_route: The best matching route or None
             alternative_routes: List of other potential matches
     """
+
+    global zwift_routes
+
     if not search_term or not zwift_routes:
         return None, []
     
@@ -251,6 +254,7 @@ def find_sprint(search_term):
     Returns:
         tuple: (matched_sprint, alternative_sprints)
     """
+    global zwift_sprints
     if not search_term or not zwift_sprints:
         return None, []
     
@@ -290,6 +294,7 @@ def find_kom(search_term):
     Returns:
         tuple: (matched_kom, alternative_koms)
     """
+    global zwift_koms
     if not search_term or not zwift_koms:
         return None, []
     
