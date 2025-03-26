@@ -950,43 +950,74 @@ class ZwiftBot(discord.Client):
                 route_file_name = result['Route'].lower().replace(' ', '_').replace("'", '').replace('-', '_')
                 logger.info(f"Looking for images with base name: {route_file_name}")
                 
-                # Try both absolute and relative paths
-                image_paths = {
-                    "Profile (absolute)": f"/app/route_images/profiles/{route_file_name}.png",
-                    "Profile (relative)": f"route_images/profiles/{route_file_name}.png",
-                    "Incline (absolute)": f"/app/route_images/inclines/{route_file_name}.png",
-                    "Incline (relative)": f"route_images/inclines/{route_file_name}.png",
-                    "Map (absolute)": f"/app/route_images/maps/{route_file_name}.png",
-                    "Map (relative)": f"route_images/maps/{route_file_name}.png",
-                }
-                
-                # Debug check all paths
-                for name, path in image_paths.items():
-                    exists = os.path.exists(path)
-                    logger.info(f"Image path check: {name} at {path} - Exists: {exists}")
-                
-                # Check for Docker container mount path
-                docker_mount_paths = [
+# ==========================================
+# Improved Route Image Finding Logic
+# ==========================================
+                # Prepare to search for all available images
+                route_file_name = result['Route'].lower().replace(' ', '_').replace("'", '').replace('-', '_')
+                logger.info(f"Looking for images with base name: {route_file_name}")
+
+                # Find all valid base paths
+                valid_base_paths = []
+                potential_paths = [
                     "/app/route_images",
-                    "/route_images",
-                    "/home/micah-reeves/Desktop/zwift-route-bot/route_images"
+                    "/route_images", 
+                    "route_images",
+                    "/home/micah-reeves/Desktop/zwift-route-bot/route_images"  # Your existing path
                 ]
-                
-                for base_path in docker_mount_paths:
-                    if os.path.exists(base_path):
-                        logger.info(f"Found valid base path: {base_path}")
-                        # List contents of this directory
-                        try:
-                            contents = os.listdir(base_path)
-                            logger.info(f"Contents of {base_path}: {contents}")
-                            # Check subdirectories 
-                            for subdir in ['profiles', 'inclines', 'maps']:
-                                subdir_path = os.path.join(base_path, subdir)
-                                if os.path.exists(subdir_path):
-                                    subdir_contents = os.listdir(subdir_path)
-                                    logger.info(f"Contents of {subdir_path}: {subdir_contents[:5]} (showing first 5)")
-                        except Exception as e:
-                            logger.error(f"Error listing directory {base_path}: {e}")
+                for path in potential_paths:
+                    if os.path.exists(path):
+                        valid_base_paths.append(path)
+                        logger.info(f"Found valid base path: {path}")
+
+                # Define possible file variations
+                file_variations = [
+                    f"{route_file_name}.png",
+                    f"{route_file_name}.jpg", 
+                    f"{route_file_name}.webp"
+                ]
+
+                # Find all images
+                existing_images = {}
+                image_subdirs = {
+                    "profiles": "Profile",
+                    "inclines": "Incline",
+                    "maps": "Map"
+                }
+
+                # Try all possible combinations of paths
+                for base_path in valid_base_paths:
+                    for subdir, image_type in image_subdirs.items():
+                        if image_type in existing_images:
+                            continue  # Already found this type
+                            
+                        subdir_path = os.path.join(base_path, subdir)
+                        if not os.path.exists(subdir_path):
+                            continue
+                            
+                        # Try exact filename matches first
+                        for file_variant in file_variations:
+                            img_path = os.path.join(subdir_path, file_variant)
+                            if os.path.exists(img_path):
+                                existing_images[image_type] = img_path
+                                logger.info(f"Found {image_type} image at {img_path}")
+                                break
+                                
+                        # If not found yet, try a full directory scan with fuzzy matching
+                        if image_type not in existing_images:
+                            try:
+                                # Get all files in the directory
+                                all_files = os.listdir(subdir_path)
+                                logger.info(f"Scanning directory {subdir_path} with {len(all_files)} files")
+                                
+                                # Try to find a file that contains the route name
+                                matching_files = [f for f in all_files if route_file_name in f.lower()]
+                                if matching_files:
+                                    img_path = os.path.join(subdir_path, matching_files[0])
+                                    existing_images[image_type] = img_path
+                                    logger.info(f"Found {image_type} image using partial match: {img_path}")
+                            except Exception as e:
+                                logger.warning(f"Error scanning directory {subdir_path}: {e}")                
                 
                 # For reliable testing, focus on one path approach
                 existing_images = {}
