@@ -853,7 +853,7 @@ class ZwiftBot(discord.Client):
     # ==========================================
     
 # ==========================================
-# Route Command Implementation
+# Route Command Implementation - Debug Version
 # ==========================================
 
     async def route(self, interaction, name):
@@ -937,20 +937,6 @@ class ZwiftBot(discord.Client):
                             inline=True
                         )
                 
-                # Prepare to search for all available images
-                route_file_name = result['Route'].lower().replace(' ', '_').replace("'", '').replace('-', '_')
-                
-                # Define paths to check for images - using absolute paths
-                image_paths = {
-                    "Profile": f"/app/route_images/profiles/{route_file_name}.png",
-                    "Incline": f"/app/route_images/inclines/{route_file_name}.png",
-                    "Map": f"/app/route_images/maps/{route_file_name}.png",
-                }
-                
-                # Check which images exist
-                existing_images = {name: path for name, path in image_paths.items() if os.path.exists(path)}
-                logger.info(f"Found {len(existing_images)} images for route {result['Route']}")
-                
                 # Add a description with available resources
                 description_parts = []
                 description_parts.append(f"View full details on [ZwiftInsider]({result['URL']})")
@@ -960,8 +946,82 @@ class ZwiftBot(discord.Client):
                 cyccal_url = f"https://cyccal.com/{cyccal_route_name}/"
                 description_parts.append(f"Check [Cyccal]({cyccal_url}) for user times")
                 
+                # Prepare to search for all available images - ADD DEBUG LOGGING
+                route_file_name = result['Route'].lower().replace(' ', '_').replace("'", '').replace('-', '_')
+                logger.info(f"Looking for images with base name: {route_file_name}")
+                
+                # Try both absolute and relative paths
+                image_paths = {
+                    "Profile (absolute)": f"/app/route_images/profiles/{route_file_name}.png",
+                    "Profile (relative)": f"route_images/profiles/{route_file_name}.png",
+                    "Incline (absolute)": f"/app/route_images/inclines/{route_file_name}.png",
+                    "Incline (relative)": f"route_images/inclines/{route_file_name}.png",
+                    "Map (absolute)": f"/app/route_images/maps/{route_file_name}.png",
+                    "Map (relative)": f"route_images/maps/{route_file_name}.png",
+                }
+                
+                # Debug check all paths
+                for name, path in image_paths.items():
+                    exists = os.path.exists(path)
+                    logger.info(f"Image path check: {name} at {path} - Exists: {exists}")
+                
+                # Check for Docker container mount path
+                docker_mount_paths = [
+                    "/app/route_images",
+                    "/route_images",
+                    "/home/micah-reeves/Desktop/zwift-route-bot/route_images"
+                ]
+                
+                for base_path in docker_mount_paths:
+                    if os.path.exists(base_path):
+                        logger.info(f"Found valid base path: {base_path}")
+                        # List contents of this directory
+                        try:
+                            contents = os.listdir(base_path)
+                            logger.info(f"Contents of {base_path}: {contents}")
+                            # Check subdirectories 
+                            for subdir in ['profiles', 'inclines', 'maps']:
+                                subdir_path = os.path.join(base_path, subdir)
+                                if os.path.exists(subdir_path):
+                                    subdir_contents = os.listdir(subdir_path)
+                                    logger.info(f"Contents of {subdir_path}: {subdir_contents[:5]} (showing first 5)")
+                        except Exception as e:
+                            logger.error(f"Error listing directory {base_path}: {e}")
+                
+                # For reliable testing, focus on one path approach
+                existing_images = {}
+                
+                # Try absolute path first (Docker container expected path)
+                profile_path = f"/app/route_images/profiles/{route_file_name}.png"
+                if os.path.exists(profile_path):
+                    existing_images["Profile"] = profile_path
+                    logger.info(f"Found profile image at {profile_path}")
+                else:
+                    # Try relative path as fallback
+                    profile_path = f"route_images/profiles/{route_file_name}.png"
+                    if os.path.exists(profile_path):
+                        existing_images["Profile"] = profile_path
+                        logger.info(f"Found profile image at relative path {profile_path}")
+                
+                # Determine image path approach for remaining images based on what worked
+                base_path = "/app/route_images" if "/app" in profile_path else "route_images"
+                
+                # Check for incline image
+                incline_path = f"{base_path}/inclines/{route_file_name}.png"
+                if os.path.exists(incline_path):
+                    existing_images["Incline"] = incline_path
+                    logger.info(f"Found incline image at {incline_path}")
+                
+                # Check for map image
+                map_path = f"{base_path}/maps/{route_file_name}.png"
+                if os.path.exists(map_path):
+                    existing_images["Map"] = map_path
+                    logger.info(f"Found map image at {map_path}")
+                
                 if existing_images:
                     description_parts.append(f"**{len(existing_images)} route images available below**")
+                else:
+                    description_parts.append("**No route images available**")
                 
                 embed.description = "\n".join(description_parts)
                 
@@ -973,16 +1033,43 @@ class ZwiftBot(discord.Client):
                 
                 # Send each image as a separate message with a descriptive embed
                 for image_name, image_path in existing_images.items():
-                    img_embed = discord.Embed(
-                        title=f"{image_name} View: {result['Route']}",
-                        color=0xFC6719
-                    )
-                    
-                    file = discord.File(image_path, filename=f"{image_name.lower()}.png")
-                    img_embed.set_image(url=f"attachment://{image_name.lower()}.png")
-                    
-                    await interaction.followup.send(embed=img_embed, file=file)
-                    logger.info(f"Sent {image_name} image for route {result['Route']}")
+                    try:
+                        logger.info(f"Preparing to send {image_name} image from {image_path}")
+                        
+                        img_embed = discord.Embed(
+                            title=f"{image_name} View: {result['Route']}",
+                            color=0xFC6719
+                        )
+                        
+                        # Create a very simple filename for the attachment
+                        simple_filename = f"{image_name.lower()}.png"
+                        
+                        # Check file size and permissions
+                        try:
+                            file_size = os.path.getsize(image_path)
+                            file_permissions = oct(os.stat(image_path).st_mode)[-3:]
+                            logger.info(f"File {image_path} size: {file_size} bytes, permissions: {file_permissions}")
+                        except Exception as e:
+                            logger.error(f"Error checking file details: {e}")
+                        
+                        # Create the file object with a simplified name
+                        file = discord.File(image_path, filename=simple_filename)
+                        
+                        # Set the image URL to match the simplified filename exactly
+                        img_embed.set_image(url=f"attachment://{simple_filename}")
+                        
+                        # Send with file attachment
+                        await interaction.followup.send(embed=img_embed, file=file)
+                        logger.info(f"Successfully sent {image_name} image")
+                    except Exception as img_error:
+                        logger.error(f"Error sending {image_name} image: {img_error}")
+                        import traceback
+                        logger.error(traceback.format_exc())
+                        
+                        # Try to send error message
+                        await interaction.followup.send(
+                            f"Error showing {image_name} image: {str(img_error)[:100]}..."
+                        )
                 
                 # Add a note about alternatives if any
                 if alternatives:
@@ -1013,12 +1100,14 @@ class ZwiftBot(discord.Client):
                 await interaction.followup.send(
                     embed=discord.Embed(
                         title="❌ Error",
-                        description="An error occurred while processing your request.",
+                        description=f"An error occurred while processing your request: {str(e)[:100]}...",
                         color=discord.Color.red()
                     )
                 )
             except Exception as err:
                 logger.error(f"Failed to send error message: {err}")
+
+
 
     # ==========================================
     # ZwiftDS Command Implementation
