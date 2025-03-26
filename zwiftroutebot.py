@@ -139,57 +139,7 @@ def get_world_for_route(route_name):
 # User Interface Helpers
 # ==========================================
 
-async def bike_loading_animation(interaction):
-    """
-    Create a bike riding animation in Discord embed.
-    
-    Args:
-        interaction: The Discord interaction
-        
-    Returns:
-        The animation message if successful, None if error
-    """
-    track_length = 20  # How long the "track" is
-    bike = "🚲"
-    track = "═"
-    loading_titles = ["Finding route...", "Calculating distance...", "Checking traffic...", "Almost there!"]
-    
-    try:
-        loading_message = await interaction.followup.send(
-            embed=discord.Embed(
-                title=loading_titles[0],
-                description=track * track_length,
-                color=0xFC6719
-            )
-        )
-        
-        for position in range(track_length):
-            # Change title every 5 positions
-            current_title = loading_titles[min(position // 5, len(loading_titles) - 1)]
-            
-            # Create the track with bike position
-            track_display = (track * position) + bike + (track * (track_length - position - 1))
-            
-            try:
-                await loading_message.edit(
-                    embed=discord.Embed(
-                        title=current_title,
-                        description=track_display,
-                        color=0xFC6719
-                    )
-                )
-                # Gradually speed up the animation
-                await asyncio.sleep(max(0.2, 0.5 - (position * 0.015)))
-            except discord.NotFound:
-                break
-            except Exception as e:
-                logger.error(f"Error updating loading animation: {e}")
-                break
-        
-        return loading_message
-    except Exception as e:
-        logger.error(f"Error in loading animation: {e}")
-        return None
+
 # ==========================================
 # Data Finding Functions
 # ==========================================
@@ -355,371 +305,7 @@ async def fetch_route_info(url):
 # UI Components for Quick Replies
 # ==========================================
 
-class RouteResponseButtons(discord.ui.View):
-    """
-    Discord view component that adds quick reply buttons for route responses.
-    Allows users to view similar routes, routes in the same world, and elevation profiles.
-    """
-    
-    def __init__(self, route_name, route_world, bot_instance):
-        """
-        Initialize the RouteResponseButtons view.
-        
-        Args:
-            route_name (str): The name of the route
-            route_world (str): The world the route is in
-            bot_instance: The ZwiftBot instance for accessing route data
-        """
-        super().__init__(timeout=300)  # 5 minute timeout
-        self.route_name = route_name
-        self.route_world = route_world
-        self.bot = bot_instance
 
-        # Prepare file names
-        self.route_file_name = route_name.lower().replace(' ', '_').replace("'", '').replace('-', '_')
-        self.profile_image_path = f"route_images/profiles/{self.route_file_name}.png"
-        self.incline_image_path = f"route_images/inclines/{self.route_file_name}.png"
-        
-        # Check if any additional images exist
-        self.has_additional_images = os.path.exists(self.profile_image_path) or os.path.exists(self.incline_image_path)
-
-    @discord.ui.button(label="Similar Routes", style=discord.ButtonStyle.primary)
-    async def similar_routes_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        """Handle click on Similar Routes button"""
-        await interaction.response.defer(thinking=True, ephemeral=True)
-        
-        try:
-            # Find the original route details
-            original_route, _ = find_route(self.route_name)
-            if not original_route:
-                await interaction.followup.send("Sorry, I couldn't find the original route details.", ephemeral=True)
-                return
-                
-            # Look up detailed info from cache
-            route_details = self.bot.route_cache_data.get(self.route_name, {})
-            if not route_details:
-                await interaction.followup.send("Sorry, I couldn't find detailed information for this route.", ephemeral=True)
-                return
-            
-            # Get route parameters to match
-            target_distance = route_details.get('distance_km', 0)
-            target_elevation = route_details.get('elevation_m', 0)
-            world = route_details.get('world', self.route_world)
-            
-            # Allow 25% variation in distance and elevation
-            distance_min = target_distance * 0.75
-            distance_max = target_distance * 1.25
-            elevation_min = target_elevation * 0.75
-            elevation_max = target_elevation * 1.25
-            
-            # Find similar routes
-            similar_routes = []
-            
-            for route_name, data in self.bot.route_cache_data.items():
-                # Skip the original route
-                if route_name == self.route_name:
-                    continue
-                    
-                # Skip routes with missing data
-                if 'distance_km' not in data or 'elevation_m' not in data:
-                    continue
-                    
-                # Check if distance and elevation are similar
-                distance_match = distance_min <= data['distance_km'] <= distance_max
-                elevation_match = elevation_min <= data['elevation_m'] <= elevation_max
-                
-                # Match if either distance or elevation is similar
-                if distance_match or elevation_match:
-                    similar_routes.append(data)
-    # Sort by how close they are to the target route
-            for route in similar_routes:
-                distance_diff = abs(route['distance_km'] - target_distance)
-                elevation_diff = abs(route['elevation_m'] - target_elevation)
-                
-                # Normalize differences to account for different scales
-                route['similarity_score'] = (distance_diff / target_distance) + (elevation_diff / target_elevation)
-            
-            similar_routes.sort(key=lambda x: x['similarity_score'])
-            
-            # Create response embed
-            embed = discord.Embed(
-                title=f"Routes Similar to {self.route_name}",
-                description=f"These routes are similar in distance ({target_distance} km) and/or elevation ({target_elevation} m):",
-                color=0x3498DB
-            )
-            
-            # Show up to 5 similar routes
-            display_count = min(5, len(similar_routes))
-            for i, route in enumerate(similar_routes[:display_count]):
-                # Format estimated time
-                est_time = route.get('estimated_time_min', 0)
-                time_str = f"{est_time // 60}h {est_time % 60}m" if est_time >= 60 else f"{est_time}m"
-                
-                # Get badges
-                badges = route.get('badges', [])
-                badges_str = ", ".join(badges) if badges else "Unknown"
-                
-                embed.add_field(
-                    name=f"{i+1}. {route['route_name']}",
-                    value=f"🌎 {route.get('world', 'Unknown')}\n"
-                          f"📏 {route.get('distance_km', '?')} km\n"
-                          f"⛰️ {route.get('elevation_m', '?')} m\n"
-                          f"⏱️ Est. time: {time_str}\n"
-                          f"🏷️ {badges_str}\n"
-                          f"[View details]({route['url']})",
-                    inline=False
-                )
-            
-            if not similar_routes:
-                embed.description = f"I couldn't find any routes similar to {self.route_name}."
-            
-            await interaction.followup.send(embed=embed, ephemeral=True)
-            
-        except Exception as e:
-            logger.error(f"Error in similar routes button: {e}")
-            import traceback
-            logger.error(traceback.format_exc())
-            await interaction.followup.send("Sorry, there was an error finding similar routes.", ephemeral=True)
-
-    @discord.ui.button(label="Routes in World", style=discord.ButtonStyle.secondary)
-    async def world_routes_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        """Handle click on Routes in World button"""
-        await interaction.response.defer(thinking=True, ephemeral=True)
-        
-        try:
-            # Find routes in the same world
-            world_routes = []
-            for route_data in self.bot.route_cache_data.values():
-                route_world = route_data.get('world', '')
-                if self.route_world.lower() in route_world.lower():
-                    world_routes.append(route_data)
-            
-            if not world_routes:
-                await interaction.followup.send(f"Sorry, I couldn't find routes in {self.route_world}.", ephemeral=True)
-                return
-            
-            # Sort by distance
-            world_routes.sort(key=lambda r: r.get('distance_km', 0))
-            
-            # Create embed
-            embed = discord.Embed(
-                title=f"Routes in {self.route_world}",
-                description=f"Found {len(world_routes)} routes in {self.route_world}, sorted by distance:",
-                color=0x3498DB
-            )
-            
-            # Create route list with details
-            route_entries = []
-            
-            for route in world_routes:
-                # Format entry
-                entry = (
-                    f"**{route['route_name']}**\n"
-                    f"📏 {route.get('distance_km', '?')} km • "
-                    f"⛰️ {route.get('elevation_m', '?')} m • "
-                )
-                
-                # Add badges if available
-                badges = route.get('badges', [])
-                if badges:
-                    entry += f"🏷️ {', '.join(badges)}\n"
-                else:
-                    entry += "\n"
-                
-                route_entries.append(entry)
-    # Split into chunks for fields (roughly 5 routes per field)
-            chunks = []
-            current_chunk = ""
-            
-            for entry in route_entries:
-                if len(current_chunk) + len(entry) > 1000:  # Leave some margin
-                    chunks.append(current_chunk)
-                    current_chunk = entry
-                else:
-                    current_chunk += entry
-                    
-            if current_chunk:
-                chunks.append(current_chunk)
-            
-            # Add fields
-            for i, chunk in enumerate(chunks):
-                field_name = f"Routes {i+1}/{len(chunks)}" if len(chunks) > 1 else "Routes"
-                embed.add_field(
-                    name=field_name,
-                    value=chunk,
-                    inline=False
-                )
-            
-            await interaction.followup.send(embed=embed, ephemeral=True)
-            
-        except Exception as e:
-            logger.error(f"Error in world routes button: {e}")
-            await interaction.followup.send("Sorry, there was an error finding routes in this world.", ephemeral=True)
-
-    @discord.ui.button(label="Compare Routes", style=discord.ButtonStyle.secondary)
-    async def compare_routes_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        """Handle click on Compare Routes button"""
-        await interaction.response.defer(thinking=True, ephemeral=True)
-        
-        try:
-            # Create comparison selection dropdown
-            view = RouteComparisonSelect(self.route_name, self.bot)
-            
-            await interaction.followup.send(
-                "Select routes to compare with " + self.route_name + ":",
-                view=view,
-                ephemeral=True
-            )
-            
-        except Exception as e:
-            logger.error(f"Error in compare routes button: {e}")
-            await interaction.followup.send("Sorry, there was an error preparing route comparison.", ephemeral=True)
-
-    @discord.ui.button(label="More Images", style=discord.ButtonStyle.secondary)
-    async def more_images_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        """Handle click on More Images button"""
-        await interaction.response.defer(thinking=True, ephemeral=True)
-
-        try:
-            # Create an embed for additional images
-            embed = discord.Embed(
-                title=f"📊 Additional Images: {self.route_name}",
-                description=f"Elevation and route profiles for {self.route_name}",
-                color=0xFC6719
-            )
-            
-            # Check if we have images to send
-            files_to_send = []
-            
-            # Add profile image if it exists
-            if os.path.exists(self.profile_image_path):
-                profile_file = discord.File(self.profile_image_path, filename=f"{self.route_file_name}_profile.png")
-                files_to_send.append(profile_file)
-                embed.add_field(
-                    name="Elevation Profile", 
-                    value=f"Route elevation profile showing climb and descent patterns", 
-                    inline=False
-                )
-                embed.set_image(url=f"attachment://{self.route_file_name}_profile.png")
-            
-            # Build response
-            await interaction.followup.send(embed=embed, files=files_to_send, ephemeral=True)
-            
-            # If we have an incline image, send it in a separate message
-            if os.path.exists(self.incline_image_path):
-                incline_file = discord.File(self.incline_image_path, filename=f"{self.route_file_name}_incline.png")
-                incline_embed = discord.Embed(
-                    title=f"⛰️ Incline Profile: {self.route_name}",
-                    description=f"Showing gradient percentages along the route",
-                    color=0xFC6719
-                )
-                incline_embed.set_image(url=f"attachment://{self.route_file_name}_incline.png")
-                await interaction.followup.send(embed=incline_embed, file=incline_file, ephemeral=True)
-            
-        except Exception as e:
-            logger.error(f"Error showing additional images: {e}")
-            import traceback
-            logger.error(traceback.format_exc())
-            await interaction.followup.send("Sorry, there was an error showing additional images.", ephemeral=True)
-
-class RouteComparisonSelect(discord.ui.View):
-    """View with dropdown for selecting routes to compare"""
-    
-    def __init__(self, base_route_name, bot_instance):
-        super().__init__(timeout=120)  # 2 minute timeout
-        self.base_route_name = base_route_name
-        self.bot = bot_instance
-        
-        # Create dropdown for route selection
-        self.add_item(RouteSelector(bot_instance, base_route_name))
-        
-    @discord.ui.button(label="Compare Selected Routes", style=discord.ButtonStyle.primary)
-    async def compare_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        """Handle click on Compare button"""
-        # Get selected routes from the dropdown
-        route_selector = self.children[0]
-        selected_routes = route_selector.selected_routes
-        
-        # Always include the base route
-        if self.base_route_name not in selected_routes:
-            selected_routes.append(self.base_route_name)
-        
-        if len(selected_routes) < 2:
-            await interaction.response.send_message("Please select at least one route to compare.", ephemeral=True)
-            return
-        
-        # Perform comparison
-        await self.bot.handle_route_comparison(interaction, selected_routes)
-class RouteSelector(discord.ui.Select):
-    """Dropdown for selecting routes to compare"""
-    
-    def __init__(self, bot_instance, base_route_name):
-        self.bot = bot_instance
-        self.base_route_name = base_route_name
-        self.selected_routes = [base_route_name]  # Start with the base route
-        
-        # Get potential routes to compare
-        options = []
-        
-        # Get base route details
-        base_route_details = bot_instance.route_cache_data.get(base_route_name, {})
-        base_world = base_route_details.get('world', '')
-        
-        # Find routes from the same world
-        for route_name, data in bot_instance.route_cache_data.items():
-            # Skip the base route
-            if route_name == base_route_name:
-                continue
-                
-            # Prioritize routes from the same world
-            route_world = data.get('world', '')
-            if route_world.lower() == base_world.lower():
-                # Add as an option
-                options.append(
-                    discord.SelectOption(
-                        label=route_name[:25] + "..." if len(route_name) > 25 else route_name,
-                        description=f"{data.get('distance_km', '?')} km, {data.get('elevation_m', '?')} m",
-                        value=route_name
-                    )
-                )
-                
-                # Limit to 25 options (Discord limit)
-                if len(options) >= 24:
-                    break
-        
-        # If we don't have 25 options yet, add routes from other worlds
-        if len(options) < 24:
-            for route_name, data in bot_instance.route_cache_data.items():
-                # Skip the base route and already added routes
-                if route_name == base_route_name or any(opt.value == route_name for opt in options):
-                    continue
-                    
-                # Add as an option
-                options.append(
-                    discord.SelectOption(
-                        label=route_name[:25] + "..." if len(route_name) > 25 else route_name,
-                        description=f"{data.get('distance_km', '?')} km, {data.get('elevation_m', '?')} m",
-                        value=route_name
-                    )
-                )
-                
-                # Limit to 25 options (Discord limit)
-                if len(options) >= 24:
-                    break
-        
-        super().__init__(
-            placeholder="Select routes to compare...",
-            min_values=1,
-            max_values=min(len(options), 4),  # Allow up to 4 selections
-            options=options
-        )
-    
-    async def callback(self, interaction: discord.Interaction):
-        """Handle selection from the dropdown"""
-        self.selected_routes = [self.base_route_name]  # Always include base route
-        self.selected_routes.extend(self.values)
-        
-        await interaction.response.defer()
 
 
 # ==========================================
@@ -1209,7 +795,7 @@ class ZwiftBot(discord.Client):
         """Register all bot commands with the command tree"""
         
         # Route command
-        @self.tree.command(name="route", description="Get a Zwift route URL by name")
+        @self.tree.command(name="route", description="Get a Zwift route INFO by name")
         async def route_command(interaction, name: str):
             await self.route(interaction, name)
         
@@ -1266,122 +852,150 @@ class ZwiftBot(discord.Client):
     # Route Command Implementation
     # ==========================================
     
+# ==========================================
+# Route Command Implementation
+# ==========================================
+
     async def route(self, interaction, name):
-   
+        """
+        Show Zwift route details and all available images.
+        
+        Args:
+            interaction: The Discord interaction object
+            name: The name of the route to look up
+        """
         if not interaction.user:
             return
         
         try:
             logger.info(f"Route command started for: {name}")
         
-            # IMMEDIATE DEFER - do this first before any other processing
-            try:
-                await interaction.response.defer(thinking=True)
-                logger.info("Interaction deferred")
-            except discord.errors.NotFound:
-                logger.error("Could not defer interaction - it may have expired")
-                return  # Exit early if we can't defer
-            except Exception as defer_error:
-                logger.error(f"Error deferring interaction: {defer_error}")
-        
-        # Check rate limits
+            # Defer the response
+            await interaction.response.defer(thinking=True)
+                
+            # Check rate limits
             try:
                 await self.check_rate_limit(interaction.user.id)
             except HTTPException as e:
                 logger.warning(f"Rate limit hit: {e}")
-                try:
-                    await interaction.followup.send(
-                        embed=discord.Embed(
-                            title="⏳ Rate Limited",
-                            description=str(e),
-                            color=discord.Color.orange()
-                        ),
-                        ephemeral=True
-                    )
-                except Exception as followup_error:
-                    logger.error(f"Error sending rate limit message: {followup_error}")
+                await interaction.followup.send(
+                    embed=discord.Embed(
+                        title="⏳ Rate Limited",
+                        description=str(e),
+                        color=discord.Color.orange()
+                    ),
+                    ephemeral=True
+                )
                 return
-
+            
             # Find route
             result, alternatives = find_route(name)
             logger.info(f"Route search result: {result['Route'] if result else 'Not found'}")
-        
-            # Show loading animation
-            loading_message = None
-            try:
-                loading_message = await bike_loading_animation(interaction)
-            except Exception as e:
-                logger.error(f"Error in loading animation: {e}")
-        
-            if result:
-                # Fetch route details
-                stats, zwift_img_url = await fetch_route_info(result["URL"])
-                logger.info(f"ZwiftInsider image URL: {zwift_img_url}")
             
-                # Create embed
+            if result:
+                # Create the base embed with route details
                 embed = discord.Embed(
                     title=f"🚲 {result['Route']}",
                     url=result["URL"],
-                    description="\n".join(stats) if stats else "View full route details on ZwiftInsider",
                     color=0xFC6719
                 )
-                logger.info("Basic embed created")
-            
-                # Add alternatives if any
-                if alternatives:
-                    similar_routes = "\n\n**Similar routes:**\n" + "\n".join(f"• {r['Route']}" for r in alternatives)
-                    if embed.description:
-                        embed.description += similar_routes
-                    else:
-                        embed.description = similar_routes
-                    logger.info("Added alternatives to embed")
-            
-                # Add image
-                # Format route name for file path (lowercase, replace spaces with underscores)
+                
+                # Get route world
+                route_world = get_world_for_route(result['Route'])
+                embed.add_field(name="World", value=route_world, inline=True)
+                
+                # Get detailed info from cache
+                detailed_info = self.route_cache_data.get(result['Route'], {})
+                
+                # Add key stats if available
+                if detailed_info:
+                    if 'distance_km' in detailed_info:
+                        embed.add_field(
+                            name="Distance", 
+                            value=f"{detailed_info['distance_km']} km ({detailed_info.get('distance_miles', '?')} mi)", 
+                            inline=True
+                        )
+                    
+                    if 'elevation_m' in detailed_info:
+                        embed.add_field(
+                            name="Elevation", 
+                            value=f"{detailed_info['elevation_m']} m ({detailed_info.get('elevation_ft', '?')} ft)", 
+                            inline=True
+                        )
+                    
+                    # Add estimated time if available
+                    if 'estimated_time_min' in detailed_info:
+                        est_time = detailed_info['estimated_time_min']
+                        time_str = f"{est_time // 60}h {est_time % 60}m" if est_time >= 60 else f"{est_time}m"
+                        embed.add_field(name="Est. Time", value=time_str, inline=True)
+                    
+                    # Add route type/badges if available
+                    if 'badges' in detailed_info and detailed_info['badges']:
+                        embed.add_field(
+                            name="Type", 
+                            value=", ".join(detailed_info['badges']), 
+                            inline=True
+                        )
+                
+                # Prepare to search for all available images
                 route_file_name = result['Route'].lower().replace(' ', '_').replace("'", '').replace('-', '_')
-                profile_image_path = f"route_images/profiles/{route_file_name}.png"
-            
-                # Add image if it exists
-                if os.path.exists(profile_image_path):
-                    file = discord.File(profile_image_path, filename=f"{route_file_name}_profile.png")
-                    embed.set_image(url=f"attachment://{route_file_name}_profile.png")
-                    logger.info(f"Added route profile image from {profile_image_path}")
-                else:
-                    # Fallback to ZwiftInsider image if available
-                    if zwift_img_url:
-                        embed.set_image(url=zwift_img_url)
-                        logger.info("Using ZwiftInsider image as fallback")
-                    else:
-                         logger.warning(f"No image found for route: {result['Route']}")
-            
+                
+                # Define paths to check for images - using absolute paths
+                image_paths = {
+                    "Profile": f"/app/route_images/profiles/{route_file_name}.png",
+                    "Incline": f"/app/route_images/inclines/{route_file_name}.png",
+                    "Map": f"/app/route_images/maps/{route_file_name}.png",
+                }
+                
+                # Check which images exist
+                existing_images = {name: path for name, path in image_paths.items() if os.path.exists(path)}
+                logger.info(f"Found {len(existing_images)} images for route {result['Route']}")
+                
+                # Add a description with available resources
+                description_parts = []
+                description_parts.append(f"View full details on [ZwiftInsider]({result['URL']})")
+                
+                # Format route name for Cyccal URL
+                cyccal_route_name = result['Route'].lower().replace(' ', '-')
+                cyccal_url = f"https://cyccal.com/{cyccal_route_name}/"
+                description_parts.append(f"Check [Cyccal]({cyccal_url}) for user times")
+                
+                if existing_images:
+                    description_parts.append(f"**{len(existing_images)} route images available below**")
+                
+                embed.description = "\n".join(description_parts)
+                
                 # Add thumbnail
                 embed.set_thumbnail(url="https://zwiftinsider.com/wp-content/uploads/2022/12/zwift-logo.png")
-            
-                # Add footer with link to Cyccal
-                route_name = result['Route'].lower().replace(' ', '-')
-                cyccal_web_url = f"https://cyccal.com/{route_name}/"
-            
-                embed.add_field(
-                    name="Additional Resources",
-                    value=f"[View on Cyccal]({cyccal_web_url})",
-                    inline=False
-                )
-            
-                # Get route world for buttons
-                route_world = get_world_for_route(result['Route'])
-            
-                # Create view with quick reply buttons
-                view = RouteResponseButtons(result['Route'], route_world, self)
-            
-                # If we have a file to attach, send it with the embed
-                if os.path.exists(profile_image_path):
-                    await interaction.followup.send(embed=embed, file=file, view=view)
-                else:
-                    await interaction.followup.send(embed=embed, view=view)
                 
-                logger.info("Successfully sent embed with buttons")
+                # Send the initial embed with route details
+                await interaction.followup.send(embed=embed)
+                
+                # Send each image as a separate message with a descriptive embed
+                for image_name, image_path in existing_images.items():
+                    img_embed = discord.Embed(
+                        title=f"{image_name} View: {result['Route']}",
+                        color=0xFC6719
+                    )
+                    
+                    file = discord.File(image_path, filename=f"{image_name.lower()}.png")
+                    img_embed.set_image(url=f"attachment://{image_name.lower()}.png")
+                    
+                    await interaction.followup.send(embed=img_embed, file=file)
+                    logger.info(f"Sent {image_name} image for route {result['Route']}")
+                
+                # Add a note about alternatives if any
+                if alternatives:
+                    alt_text = "\n".join(f"• {r['Route']}" for r in alternatives)
+                    alt_embed = discord.Embed(
+                        title="Similar Routes",
+                        description=f"You might also be interested in:\n{alt_text}",
+                        color=0xFC6719
+                    )
+                    await interaction.followup.send(embed=alt_embed)
+            
             else:
-                # Create not found embed
+                # Route not found
                 suggestions = random.sample(zwift_routes, min(3, len(zwift_routes)))
                 embed = discord.Embed(
                     title="❌ Route Not Found",
@@ -1389,42 +1003,20 @@ class ZwiftBot(discord.Client):
                                "\n".join(f"• {r['Route']}" for r in suggestions),
                     color=discord.Color.red()
                 )
-                logger.info("Created 'not found' embed")
-            
-                # Send response
                 await interaction.followup.send(embed=embed)
-        
-            # Delete loading message
-            if loading_message:
-                try:
-                    await loading_message.delete()
-                    logger.info("Deleted loading animation message")
-                except Exception as e:
-                    logger.error(f"Error deleting loading animation: {e}")
                 
         except Exception as e:
             logger.error(f"Error in route command: {e}")
             import traceback
             logger.error(traceback.format_exc())
             try:
-                if interaction.response.is_done():
-                    await interaction.followup.send(
-                        embed=discord.Embed(
-                            title="❌ Error",
-                            description="An error occurred while processing your request.",
-                            color=discord.Color.red()
-                        ),
-                        ephemeral=True
+                await interaction.followup.send(
+                    embed=discord.Embed(
+                        title="❌ Error",
+                        description="An error occurred while processing your request.",
+                        color=discord.Color.red()
                     )
-                else:
-                    await interaction.response.send_message(
-                        embed=discord.Embed(
-                            title="❌ Error",
-                            description="An error occurred while processing your request.",
-                            color=discord.Color.red()
-                        ),
-                        ephemeral=True
-                    )
+                )
             except Exception as err:
                 logger.error(f"Failed to send error message: {err}")
 
@@ -1474,8 +1066,7 @@ class ZwiftBot(discord.Client):
             await interaction.response.defer(thinking=True, ephemeral=True)
             logger.info(f"ZwiftDS received question: {question}")
             
-            # Show loading animation
-            loading_message = await bike_loading_animation(interaction)
+        
             
             try:
                 # Check if question depends on previous context
@@ -1566,13 +1157,7 @@ class ZwiftBot(discord.Client):
                 )
             except:
                 logger.error("Failed to send error message")
-            finally:
-            # Delete loading animation
-                if loading_message:
-                    try:
-                        await loading_message.delete()
-                    except Exception as e:
-                        logger.error(f"Error deleting loading animation: {e}")
+            
 
     # ==========================================
     # Question Analysis Methods
@@ -1925,24 +1510,20 @@ class ZwiftBot(discord.Client):
                 inline=False
             )
             
-            # Get route world for buttons
-            route_world = get_world_for_route(result['Route'])
+           
             
             # Format route name for file path (lowercase, replace spaces with underscores)
             route_file_name = result['Route'].lower().replace(' ', '_').replace("'", '').replace('-', '_')
             profile_image_path = f"route_images/profiles/{route_file_name}.png"
 
-            # Create view with quick reply buttons including the More Images button
-            view = RouteResponseButtons(result['Route'], route_world, self)
-
             # Check if profile image exists to embed in the main response
             if os.path.exists(profile_image_path):
                 file = discord.File(profile_image_path, filename=f"{route_file_name}_profile.png")
                 embed.set_image(url=f"attachment://{route_file_name}_profile.png")
-                await interaction.followup.send(embed=embed, file=file, view=view, ephemeral=True)
+                await interaction.followup.send(embed=embed)
             else:
                 # If no profile image, just send the embed with the view
-                await interaction.followup.send(embed=embed, view=view, ephemeral=True)
+                await interaction.followup.send(embed=embed)
         else:
             # Not found response
             await interaction.followup.send(
@@ -2487,11 +2068,9 @@ class ZwiftBot(discord.Client):
         # Get route world for buttons
         route_world = selected_route.get('world', '')
         
-        # Create view with quick reply buttons
-        view = RouteResponseButtons(route_name, route_world, self)
         
         # Send response
-        await interaction.followup.send(embed=embed, view=view, ephemeral=True)
+        await interaction.followup.send(embed=embed)
     
     async def handle_general_question(self, interaction, question):
         """
