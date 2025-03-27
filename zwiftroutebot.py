@@ -1037,7 +1037,7 @@ class ZwiftBot(discord.Client):
                         logger.info(f"Preparing to send {image_name} image from {image_path}")
                         
                         img_embed = discord.Embed(
-                            title=f"{image_name} View: {result['Route']}",
+                            title=f"{result['Route']}",
                             color=0xFC6719
                         )
                         
