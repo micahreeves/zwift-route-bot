@@ -951,7 +951,7 @@ class ZwiftBot(discord.Client):
                 logger.info(f"Looking for images with base name: {route_file_name}")
                 
 # ==========================================
-# Improved Route Image Finding Logic
+# Enhanced Route Image Finding Logic
 # ==========================================
                 # Prepare to search for all available images
                 route_file_name = result['Route'].lower().replace(' ', '_').replace("'", '').replace('-', '_')
@@ -963,21 +963,22 @@ class ZwiftBot(discord.Client):
                     "/app/route_images",
                     "/route_images", 
                     "route_images",
-                    "/home/micah-reeves/Desktop/zwift-route-bot/route_images"  # Your existing path
+                    "/home/micah-reeves/Desktop/zwift-route-bot/route_images"
                 ]
                 for path in potential_paths:
                     if os.path.exists(path):
                         valid_base_paths.append(path)
                         logger.info(f"Found valid base path: {path}")
 
-                # Define possible file variations
-                file_variations = [
-                    f"{route_file_name}.png",
-                    f"{route_file_name}.jpg", 
-                    f"{route_file_name}.webp"
+                # Create common naming variations
+                route_variations = [
+                    route_file_name,
+                    route_file_name.replace('_', '-'),
+                    result['Route'].lower().replace(' ', '-').replace("'", ''),
+                    ''.join(result['Route'].lower().split())  # No spaces or underscores
                 ]
 
-                # Find all images
+                # Find all images with thorough directory scanning
                 existing_images = {}
                 image_subdirs = {
                     "profiles": "Profile",
@@ -985,39 +986,71 @@ class ZwiftBot(discord.Client):
                     "maps": "Map"
                 }
 
-                # Try all possible combinations of paths
+                # Scan directories and find matches
                 for base_path in valid_base_paths:
                     for subdir, image_type in image_subdirs.items():
                         if image_type in existing_images:
-                            continue  # Already found this type
+                            continue  # Already found this image type
                             
                         subdir_path = os.path.join(base_path, subdir)
                         if not os.path.exists(subdir_path):
                             continue
                             
-                        # Try exact filename matches first
-                        for file_variant in file_variations:
-                            img_path = os.path.join(subdir_path, file_variant)
-                            if os.path.exists(img_path):
-                                existing_images[image_type] = img_path
-                                logger.info(f"Found {image_type} image at {img_path}")
-                                break
+                        try:
+                            # Get all files in the directory
+                            all_files = os.listdir(subdir_path)
+                            # Display a sample of files to debug
+                            logger.info(f"Files in {subdir_path} (first 5): {', '.join(all_files[:5])}")
+                            
+                            # Convert all filenames to lowercase for case-insensitive matching
+                            all_files_lower = {f.lower(): f for f in all_files}
+                            
+                            # Try exact matches with various naming patterns first
+                            found_match = False
+                            for variation in route_variations:
+                                for ext in ['.png', '.jpg', '.webp']:
+                                    test_filename = variation + ext
+                                    if test_filename in all_files_lower:
+                                        # Use the actual filename with original case
+                                        original_filename = all_files_lower[test_filename]
+                                        img_path = os.path.join(subdir_path, original_filename)
+                                        existing_images[image_type] = img_path
+                                        logger.info(f"Found {image_type} image with pattern match: {img_path}")
+                                        found_match = True
+                                        break
+                                if found_match:
+                                    break
+                            
+                            # If no exact matches, try substring matches
+                            if not found_match:
+                                # Check if any filename contains our route name
+                                for actual_file, original_file in all_files_lower.items():
+                                    if any(variation in actual_file for variation in route_variations):
+                                        img_path = os.path.join(subdir_path, original_file)
+                                        existing_images[image_type] = img_path
+                                        logger.info(f"Found {image_type} image with substring match: {img_path}")
+                                        found_match = True
+                                        break
+                            
+                            # Last resort: try matching key parts of the route name
+                            if not found_match:
+                                # Get individual words from route name
+                                word_parts = result['Route'].lower().split()
+                                # Only use words with 4+ characters (more distinctive)
+                                significant_parts = [w for w in word_parts if len(w) >= 4]
                                 
-                        # If not found yet, try a full directory scan with fuzzy matching
-                        if image_type not in existing_images:
-                            try:
-                                # Get all files in the directory
-                                all_files = os.listdir(subdir_path)
-                                logger.info(f"Scanning directory {subdir_path} with {len(all_files)} files")
-                                
-                                # Try to find a file that contains the route name
-                                matching_files = [f for f in all_files if route_file_name in f.lower()]
-                                if matching_files:
-                                    img_path = os.path.join(subdir_path, matching_files[0])
-                                    existing_images[image_type] = img_path
-                                    logger.info(f"Found {image_type} image using partial match: {img_path}")
-                            except Exception as e:
-                                logger.warning(f"Error scanning directory {subdir_path}: {e}")                
+                                for part in significant_parts:
+                                    for actual_file, original_file in all_files_lower.items():
+                                        if part in actual_file:
+                                            img_path = os.path.join(subdir_path, original_file)
+                                            existing_images[image_type] = img_path
+                                            logger.info(f"Found {image_type} image using keyword '{part}': {img_path}")
+                                            found_match = True
+                                            break
+                                    if found_match:
+                                        break
+                        except Exception as e:
+                            logger.warning(f"Error scanning directory {subdir_path}: {e}")              
                 
                 # For reliable testing, focus on one path approach
                 existing_images = {}
