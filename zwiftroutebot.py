@@ -848,12 +848,8 @@ class ZwiftBot(discord.Client):
                         response=discord.WebhookMessage, 
                         message=f"Bot is experiencing high traffic. Please try again in {wait_time:.1f} seconds."
                     )
-    # ==========================================
-    # Route Command Implementation
-    # ==========================================
-    
 # ==========================================
-# Route Command Implementation - Debug Version
+# Route Command Implementation
 # ==========================================
 
     async def route(self, interaction, name):
@@ -937,6 +933,82 @@ class ZwiftBot(discord.Client):
                             inline=True
                         )
                 
+                # Prepare route name variations for smarter image matching
+                route_name = result['Route']
+                route_name_lower = route_name.lower()
+                route_variations = [
+                    route_name_lower.replace(' ', '_').replace("'", '').replace('-', '_'),
+                    route_name_lower.replace(' ', '').replace("'", '').replace('-', ''),
+                    route_name_lower.replace(' ', '-').replace("'", ''),
+                    ''.join(c for c in route_name_lower if c.isalnum())
+                ]
+                
+                logger.info(f"Looking for images with variations: {route_variations}")
+                
+                # Try both absolute and relative paths
+                base_paths = [
+                    "/app/route_images",
+                    "route_images",
+                    "/home/micah-reeves/Desktop/zwift-route-bot/route_images"
+                ]
+                
+                # Find valid base path
+                valid_base = None
+                for base in base_paths:
+                    if os.path.exists(base) and os.path.isdir(base):
+                        valid_base = base
+                        logger.info(f"Found valid base path: {valid_base}")
+                        break
+                
+                # Define image types to look for
+                image_types = {
+                    "Profile": "profiles",
+                    "Incline": "inclines", 
+                    "Map": "maps"
+                }
+                
+                # Find images
+                existing_images = {}
+                if valid_base:
+                    for img_type, subdir in image_types.items():
+                        subdir_path = os.path.join(valid_base, subdir)
+                        
+                        if not os.path.exists(subdir_path) or not os.path.isdir(subdir_path):
+                            logger.warning(f"Directory not found: {subdir_path}")
+                            continue
+                            
+                        # Try exact matches with all name variations
+                        found = False
+                        for variation in route_variations:
+                            img_path = os.path.join(subdir_path, f"{variation}.png")
+                            if os.path.exists(img_path):
+                                existing_images[img_type] = img_path
+                                logger.info(f"Found {img_type} image: {img_path}")
+                                found = True
+                                break
+                                
+                        # If no exact match, try fuzzy matching with directory listing
+                        if not found:
+                            try:
+                                files = [f for f in os.listdir(subdir_path) if f.lower().endswith('.png')]
+                                
+                                # Strip extensions for matching
+                                file_bases = [os.path.splitext(f)[0].lower() for f in files]
+                                
+                                # Try difflib for fuzzy matching
+                                for variation in route_variations:
+                                    close_matches = get_close_matches(variation, file_bases, n=1, cutoff=0.7)
+                                    
+                                    if close_matches:
+                                        match_index = file_bases.index(close_matches[0])
+                                        matched_file = files[match_index]
+                                        img_path = os.path.join(subdir_path, matched_file)
+                                        existing_images[img_type] = img_path
+                                        logger.info(f"Found fuzzy match for {img_type}: {matched_file}")
+                                        break
+                            except Exception as e:
+                                logger.error(f"Error listing directory {subdir_path}: {e}")
+                
                 # Add a description with available resources
                 description_parts = []
                 description_parts.append(f"View full details on [ZwiftInsider]({result['URL']})")
@@ -946,147 +1018,10 @@ class ZwiftBot(discord.Client):
                 cyccal_url = f"https://cyccal.com/{cyccal_route_name}/"
                 description_parts.append(f"Check [Cyccal]({cyccal_url}) for user times")
                 
-                # Prepare to search for all available images - ADD DEBUG LOGGING
-                route_file_name = result['Route'].lower().replace(' ', '_').replace("'", '').replace('-', '_')
-                logger.info(f"Looking for images with base name: {route_file_name}")
-                
-# ==========================================
-# Enhanced Route Image Finding Logic
-# ==========================================
-                # Prepare to search for all available images
-                route_file_name = result['Route'].lower().replace(' ', '_').replace("'", '').replace('-', '_')
-                logger.info(f"Looking for images with base name: {route_file_name}")
-
-                # Find all valid base paths
-                valid_base_paths = []
-                potential_paths = [
-                    "/app/route_images",
-                    "/route_images", 
-                    "route_images",
-                    "/home/micah-reeves/Desktop/zwift-route-bot/route_images"
-                ]
-                for path in potential_paths:
-                    if os.path.exists(path):
-                        valid_base_paths.append(path)
-                        logger.info(f"Found valid base path: {path}")
-
-                # Create common naming variations
-                route_variations = [
-                    route_file_name,
-                    route_file_name.replace('_', '-'),
-                    result['Route'].lower().replace(' ', '-').replace("'", ''),
-                    ''.join(result['Route'].lower().split()),
-                    '_'.join(result['Route'].lower().split()[:1]) + '_' + '-'.join(result['Route'].lower().split()[1:])
-                ]
-
-                # Find all images with thorough directory scanning
-                existing_images = {}
-                image_subdirs = {
-                    "profiles": "Profile",
-                    "inclines": "Incline",
-                    "maps": "Map"
-                }
-
-                # Scan directories and find matches
-                for base_path in valid_base_paths:
-                    for subdir, image_type in image_subdirs.items():
-                        if image_type in existing_images:
-                            continue  # Already found this image type
-                            
-                        subdir_path = os.path.join(base_path, subdir)
-                        if not os.path.exists(subdir_path):
-                            continue
-                            
-                        try:
-                            # Get all files in the directory
-                            all_files = os.listdir(subdir_path)
-                            # Display a sample of files to debug
-                            logger.info(f"Files in {subdir_path} (first 5): {', '.join(all_files[:5])}")
-                            
-                            # Convert all filenames to lowercase for case-insensitive matching
-                            all_files_lower = {f.lower(): f for f in all_files}
-                            
-                            # Try exact matches with various naming patterns first
-                            found_match = False
-                            for variation in route_variations:
-                                for ext in ['.png', '.jpg', '.webp']:
-                                    test_filename = variation + ext
-                                    if test_filename in all_files_lower:
-                                        # Use the actual filename with original case
-                                        original_filename = all_files_lower[test_filename]
-                                        img_path = os.path.join(subdir_path, original_filename)
-                                        existing_images[image_type] = img_path
-                                        logger.info(f"Found {image_type} image with pattern match: {img_path}")
-                                        found_match = True
-                                        break
-                                if found_match:
-                                    break
-                            
-                            # If no exact matches, try substring matches
-                            if not found_match:
-                                # Check if any filename contains our route name
-                                for actual_file, original_file in all_files_lower.items():
-                                    if any(variation in actual_file for variation in route_variations):
-                                        img_path = os.path.join(subdir_path, original_file)
-                                        existing_images[image_type] = img_path
-                                        logger.info(f"Found {image_type} image with substring match: {img_path}")
-                                        found_match = True
-                                        break
-                            
-                            # Last resort: try matching key parts of the route name
-                            if not found_match:
-                                # Get individual words from route name
-                                word_parts = result['Route'].lower().split()
-                                # Only use words with 4+ characters (more distinctive)
-                                significant_parts = [w for w in word_parts if len(w) >= 4]
-                                
-                                for part in significant_parts:
-                                    for actual_file, original_file in all_files_lower.items():
-                                        if part in actual_file:
-                                            img_path = os.path.join(subdir_path, original_file)
-                                            existing_images[image_type] = img_path
-                                            logger.info(f"Found {image_type} image using keyword '{part}': {img_path}")
-                                            found_match = True
-                                            break
-                                    if found_match:
-                                        break
-                        except Exception as e:
-                            logger.warning(f"Error scanning directory {subdir_path}: {e}")              
-                
-                # For reliable testing, focus on one path approach
-                existing_images = {}
-                
-                # Try absolute path first (Docker container expected path)
-                profile_path = f"/app/route_images/profiles/{route_file_name}.png"
-                if os.path.exists(profile_path):
-                    existing_images["Profile"] = profile_path
-                    logger.info(f"Found profile image at {profile_path}")
-                else:
-                    # Try relative path as fallback
-                    profile_path = f"route_images/profiles/{route_file_name}.png"
-                    if os.path.exists(profile_path):
-                        existing_images["Profile"] = profile_path
-                        logger.info(f"Found profile image at relative path {profile_path}")
-                
-                # Determine image path approach for remaining images based on what worked
-                base_path = "/app/route_images" if "/app" in profile_path else "route_images"
-                
-                # Check for incline image
-                incline_path = f"{base_path}/inclines/{route_file_name}.png"
-                if os.path.exists(incline_path):
-                    existing_images["Incline"] = incline_path
-                    logger.info(f"Found incline image at {incline_path}")
-                
-                # Check for map image
-                map_path = f"{base_path}/maps/{route_file_name}.png"
-                if os.path.exists(map_path):
-                    existing_images["Map"] = map_path
-                    logger.info(f"Found map image at {map_path}")
-                
                 if existing_images:
                     description_parts.append(f"**{len(existing_images)} route images available below**")
                 else:
-                    description_parts.append("**No route images available**")
+                    description_parts.append("**No route images found**")
                 
                 embed.description = "\n".join(description_parts)
                 
@@ -1106,35 +1041,20 @@ class ZwiftBot(discord.Client):
                             color=0xFC6719
                         )
                         
-                        # Create a very simple filename for the attachment
+                        # Use a simple filename for Discord attachment
                         simple_filename = f"{image_name.lower()}.png"
                         
-                        # Check file size and permissions
-                        try:
-                            file_size = os.path.getsize(image_path)
-                            file_permissions = oct(os.stat(image_path).st_mode)[-3:]
-                            logger.info(f"File {image_path} size: {file_size} bytes, permissions: {file_permissions}")
-                        except Exception as e:
-                            logger.error(f"Error checking file details: {e}")
-                        
-                        # Create the file object with a simplified name
+                        # Create file object and set image
                         file = discord.File(image_path, filename=simple_filename)
-                        
-                        # Set the image URL to match the simplified filename exactly
                         img_embed.set_image(url=f"attachment://{simple_filename}")
                         
-                        # Send with file attachment
+                        # Send with attachment
                         await interaction.followup.send(embed=img_embed, file=file)
                         logger.info(f"Successfully sent {image_name} image")
                     except Exception as img_error:
                         logger.error(f"Error sending {image_name} image: {img_error}")
                         import traceback
                         logger.error(traceback.format_exc())
-                        
-                        # Try to send error message
-                        await interaction.followup.send(
-                            f"Error showing {image_name} image: {str(img_error)[:100]}..."
-                        )
                 
                 # Add a note about alternatives if any
                 if alternatives:
@@ -1165,14 +1085,12 @@ class ZwiftBot(discord.Client):
                 await interaction.followup.send(
                     embed=discord.Embed(
                         title="❌ Error",
-                        description=f"An error occurred while processing your request: {str(e)[:100]}...",
+                        description="An error occurred while processing your request.",
                         color=discord.Color.red()
                     )
                 )
             except Exception as err:
                 logger.error(f"Failed to send error message: {err}")
-
-
 
     # ==========================================
     # ZwiftDS Command Implementation
