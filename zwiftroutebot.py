@@ -975,7 +975,8 @@ class ZwiftBot(discord.Client):
                     route_file_name,
                     route_file_name.replace('_', '-'),
                     result['Route'].lower().replace(' ', '-').replace("'", ''),
-                    ''.join(result['Route'].lower().split())  # No spaces or underscores
+                    ''.join(result['Route'].lower().split()),
+                    '_'.join(result['Route'].lower().split()[:1]) + '_' + '-'.join(result['Route'].lower().split()[1:])
                 ]
 
                 # Find all images with thorough directory scanning
