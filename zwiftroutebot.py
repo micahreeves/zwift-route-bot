@@ -1000,6 +1000,15 @@ class ZwiftBot(discord.Client):
         @self.tree.command(name="refresh_all_routes", description="Force refresh all route data (Admin only)")
         async def refresh_all_routes_command(interaction):
             await self.refresh_all_routes(interaction)
+
+# ==========================================
+# Register Refresh Route Command
+# ==========================================
+
+        # Route with refresh option
+        @self.tree.command(name="refresh_route", description="Refresh and get updated info for a Zwift route")
+        async def refresh_route_command(interaction, name: str):
+            await self.refresh_route(interaction, name)
         
         
     
