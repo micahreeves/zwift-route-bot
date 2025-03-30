@@ -724,6 +724,32 @@ class RouteCache:
             logger.error(f"Unexpected error in periodic update task: {e}")
             import traceback
             logger.error(traceback.format_exc())
+# ==========================================
+# Force Cache Refresh Method
+# ==========================================
+
+    async def force_refresh(self):
+        """
+        Force a refresh of the route cache data regardless of age.
+        
+        Returns:
+            dict: Refreshed cache of route details
+        """
+        logger.info("Force refreshing route cache...")
+        try:
+            new_cache = await self.cache_route_details()
+            
+            # Save cache to file
+            with open(self.CACHE_FILE, 'w', encoding='utf-8') as f:
+                json.dump(new_cache, f, indent=2)
+            logger.info(f"Successfully force refreshed cache with {len(new_cache)} routes")
+            
+            return new_cache
+        except Exception as e:
+            logger.error(f"Error during force refresh: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return {}
 
 # ==========================================
 # Route Refresh Command
