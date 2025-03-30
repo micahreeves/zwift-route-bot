@@ -751,173 +751,7 @@ class RouteCache:
             logger.error(traceback.format_exc())
             return {}
 
-# ==========================================
-# Route Refresh Command
-# ==========================================
-
-    async def refresh_route(self, interaction, name):
-        """
-        Refresh data for a specific route and display it.
-        
-        Args:
-            interaction: The Discord interaction
-            name: The name of the route to refresh
-        """
-        if not interaction.user:
-            return
-        
-        try:
-            # Defer the response
-            await interaction.response.defer(thinking=True)
-            
-            # Find the route first
-            result, alternatives = find_route(name)
-            
-            if not result:
-                await interaction.followup.send(
-                    embed=discord.Embed(
-                        title="❌ Route Not Found",
-                        description=f"Could not find a route matching '{name}'.",
-                        color=discord.Color.red()
-                    )
-                )
-                return
-                
-            # Create a temporary session just for this request
-            async with aiohttp.ClientSession() as session:
-                logger.info(f"Refreshing data for route: {result['Route']}")
-                
-                try:
-                    # Fetch updated route details
-                    route_data = await self.cache.fetch_route_details(session, result)
-                    
-                    if route_data and 'route_name' in route_data:
-                        # Update the cache
-                        self.route_cache_data[result['Route']] = route_data
-                        
-                        # Save the updated cache
-                        with open(self.cache.CACHE_FILE, 'w', encoding='utf-8') as f:
-                            json.dump(self.route_cache_data, f, indent=2)
-                        
-                        await interaction.followup.send(
-                            embed=discord.Embed(
-                                title="✅ Route Refreshed",
-                                description=f"Successfully refreshed data for '{result['Route']}'.",
-                                color=discord.Color.green()
-                            )
-                        )
-                    else:
-                        await interaction.followup.send(
-                            embed=discord.Embed(
-                                title="⚠️ Partial Refresh",
-                                description=f"Route was found but complete data couldn't be refreshed. Using existing data if available.",
-                                color=discord.Color.orange()
-                            )
-                        )
-                except Exception as e:
-                    logger.error(f"Error refreshing route {name}: {e}")
-                    await interaction.followup.send(
-                        embed=discord.Embed(
-                            title="❌ Refresh Error",
-                            description=f"An error occurred while refreshing the route data: {str(e)}",
-                            color=discord.Color.red()
-                        )
-                    )
-            
-            # Now display the route with updated or existing data
-            await self.route(interaction, name)
-            
-        except Exception as e:
-            logger.error(f"Error in refresh_route command: {e}")
-            import traceback
-            logger.error(traceback.format_exc())
-            
-            try:
-                await interaction.followup.send(
-                    embed=discord.Embed(
-                        title="❌ Error",
-                        description="An error occurred while processing your request.",
-                        color=discord.Color.red()
-                    )
-                )
-            except Exception as err:
-                logger.error(f"Failed to send error message: {err}")
-
-# ==========================================
-# Admin Route Cache Refresh Command
-# ==========================================
-
-    async def refresh_all_routes(self, interaction):
-        """
-        Force refresh all route data in the cache.
-        Admin-only command.
-        
-        Args:
-            interaction: The Discord interaction
-        """
-        if not interaction.user:
-            return
-        
-        # Check if user is admin
-        if interaction.user.id not in ADMIN_IDS:
-            await interaction.response.send_message(
-                embed=discord.Embed(
-                    title="❌ Permission Denied",
-                    description="You don't have permission to use this command.",
-                    color=discord.Color.red()
-                ),
-                ephemeral=True
-            )
-            return
-        
-        try:
-            # Defer the response (this might take a while)
-            await interaction.response.defer(thinking=True)
-            
-            logger.info(f"Admin {interaction.user.name} ({interaction.user.id}) initiated full cache refresh")
-            
-            # Force refresh all routes
-            start_time = time.time()
-            updated_cache = await self.cache.force_refresh()
-            elapsed_time = time.time() - start_time
-            
-            if updated_cache:
-                # Update the bot's cached data
-                self.route_cache_data = updated_cache
-                
-                # Send success message
-                await interaction.followup.send(
-                    embed=discord.Embed(
-                        title="✅ Cache Refresh Complete",
-                        description=f"Successfully refreshed data for {len(updated_cache)} routes in {elapsed_time:.1f} seconds.",
-                        color=discord.Color.green()
-                    )
-                )
-            else:
-                # Send error message
-                await interaction.followup.send(
-                    embed=discord.Embed(
-                        title="❌ Cache Refresh Failed",
-                        description="Failed to refresh the route cache. Check the logs for details.",
-                        color=discord.Color.red()
-                    )
-                )
-        
-        except Exception as e:
-            logger.error(f"Error in refresh_all_routes command: {e}")
-            import traceback
-            logger.error(traceback.format_exc())
-            
-            try:
-                await interaction.followup.send(
-                    embed=discord.Embed(
-                        title="❌ Error",
-                        description=f"An error occurred while refreshing the cache: {str(e)}",
-                        color=discord.Color.red()
-                    )
-                )
-            except Exception as err:
-                logger.error(f"Failed to send error message: {err}")   
+ 
 
 
 # ==========================================
@@ -1296,7 +1130,173 @@ class ZwiftBot(discord.Client):
                 )
             except Exception as err:
                 logger.error(f"Failed to send error message: {err}")
+# ==========================================
+# Route Refresh Command
+# ==========================================
 
+    async def refresh_route(self, interaction, name):
+        """
+        Refresh data for a specific route and display it.
+        
+        Args:
+            interaction: The Discord interaction
+            name: The name of the route to refresh
+        """
+        if not interaction.user:
+            return
+        
+        try:
+            # Defer the response
+            await interaction.response.defer(thinking=True)
+            
+            # Find the route first
+            result, alternatives = find_route(name)
+            
+            if not result:
+                await interaction.followup.send(
+                    embed=discord.Embed(
+                        title="❌ Route Not Found",
+                        description=f"Could not find a route matching '{name}'.",
+                        color=discord.Color.red()
+                    )
+                )
+                return
+                
+            # Create a temporary session just for this request
+            async with aiohttp.ClientSession() as session:
+                logger.info(f"Refreshing data for route: {result['Route']}")
+                
+                try:
+                    # Fetch updated route details
+                    route_data = await self.cache.fetch_route_details(session, result)
+                    
+                    if route_data and 'route_name' in route_data:
+                        # Update the cache
+                        self.route_cache_data[result['Route']] = route_data
+                        
+                        # Save the updated cache
+                        with open(self.cache.CACHE_FILE, 'w', encoding='utf-8') as f:
+                            json.dump(self.route_cache_data, f, indent=2)
+                        
+                        await interaction.followup.send(
+                            embed=discord.Embed(
+                                title="✅ Route Refreshed",
+                                description=f"Successfully refreshed data for '{result['Route']}'.",
+                                color=discord.Color.green()
+                            )
+                        )
+                    else:
+                        await interaction.followup.send(
+                            embed=discord.Embed(
+                                title="⚠️ Partial Refresh",
+                                description=f"Route was found but complete data couldn't be refreshed. Using existing data if available.",
+                                color=discord.Color.orange()
+                            )
+                        )
+                except Exception as e:
+                    logger.error(f"Error refreshing route {name}: {e}")
+                    await interaction.followup.send(
+                        embed=discord.Embed(
+                            title="❌ Refresh Error",
+                            description=f"An error occurred while refreshing the route data: {str(e)}",
+                            color=discord.Color.red()
+                        )
+                    )
+            
+            # Now display the route with updated or existing data
+            await self.route(interaction, name)
+            
+        except Exception as e:
+            logger.error(f"Error in refresh_route command: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            
+            try:
+                await interaction.followup.send(
+                    embed=discord.Embed(
+                        title="❌ Error",
+                        description="An error occurred while processing your request.",
+                        color=discord.Color.red()
+                    )
+                )
+            except Exception as err:
+                logger.error(f"Failed to send error message: {err}")
+
+# ==========================================
+# Admin Route Cache Refresh Command
+# ==========================================
+
+    async def refresh_all_routes(self, interaction):
+        """
+        Force refresh all route data in the cache.
+        Admin-only command.
+        
+        Args:
+            interaction: The Discord interaction
+        """
+        if not interaction.user:
+            return
+        
+        # Check if user is admin
+        if interaction.user.id not in ADMIN_IDS:
+            await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="❌ Permission Denied",
+                    description="You don't have permission to use this command.",
+                    color=discord.Color.red()
+                ),
+                ephemeral=True
+            )
+            return
+        
+        try:
+            # Defer the response (this might take a while)
+            await interaction.response.defer(thinking=True)
+            
+            logger.info(f"Admin {interaction.user.name} ({interaction.user.id}) initiated full cache refresh")
+            
+            # Force refresh all routes
+            start_time = time.time()
+            updated_cache = await self.cache.force_refresh()
+            elapsed_time = time.time() - start_time
+            
+            if updated_cache:
+                # Update the bot's cached data
+                self.route_cache_data = updated_cache
+                
+                # Send success message
+                await interaction.followup.send(
+                    embed=discord.Embed(
+                        title="✅ Cache Refresh Complete",
+                        description=f"Successfully refreshed data for {len(updated_cache)} routes in {elapsed_time:.1f} seconds.",
+                        color=discord.Color.green()
+                    )
+                )
+            else:
+                # Send error message
+                await interaction.followup.send(
+                    embed=discord.Embed(
+                        title="❌ Cache Refresh Failed",
+                        description="Failed to refresh the route cache. Check the logs for details.",
+                        color=discord.Color.red()
+                    )
+                )
+        
+        except Exception as e:
+            logger.error(f"Error in refresh_all_routes command: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            
+            try:
+                await interaction.followup.send(
+                    embed=discord.Embed(
+                        title="❌ Error",
+                        description=f"An error occurred while refreshing the cache: {str(e)}",
+                        color=discord.Color.red()
+                    )
+                )
+            except Exception as err:
+                logger.error(f"Failed to send error message: {err}")  
    
 
 # ==========================================
