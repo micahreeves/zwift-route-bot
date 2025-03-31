@@ -1056,7 +1056,34 @@ class ZwiftBot(discord.Client):
                                     logger.info(f"No match found for {img_type}. Available files: {files[:5]}...")
                             except Exception as e:
                                 logger.error(f"Error listing directory {subdir_path}: {e}")
-                
+# ==========================================
+# Enhanced Maps Directory Search Logic
+# ==========================================
+
+                        # Special handling for maps directory which has different naming patterns
+                        if subdir == "maps" and not found:
+                            try:
+                                files = [f for f in os.listdir(subdir_path) if f.lower().endswith('.png')]
+                                
+                                # For maps, try simple substring matching
+                                route_keywords = route_name_lower.split()
+                                
+                                for file in files:
+                                    file_lower = file.lower()
+                                    # Check if ANY of the keywords from the route name are in the filename
+                                    if any(keyword in file_lower for keyword in route_keywords):
+                                        img_path = os.path.join(subdir_path, file)
+                                        existing_images[img_type] = img_path
+                                        logger.info(f"Found keyword match for {img_type}: {file}")
+                                        found = True
+                                        break
+                                        
+                                if not found:
+                                    logger.info(f"No keyword match found for {img_type} in maps directory. Available files: {files[:5]}...")
+                            except Exception as e:
+                                logger.error(f"Error with special maps directory handling: {e}")
+
+
                 # Add a description with available resources
                 description_parts = []
                 description_parts.append(f"View full details on [ZwiftInsider]({result['URL']})")
