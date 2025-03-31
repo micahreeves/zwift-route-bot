@@ -1057,7 +1057,7 @@ class ZwiftBot(discord.Client):
                             except Exception as e:
                                 logger.error(f"Error listing directory {subdir_path}: {e}")
 # ==========================================
-# Enhanced Maps Directory Search Logic
+# More Strict Maps Directory Search Logic
 # ==========================================
 
                         # Special handling for maps directory which has different naming patterns
@@ -1065,21 +1065,31 @@ class ZwiftBot(discord.Client):
                             try:
                                 files = [f for f in os.listdir(subdir_path) if f.lower().endswith('.png')]
                                 
-                                # For maps, try simple substring matching
-                                route_keywords = route_name_lower.split()
+                                # For maps, try more strict keyword matching
+                                # Use longer keywords to reduce false matches
+                                route_keywords = [word for word in route_name_lower.split() if len(word) > 3]
+                                
+                                # If we don't have any long keywords, fall back to all keywords
+                                if not route_keywords:
+                                    route_keywords = route_name_lower.split()
+                                
+                                # Look for files that contain at least 2 keywords (if possible)
+                                min_keywords = min(2, len(route_keywords))
                                 
                                 for file in files:
                                     file_lower = file.lower()
-                                    # Check if ANY of the keywords from the route name are in the filename
-                                    if any(keyword in file_lower for keyword in route_keywords):
+                                    # Count how many keywords match
+                                    matching_keywords = sum(1 for keyword in route_keywords if keyword in file_lower)
+                                    
+                                    if matching_keywords >= min_keywords:
                                         img_path = os.path.join(subdir_path, file)
                                         existing_images[img_type] = img_path
-                                        logger.info(f"Found keyword match for {img_type}: {file}")
+                                        logger.info(f"Found strict keyword match for {img_type}: {file} ({matching_keywords} keywords)")
                                         found = True
                                         break
                                         
                                 if not found:
-                                    logger.info(f"No keyword match found for {img_type} in maps directory. Available files: {files[:5]}...")
+                                    logger.info(f"No strict keyword match found for {img_type} in maps directory. Keywords: {route_keywords}")
                             except Exception as e:
                                 logger.error(f"Error with special maps directory handling: {e}")
 
