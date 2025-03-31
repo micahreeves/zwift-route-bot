@@ -1026,6 +1026,10 @@ class ZwiftBot(discord.Client):
                                 found = True
                                 break
                                 
+# ==========================================
+# Enhanced Image Search Logging
+# ==========================================
+
                         # If no exact match, try fuzzy matching with directory listing
                         if not found:
                             try:
@@ -1036,7 +1040,7 @@ class ZwiftBot(discord.Client):
                                 
                                 # Try difflib for fuzzy matching
                                 for variation in route_variations:
-                                    close_matches = get_close_matches(variation, file_bases, n=1, cutoff=0.7)
+                                    close_matches = get_close_matches(variation, file_bases, n=1, cutoff=0.6)  # Lowered cutoff to 0.6
                                     
                                     if close_matches:
                                         match_index = file_bases.index(close_matches[0])
@@ -1044,7 +1048,12 @@ class ZwiftBot(discord.Client):
                                         img_path = os.path.join(subdir_path, matched_file)
                                         existing_images[img_type] = img_path
                                         logger.info(f"Found fuzzy match for {img_type}: {matched_file}")
-                                        break
+                                        found = True
+                                        break  # Only break out of the variation loop, not the directory loop
+                                
+                                # Add an additional fallback if needed - list available files
+                                if not found:
+                                    logger.info(f"No match found for {img_type}. Available files: {files[:5]}...")
                             except Exception as e:
                                 logger.error(f"Error listing directory {subdir_path}: {e}")
                 
@@ -1055,7 +1064,7 @@ class ZwiftBot(discord.Client):
                 # Format route name for Cyccal URL
                 cyccal_route_name = result['Route'].lower().replace(' ', '-')
                 cyccal_url = f"https://cyccal.com/{cyccal_route_name}/"
-                description_parts.append(f"Check [Cyccal]({cyccal_url}) for user times")
+                description_parts.append(f"Check [Cyccal]({cyccal_url}) for additional INFO")
                 
                 if existing_images:
                     description_parts.append(f"**{len(existing_images)} route images available below**")
