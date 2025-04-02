@@ -1104,13 +1104,13 @@
     },
     {
         "Route": "Radio Rendezvous",
-        "URL": "https://zwiftinsider.com/route/radio-rendezvous/"
+        "URL": "https://zwiftinsider.com/route/radio-rendezvous/",
         "StravaURL": "https://www.strava.com/segments/37716248",
         "VeloViewerURL": "https://veloviewer.com/segment/37716248"
     },
     {
         "Route": "Rolling Highlands",
-        "URL": "https://zwiftinsider.com/route/rolling-highlands/"
+        "URL": "https://zwiftinsider.com/route/rolling-highlands/",
         "StravaURL": "https://www.strava.com/segments/33620176",
         "VeloViewerURL": "https://veloviewer.com/segment/33620176"
     }
