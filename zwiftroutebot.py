@@ -572,6 +572,7 @@ class RouteCache:
                     if lead_in_match:
                         lead_in_km = float(lead_in_match.group(1))
                         logger.info(f"Found lead-in: {lead_in_km} km")
+                        route_data['lead_in_km'] = lead_in_km
     # Validate the extracted values
                 if distance_km:
                     # Check for reasonable distance range (0.1 - 150 km)
