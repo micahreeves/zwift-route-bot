@@ -2,326 +2,460 @@
     {
         "Route": "Glasgow Crit Circuit",
         "URL": "https://zwiftinsider.com/route/glasgow-crit-circuit/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Scotland_Glasgow_Crit_Circuit_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Scotland_Glasgow_Crit_Circuit_profile.png",
+        "StravaURL": "https://www.strava.com/segments/33620076",
+        "VeloViewerURL": "https://veloviewer.com/segments/33620076"
     },
     {
         "Route": "Neokyo Crit Course",
-        "URL": "https://zwiftinsider.com/route/neokyo-crit-course/"
+        "URL": "https://zwiftinsider.com/route/neokyo-crit-course/",
+        "StravaURL": "https://www.strava.com/segments/34903851",
+        "VeloViewerURL": "https://veloviewer.com/segments/34903851"
     },
     {
         "Route": "Mech Isle Loop",
-        "URL": "https://zwiftinsider.com/route/mech-isle-loop/"
-    },
-    {
-        "Route": "Downtown Dolphin",
-        "URL": "https://zwiftinsider.com/route/downtown-dolphin/"
+        "URL": "https://zwiftinsider.com/route/mech-isle-loop/",
+        "StravaURL": "https://www.strava.com/segments/33214506",
+        "VeloViewerURL": "https://veloviewer.com/segments/33214506"
     },
     {
         "Route": "Seaside Sprint",
-        "URL": "https://zwiftinsider.com/route/seaside-sprint/"
-    },
-    {
-        "Route": "Beach Island Loop",
-        "URL": "https://zwiftinsider.com/route/beach-island-loop/"
+        "URL": "https://zwiftinsider.com/route/seaside-sprint/",
+        "StravaURL": "https://www.strava.com/segments/22913457",
+        "VeloViewerURL": "https://veloviewer.com/segments/22913457"
     },
     {
         "Route": "Duchy Estate",
-        "URL": "https://zwiftinsider.com/route/duchy-estate/"
+        "URL": "https://zwiftinsider.com/route/duchy-estate/",
+        "StravaURL": "https://www.strava.com/segments/21747962",
+        "VeloViewerURL": "https://veloviewer.com/segments/21747962"
     },
     {
         "Route": "Twilight Harbor",
-        "URL": "https://zwiftinsider.com/route/twilight-harbor/"
+        "URL": "https://zwiftinsider.com/route/twilight-harbor/",
+        "StravaURL": "https://www.strava.com/segments/30629791",
+        "VeloViewerURL": "https://veloviewer.com/segments/30629791"
     },
     {
         "Route": "Volcano Circuit",
-        "URL": "https://zwiftinsider.com/route/volcano-circuit/"
+        "URL": "https://zwiftinsider.com/route/volcano-circuit/",
+        "StravaURL": "https://www.strava.com/segments/27139516",
+        "VeloViewerURL": "https://veloviewer.com/segments/27139516"
     },
     {
         "Route": "Castle Crit",
-        "URL": "https://zwiftinsider.com/route/castle-crit/"
+        "URL": "https://zwiftinsider.com/route/castle-crit/",
+        "StravaURL": "https://www.strava.com/segments/30326079",
+        "VeloViewerURL": "https://veloviewer.com/segments/30326079"
     },
     {
         "Route": "The 6 Train",
-        "URL": "https://zwiftinsider.com/route/the-6-train/"
+        "URL": "https://zwiftinsider.com/route/the-6-train/",
+        "StravaURL": "https://www.strava.com/segments/19172136",
+        "VeloViewerURL": "https://veloviewer.com/segments/19172136"
     },
     {
         "Route": "Queen's Highway",
-        "URL": "https://zwiftinsider.com/route/queens-highway/"
+        "URL": "https://zwiftinsider.com/route/queens-highway/",
+        "StravaURL": "https://www.strava.com/segments/21748231",
+        "VeloViewerURL": "https://veloviewer.com/segments/21748231"
     },
     {
         "Route": "Sea to Tree",
-        "URL": "https://zwiftinsider.com/route/sea-to-tree/"
+        "URL": "https://zwiftinsider.com/route/sea-to-tree/",
+        "StravaURL": "https://www.strava.com/segments/28432204",
+        "VeloViewerURL": "https://veloviewer.com/segments/28432204"
     },
     {
         "Route": "Rooftop Rendezvous",
-        "URL": "https://zwiftinsider.com/route/rooftop-rendezvous/"
+        "URL": "https://zwiftinsider.com/route/rooftop-rendezvous/",
+        "StravaURL": "https://www.strava.com/segments/30407898",
+        "VeloViewerURL": "https://veloviewer.com/segments/30407898"
     },
     {
         "Route": "Two Bridges Loop",
-        "URL": "https://zwiftinsider.com/route/two-bridges-loop/"
+        "URL": "https://zwiftinsider.com/route/two-bridges-loop/",
+        "StravaURL": "https://www.strava.com/segments/26741685",
+        "VeloViewerURL": "https://veloviewer.com/segments/26741685"
     },
     {
         "Route": "Farmland Loop",
-        "URL": "https://zwiftinsider.com/route/farmland-loop/"
+        "URL": "https://zwiftinsider.com/route/farmland-loop/",
+        "StravaURL": "https://www.strava.com/segments/29534888",
+        "VeloViewerURL": "https://veloviewer.com/segments/29534888"
     },
     {
         "Route": "Loch Loop",
         "URL": "https://zwiftinsider.com/route/loch-loop/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Scotland_Loch_Loop_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Scotland_Loch_Loop_profile.png",
+        "StravaURL": "https://www.strava.com/segments/33636526",
+        "VeloViewerURL": "https://veloviewer.com/segments/33636526"
     },
     {
         "Route": "Electric Loop",
         "URL": "https://zwiftinsider.com/route/electric-loop/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Electric_Loop_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Electric_Loop_profile.png",
+        "StravaURL": "https://www.strava.com/segments/30987848",
+        "VeloViewerURL": "https://veloviewer.com/segments/30987848"
     },
     {
         "Route": "Bridges and Boardwalks",
-        "URL": "https://zwiftinsider.com/route/bridges-and-boardwalks/"
+        "URL": "https://zwiftinsider.com/route/bridges-and-boardwalks/",
+        "StravaURL": "https://www.strava.com/segments/33221600",
+        "VeloViewerURL": "https://veloviewer.com/segments/33221600"
     },
     {
         "Route": "The Fan Flats",
-        "URL": "https://zwiftinsider.com/route/the-fan-flats/"
+        "URL": "https://zwiftinsider.com/route/the-fan-flats/",
+        "StravaURL": "https://www.strava.com/segments/19852166",
+        "VeloViewerURL": "https://veloviewer.com/segments/19852166"
     },
     {
         "Route": "Temple Trek",
-        "URL": "https://zwiftinsider.com/route/temple-trek/"
+        "URL": "https://zwiftinsider.com/route/temple-trek/",
+        "StravaURL": "https://www.strava.com/segments/35705430",
+        "VeloViewerURL": "https://veloviewer.com/segments/35705430"
     },
     {
         "Route": "Valley to Mountaintop",
-        "URL": "https://zwiftinsider.com/route/valley-to-mountaintop/"
+        "URL": "https://zwiftinsider.com/route/valley-to-mountaintop/",
+        "StravaURL": "https://www.strava.com/segments/29559312",
+        "VeloViewerURL": "https://veloviewer.com/segments/29559312"
     },
     {
         "Route": "Sleepless City",
         "URL": "https://zwiftinsider.com/route/sleepless-city/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Sleepless_City_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Sleepless_City_profile.png",
+        "StravaURL": "https://www.strava.com/segments/30407957",
+        "VeloViewerURL": "https://veloviewer.com/segments/30407957"
     },
     {
         "Route": "Volcano Circuit CCW",
-        "URL": "https://zwiftinsider.com/route/volcano-circuit-ccw/"
+        "URL": "https://zwiftinsider.com/route/volcano-circuit-ccw/",
+        "StravaURL": "https://www.strava.com/segments/14032426",
+        "VeloViewerURL": "https://veloviewer.com/segments/14032426"
     },
     {
         "Route": "The Classic",
-        "URL": "https://zwiftinsider.com/route/the-classic/"
+        "URL": "https://zwiftinsider.com/route/the-classic/",
+        "StravaURL": "https://www.strava.com/segments/8907146",
+        "VeloViewerURL": "https://veloviewer.com/segments/8907146"
     },
     {
         "Route": "Innsbruckring",
-        "URL": "https://zwiftinsider.com/route/innsbruckring/"
+        "URL": "https://zwiftinsider.com/route/innsbruckring/",
+        "StravaURL": "https://www.strava.com/segments/18398895",
+        "VeloViewerURL": "https://veloviewer.com/segments/18398895"
     },
     {
         "Route": "Railways and Rooftops",
-        "URL": "https://zwiftinsider.com/route/railways-and-rooftops/"
+        "URL": "https://zwiftinsider.com/route/railways-and-rooftops/",
+        "StravaURL": "https://www.strava.com/segments/30407802",
+        "VeloViewerURL": "https://veloviewer.com/segments/30407802"
     },
     {
-        "Route": "Champs-Élysées",
-        "URL": "https://zwiftinsider.com/route/champs-elysees/"
+        "Route": "Champs-\u00c9lys\u00e9es",
+        "URL": "https://zwiftinsider.com/route/champs-elysees/",
+        "StravaURL": "https://www.strava.com/segments/24674235",
+        "VeloViewerURL": "https://veloviewer.com/segments/24674235"
     },
     {
         "Route": "Handful of Gravel",
-        "URL": "https://zwiftinsider.com/route/handful-of-gravel/"
+        "URL": "https://zwiftinsider.com/route/handful-of-gravel/",
+        "StravaURL": "https://www.strava.com/segments/31095294",
+        "VeloViewerURL": "https://veloviewer.com/segments/31095294"
     },
     {
         "Route": "Gotham Grind",
-        "URL": "https://zwiftinsider.com/route/gotham-grind/"
+        "URL": "https://zwiftinsider.com/route/gotham-grind/",
+        "StravaURL": "https://www.strava.com/segments/19820820",
+        "VeloViewerURL": "https://veloviewer.com/segments/19820820"
     },
     {
         "Route": "Flat Route",
         "URL": "https://zwiftinsider.com/route/flat-route/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Flat_Route_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Flat_Route_profile.png",
+        "StravaURL": "https://www.strava.com/segments/27130302",
+        "VeloViewerURL": "https://veloviewer.com/segments/27130302"
     },
     {
         "Route": "Lutece Express",
-        "URL": "https://zwiftinsider.com/route/lutece-express/"
+        "URL": "https://zwiftinsider.com/route/lutece-express/",
+        "StravaURL": "https://www.strava.com/segments/24674248",
+        "VeloViewerURL": "https://veloviewer.com/segments/24674248"
     },
     {
         "Route": "Hilly Route",
         "URL": "https://zwiftinsider.com/route/hilly-route/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Hilly_Route_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Hilly_Route_profile.png",
+        "StravaURL": "https://www.strava.com/segments/12118362",
+        "VeloViewerURL": "https://veloviewer.com/segments/12118362"
     },
     {
         "Route": "Hilly Route Reverse",
         "URL": "https://zwiftinsider.com/route/hilly-route-reverse/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Hilly_Route_Reverse_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Hilly_Route_Reverse_profile.png",
+        "StravaURL": "https://www.strava.com/segments/12128037",
+        "VeloViewerURL": "https://veloviewer.com/segments/12128037"
     },
     {
         "Route": "Classique",
-        "URL": "https://zwiftinsider.com/route/classique/"
+        "URL": "https://zwiftinsider.com/route/classique/",
+        "StravaURL": "https://www.strava.com/segments/12749761",
+        "VeloViewerURL": "https://veloviewer.com/segments/12749761"
     },
     {
         "Route": "Fine and Sandy",
         "URL": "https://zwiftinsider.com/route/fine-and-sandy/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Fine_and_Sandy_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Fine_and_Sandy_profile.png",
+        "StravaURL": "https://www.strava.com/segments/33237114",
+        "VeloViewerURL": "https://veloviewer.com/segments/33237114"
     },
     {
         "Route": "Grand Central Circuit",
-        "URL": "https://zwiftinsider.com/route/grand-central-circuit/"
+        "URL": "https://zwiftinsider.com/route/grand-central-circuit/",
+        "StravaURL": "https://www.strava.com/segments/19141192",
+        "VeloViewerURL": "https://veloviewer.com/segments/19141192"
     },
     {
         "Route": "Cobbled Climbs",
-        "URL": "https://zwiftinsider.com/route/cobbled-climbs/"
+        "URL": "https://zwiftinsider.com/route/cobbled-climbs/",
+        "StravaURL": "https://www.strava.com/segments/11308213",
+        "VeloViewerURL": "https://veloviewer.com/segments/11308213"
     },
     {
         "Route": "Park Perimeter Loop",
-        "URL": "https://zwiftinsider.com/route/park-perimeter-loop/"
+        "URL": "https://zwiftinsider.com/route/park-perimeter-loop/",
+        "StravaURL": "https://www.strava.com/segments/19170651",
+        "VeloViewerURL": "https://veloviewer.com/segments/19170651"
     },
     {
         "Route": "Park Perimeter Reverse",
-        "URL": "https://zwiftinsider.com/route/park-perimeter-reverse/"
+        "URL": "https://zwiftinsider.com/route/park-perimeter-reverse/",
+        "StravaURL": "https://www.strava.com/segments/19170661",
+        "VeloViewerURL": "https://veloviewer.com/segments/19170661"
     },
     {
         "Route": "Volcano Flat",
         "URL": "https://zwiftinsider.com/route/volcano-flat/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Volcano_Flat_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Volcano_Flat_profile.png",
+        "StravaURL": "https://www.strava.com/segments/14032442",
+        "VeloViewerURL": "https://veloviewer.com/segments/14032442"
     },
     {
         "Route": "Island Outskirts",
         "URL": "https://zwiftinsider.com/route/island-outskirts/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Island_Outskirts_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Island_Outskirts_profile.png",
+        "StravaURL": "https://www.strava.com/segments/33237309",
+        "VeloViewerURL": "https://veloviewer.com/segments/33237309"
     },
     {
         "Route": "Outer Scotland",
-        "URL": "https://zwiftinsider.com/route/outer-scotland/"
+        "URL": "https://zwiftinsider.com/route/outer-scotland/",
+        "StravaURL": "https://www.strava.com/segments/34255102",
+        "VeloViewerURL": "https://veloviewer.com/segments/34255102"
     },
     {
         "Route": "Tempus Fugit",
         "URL": "https://zwiftinsider.com/route/tempus-fugit/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Tempus_Fugit_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Tempus_Fugit_profile.png",
+        "StravaURL": "https://www.strava.com/segments/20350088",
+        "VeloViewerURL": "https://veloviewer.com/segments/20350088"
     },
     {
         "Route": "Chain Chomper",
         "URL": "https://zwiftinsider.com/route/chain-chomper/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Chain_Chomper_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Chain_Chomper_profile.png",
+        "StravaURL": "https://www.strava.com/segments/28430973",
+        "VeloViewerURL": "https://veloviewer.com/segments/28430973"
     },
     {
         "Route": "Tick Tock",
         "URL": "https://zwiftinsider.com/route/tick-tock/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Tick_Tock_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Tick_Tock_profile.png",
+        "StravaURL": "https://www.strava.com/segments/20350376",
+        "VeloViewerURL": "https://veloviewer.com/segments/20350376"
     },
     {
         "Route": "Going Coastal",
         "URL": "https://zwiftinsider.com/route/going-coastal/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Going_Coastal_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Going_Coastal_profile.png",
+        "StravaURL": "https://www.strava.com/segments/35697589",
+        "VeloViewerURL": "https://veloviewer.com/segments/35697589"
     },
     {
         "Route": "2019 UCI Worlds Harrogate Circuit",
-        "URL": "https://zwiftinsider.com/route/2019-uci-worlds-harrogate-circuit/"
+        "URL": "https://zwiftinsider.com/route/2019-uci-worlds-harrogate-circuit/",
+        "StravaURL": "https://www.strava.com/segments/21738724",
+        "VeloViewerURL": "https://veloviewer.com/segments/21738724"
     },
     {
         "Route": "Countryside Tour",
         "URL": "https://zwiftinsider.com/route/countryside-tour/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Countryside_Tour_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Countryside_Tour_profile.png",
+        "StravaURL": "https://www.strava.com/segments/28431416",
+        "VeloViewerURL": "https://veloviewer.com/segments/28431416"
     },
     {
         "Route": "Island Hopper",
         "URL": "https://zwiftinsider.com/route/island-hopper/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Island_Hopper_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Island_Hopper_profile.png",
+        "StravaURL": "https://www.strava.com/segments/33236919",
+        "VeloViewerURL": "https://veloviewer.com/segments/33236919"
     },
     {
         "Route": "Spirit Forest",
-        "URL": "https://zwiftinsider.com/route/spirit-forest/"
+        "URL": "https://zwiftinsider.com/route/spirit-forest/",
+        "StravaURL": "https://www.strava.com/segments/28432455",
+        "VeloViewerURL": "https://veloviewer.com/segments/28432455"
     },
     {
         "Route": "London Loop",
-        "URL": "https://zwiftinsider.com/route/london-loop/"
+        "URL": "https://zwiftinsider.com/route/london-loop/",
+        "StravaURL": "https://www.strava.com/segments/12749649",
+        "VeloViewerURL": "https://veloviewer.com/segments/12749649"
     },
     {
         "Route": "Kappa Quest",
         "URL": "https://zwiftinsider.com/route/kappa-quest/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Kappa_Quest_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Kappa_Quest_profile.png",
+        "StravaURL": "https://www.strava.com/segments/28432243",
+        "VeloViewerURL": "https://veloviewer.com/segments/28432243"
     },
     {
         "Route": "Suki's Playground",
         "URL": "https://zwiftinsider.com/route/sukis-playground/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Sukis_Playground_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Sukis_Playground_profile.png",
+        "StravaURL": "https://www.strava.com/segments/29009511",
+        "VeloViewerURL": "https://veloviewer.com/segments/29009511"
     },
     {
         "Route": "Whole Lotta Lava",
         "URL": "https://zwiftinsider.com/route/whole-lotta-lava/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Whole_Lotta_Lava_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Whole_Lotta_Lava_profile.png",
+        "StravaURL": "https://www.strava.com/segments/20545879",
+        "VeloViewerURL": "https://veloviewer.com/segments/20545879"
     },
     {
         "Route": "Ocean Lava Cliffside Loop",
         "URL": "https://zwiftinsider.com/route/ocean-lava-cliffside-loop/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Ocean_Lava_Cliffside_Loop_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Ocean_Lava_Cliffside_Loop_profile.png",
+        "StravaURL": "https://www.strava.com/segments/26741663",
+        "VeloViewerURL": "https://veloviewer.com/segments/26741663"
     },
     {
         "Route": "Loopin Lava",
         "URL": "https://zwiftinsider.com/route/loopin-lava/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Loopin_Lava_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Loopin_Lava_profile.png",
+        "StravaURL": "https://www.strava.com/segments/38132886",
+        "VeloViewerURL": "https://veloviewer.com/segments/38132886"
     },
     {
         "Route": "Jurassic Coast",
         "URL": "https://zwiftinsider.com/route/jurassic-coast/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Jurassic_Coast_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Jurassic_Coast_profile.png",
+        "StravaURL": "https://www.strava.com/segments/36343069",
+        "VeloViewerURL": "https://veloviewer.com/segments/36343069"
     },
     {
         "Route": "Mayan San Remo",
         "URL": "https://zwiftinsider.com/route/mayan-san-remo/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Mayan_San_Remo_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Mayan_San_Remo_profile.png",
+        "StravaURL": "https://www.strava.com/segments/11359078",
+        "VeloViewerURL": "https://veloviewer.com/segments/11359078"
     },
     {
         "Route": "Castle to Castle",
         "URL": "https://zwiftinsider.com/route/castle-to-castle/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Castle_to_Castle_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Castle_to_Castle_profile.png",
+        "StravaURL": "https://www.strava.com/segments/30629803",
+        "VeloViewerURL": "https://veloviewer.com/segments/30629803"
     },
     {
         "Route": "London 8",
-        "URL": "https://zwiftinsider.com/route/london-8/"
+        "URL": "https://zwiftinsider.com/route/london-8/",
+        "StravaURL": "https://www.strava.com/segments/12747814",
+        "VeloViewerURL": "https://veloviewer.com/segments/12747814"
     },
     {
         "Route": "Sand and Sequoias",
         "URL": "https://zwiftinsider.com/route/sand-and-sequoias/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Sand_and_Sequoias_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Sand_and_Sequoias_profile.png",
+        "StravaURL": "https://www.strava.com/segments/21343833",
+        "VeloViewerURL": "https://veloviewer.com/segments/21343833"
     },
     {
         "Route": "Douce France",
         "URL": "https://zwiftinsider.com/route/douce-france/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/France_Douce_France_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/France_Douce_France_profile.png",
+        "StravaURL": "https://www.strava.com/segments/24676077",
+        "VeloViewerURL": "https://veloviewer.com/segments/24676077"
     },
     {
         "Route": "Casse-Pattes",
-        "URL": "https://zwiftinsider.com/route/casse-pattes/"
+        "URL": "https://zwiftinsider.com/route/casse-pattes/",
+        "StravaURL": "https://www.strava.com/segments/24674909",
+        "VeloViewerURL": "https://veloviewer.com/segments/24674909"
     },
     {
         "Route": "Greater London Loop",
-        "URL": "https://zwiftinsider.com/route/greater-london-loop/"
+        "URL": "https://zwiftinsider.com/route/greater-london-loop/",
+        "StravaURL": "https://www.strava.com/segments/15158576",
+        "VeloViewerURL": "https://veloviewer.com/segments/15158576"
     },
     {
         "Route": "R.G.V.",
-        "URL": "https://zwiftinsider.com/route/rgv/"
+        "URL": "https://zwiftinsider.com/route/rgv/",
+        "StravaURL": "https://www.strava.com/segments/24685955",
+        "VeloViewerURL": "https://veloviewer.com/segments/24685955"
     },
     {
         "Route": "Queen's Highway After Party",
-        "URL": "https://zwiftinsider.com/route/queens-highway-after-party/"
+        "URL": "https://zwiftinsider.com/route/queens-highway-after-party/",
+        "StravaURL": "https://www.strava.com/segments/21748231",
+        "VeloViewerURL": "https://veloviewer.com/segments/21748231"
     },
     {
         "Route": "Kappa Quest Reverse",
         "URL": "https://zwiftinsider.com/route/kappa-quest-reverse/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Kappa_Quest_Reverse_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Kappa_Quest_Reverse_profile.png",
+        "StravaURL": "https://www.strava.com/segments/29009500",
+        "VeloViewerURL": "https://veloviewer.com/segments/29009500"
     },
     {
         "Route": "Volcano Climb",
         "URL": "https://zwiftinsider.com/route/volcano-climb/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Volcano_Climb_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Volcano_Climb_profile.png",
+        "StravaURL": "https://www.strava.com/segments/16425130",
+        "VeloViewerURL": "https://veloviewer.com/segments/16425130"
     },
     {
         "Route": "Wandering Flats",
         "URL": "https://zwiftinsider.com/route/wandering-flats/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Wandering_Flats_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Wandering_Flats_profile.png",
+        "StravaURL": "https://www.strava.com/segments/30408380",
+        "VeloViewerURL": "https://veloviewer.com/segments/30408380"
     },
     {
         "Route": "Neokyo All-Nighter",
         "URL": "https://zwiftinsider.com/route/neokyo-all-nighter/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Neokyo_All-Nighter_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Neokyo_All-Nighter_profile.png",
+        "StravaURL": "https://www.strava.com/segments/30407658",
+        "VeloViewerURL": "https://veloviewer.com/segments/30407658"
     },
     {
         "Route": "Mighty Metropolitan",
         "URL": "https://zwiftinsider.com/route/mighty-metropolitan/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/NewYork_Mighty_Metropolitan_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/NewYork_Mighty_Metropolitan_profile.png",
+        "StravaURL": "https://www.strava.com/segments/19141368",
+        "VeloViewerURL": "https://veloviewer.com/segments/19141368"
     },
     {
         "Route": "BRAEk-fast",
         "URL": "https://zwiftinsider.com/route/braek-fast/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Scotland_BRAEk-fast_Crits_and_Grits_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Scotland_BRAEk-fast_Crits_and_Grits_profile.png",
+        "StravaURL": "https://www.strava.com/segments/37675004",
+        "VeloViewerURL": "https://veloviewer.com/segments/37675004"
     },
     {
         "Route": "Crits and Grits",
@@ -330,456 +464,654 @@
     {
         "Route": "Turf N Surf",
         "URL": "https://zwiftinsider.com/route/turf-n-surf/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Turf_N_Surf_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Turf_N_Surf_profile.png",
+        "StravaURL": "https://www.strava.com/segments/33238344",
+        "VeloViewerURL": "https://veloviewer.com/segments/33238344"
     },
     {
         "Route": "Triple Twist",
         "URL": "https://zwiftinsider.com/route/triple-twist/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Triple_Twist_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Triple_Twist_profile.png",
+        "StravaURL": "https://www.strava.com/segments/38138494",
+        "VeloViewerURL": "https://veloviewer.com/segments/38138494"
     },
     {
         "Route": "Watopia's Waistband",
-        "URL": "https://zwiftinsider.com/route/watopias-waistband/"
+        "URL": "https://zwiftinsider.com/route/watopias-waistband/",
+        "StravaURL": "https://www.strava.com/segments/20469780",
+        "VeloViewerURL": "https://veloviewer.com/segments/20469780"
     },
     {
         "Route": "Coast to Coast",
         "URL": "https://zwiftinsider.com/route/coast-to-coast/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Coast_to_Coast_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Coast_to_Coast_profile.png",
+        "StravaURL": "https://www.strava.com/segments/38138499",
+        "VeloViewerURL": "https://veloviewer.com/segments/38138499"
     },
     {
         "Route": "Rising Empire",
-        "URL": "https://zwiftinsider.com/route/rising-empire/"
+        "URL": "https://zwiftinsider.com/route/rising-empire/",
+        "StravaURL": "https://www.strava.com/segments/19171748",
+        "VeloViewerURL": "https://veloviewer.com/segments/19171748"
     },
     {
         "Route": "The Muckle Yin",
         "URL": "https://zwiftinsider.com/route/the-muckle-yin/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Scotland_The_Muckle_Yin_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Scotland_The_Muckle_Yin_profile.png",
+        "StravaURL": "https://www.strava.com/segments/33636050",
+        "VeloViewerURL": "https://veloviewer.com/segments/33636050"
     },
     {
         "Route": "Serpentine 8",
         "URL": "https://zwiftinsider.com/route/serpentine-8/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Serpentine_8_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Serpentine_8_profile.png",
+        "StravaURL": "https://www.strava.com/segments/26742092",
+        "VeloViewerURL": "https://veloviewer.com/segments/26742092"
     },
     {
         "Route": "Greater London 8",
-        "URL": "https://zwiftinsider.com/route/greater-london-8/"
+        "URL": "https://zwiftinsider.com/route/greater-london-8/",
+        "StravaURL": "https://www.strava.com/segments/15158866",
+        "VeloViewerURL": "https://veloviewer.com/segments/15158866"
     },
     {
         "Route": "Coastal Crown Loop",
         "URL": "https://zwiftinsider.com/route/coastal-crown-loop/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Coastal_Crown_Loop_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Coastal_Crown_Loop_profile.png",
+        "StravaURL": "https://www.strava.com/segments/37039562",
+        "VeloViewerURL": "https://veloviewer.com/segments/37039562"
     },
     {
         "Route": "Downtown Titans",
         "URL": "https://zwiftinsider.com/route/downtown-titans/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Downtown_Titans_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Downtown_Titans_profile.png",
+        "StravaURL": "https://www.strava.com/segments/23167123",
+        "VeloViewerURL": "https://veloviewer.com/segments/23167123"
     },
     {
         "Route": "Knickerbocker",
-        "URL": "https://zwiftinsider.com/route/knickerbocker/"
+        "URL": "https://zwiftinsider.com/route/knickerbocker/",
+        "StravaURL": "https://www.strava.com/segments/19141299",
+        "VeloViewerURL": "https://veloviewer.com/segments/19141299"
     },
     {
         "Route": "Knickerbocker Reverse",
-        "URL": "https://zwiftinsider.com/route/knickerbocker-reverse/"
+        "URL": "https://zwiftinsider.com/route/knickerbocker-reverse/",
+        "StravaURL": "https://www.strava.com/segments/20721179",
+        "VeloViewerURL": "https://veloviewer.com/segments/20721179"
     },
     {
         "Route": "Mayan 8",
         "URL": "https://zwiftinsider.com/route/mayan-8/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Mayan_8_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Mayan_8_profile.png",
+        "StravaURL": "https://www.strava.com/segments/37683459",
+        "VeloViewerURL": "https://veloviewer.com/segments/37683459"
     },
     {
         "Route": "The Highline",
-        "URL": "https://zwiftinsider.com/route/the-highline/"
+        "URL": "https://zwiftinsider.com/route/the-highline/",
+        "StravaURL": "https://www.strava.com/segments/19173163",
+        "VeloViewerURL": "https://veloviewer.com/segments/19173163"
     },
     {
         "Route": "Canopies and Coastlines",
         "URL": "https://zwiftinsider.com/route/canopies-and-coastlines/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Canopies_and_Coastlines_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Canopies_and_Coastlines_profile.png",
+        "StravaURL": "https://www.strava.com/segments/35696990",
+        "VeloViewerURL": "https://veloviewer.com/segments/35696990"
     },
     {
         "Route": "Big Flat 8",
         "URL": "https://zwiftinsider.com/route/big-flat-8/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Big_Flat_8_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Big_Flat_8_profile.png",
+        "StravaURL": "https://www.strava.com/segments/36049309",
+        "VeloViewerURL": "https://veloviewer.com/segments/36049309"
     },
     {
         "Route": "Waisted 8",
         "URL": "https://zwiftinsider.com/route/waisted-8/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Waisted_8_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Waisted_8_profile.png",
+        "StravaURL": "https://www.strava.com/segments/38138483",
+        "VeloViewerURL": "https://veloviewer.com/segments/38138483"
     },
     {
         "Route": "Roule Ma Poule",
-        "URL": "https://zwiftinsider.com/route/roule-ma-poule/"
+        "URL": "https://zwiftinsider.com/route/roule-ma-poule/",
+        "StravaURL": "https://www.strava.com/segments/24690956",
+        "VeloViewerURL": "https://veloviewer.com/segments/24690956"
     },
     {
         "Route": "Libby Hill After Party",
-        "URL": "https://zwiftinsider.com/route/libby-hill-after-party/"
+        "URL": "https://zwiftinsider.com/route/libby-hill-after-party/",
+        "StravaURL": "https://www.strava.com/segments/22815233",
+        "VeloViewerURL": "https://veloviewer.com/segments/22815233"
     },
     {
         "Route": "Greatest London Loop",
-        "URL": "https://zwiftinsider.com/route/greatest-london-loop/"
+        "URL": "https://zwiftinsider.com/route/greatest-london-loop/",
+        "StravaURL": "https://www.strava.com/segments/16781177",
+        "VeloViewerURL": "https://veloviewer.com/segments/16781177"
     },
     {
         "Route": "Legends and Lava",
         "URL": "https://zwiftinsider.com/route/legends-and-lava/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Legends_and_Lava_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Legends_and_Lava_profile.png",
+        "StravaURL": "https://www.strava.com/segments/30630421",
+        "VeloViewerURL": "https://veloviewer.com/segments/30630421"
     },
     {
         "Route": "Figure 8",
         "URL": "https://zwiftinsider.com/route/figure-8/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Figure_8_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Figure_8_profile.png",
+        "StravaURL": "https://www.strava.com/segments/12118421",
+        "VeloViewerURL": "https://veloviewer.com/segments/12118421"
     },
     {
         "Route": "Figure 8 Reverse",
         "URL": "https://zwiftinsider.com/route/figure-8-reverse/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Figure_8_Reverse_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Figure_8_Reverse_profile.png",
+        "StravaURL": "https://www.strava.com/segments/27177732",
+        "VeloViewerURL": "https://veloviewer.com/segments/27177732"
     },
     {
         "Route": "Road to Ruins",
         "URL": "https://zwiftinsider.com/route/road-to-ruins/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Road_to_Ruins_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Road_to_Ruins_profile.png",
+        "StravaURL": "https://www.strava.com/segments/16404154",
+        "VeloViewerURL": "https://veloviewer.com/segments/16404154"
     },
     {
         "Route": "2018 UCI Worlds Course Short Lap",
-        "URL": "https://zwiftinsider.com/route/2018-uci-worlds-course-short-lap/"
+        "URL": "https://zwiftinsider.com/route/2018-uci-worlds-course-short-lap/",
+        "StravaURL": "https://www.strava.com/segments/18397725",
+        "VeloViewerURL": "https://veloviewer.com/segments/18397725"
     },
     {
         "Route": "Greatest London Flat",
-        "URL": "https://zwiftinsider.com/route/greatest-london-flat/"
+        "URL": "https://zwiftinsider.com/route/greatest-london-flat/",
+        "StravaURL": "https://www.strava.com/segments/16982511",
+        "VeloViewerURL": "https://veloviewer.com/segments/16982511"
     },
     {
         "Route": "Petite Douleur",
-        "URL": "https://zwiftinsider.com/route/petite-douleur/"
+        "URL": "https://zwiftinsider.com/route/petite-douleur/",
+        "StravaURL": "https://www.strava.com/segments/24984611",
+        "VeloViewerURL": "https://veloviewer.com/segments/24984611"
     },
     {
         "Route": "Elevation Evaluation",
         "URL": "https://zwiftinsider.com/route/elevation-evaluation/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Elevation_Evaluation_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Elevation_Evaluation_profile.png",
+        "StravaURL": "https://www.strava.com/segments/37049454",
+        "VeloViewerURL": "https://veloviewer.com/segments/37049454"
     },
     {
         "Route": "Triple Flat Loops",
         "URL": "https://zwiftinsider.com/route/triple-flat-loops/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Triple_Flat_Loops_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Triple_Flat_Loops_profile.png",
+        "StravaURL": "https://www.strava.com/segments/20453276",
+        "VeloViewerURL": "https://veloviewer.com/segments/20453276"
     },
     {
         "Route": "Itza Climb Finish",
         "URL": "https://zwiftinsider.com/route/itza-climb-finish/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Itza_Climb_Finish_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Itza_Climb_Finish_profile.png",
+        "StravaURL": "https://www.strava.com/segments/37097998",
+        "VeloViewerURL": "https://veloviewer.com/segments/37097998"
     },
     {
         "Route": "Country to Coastal",
         "URL": "https://zwiftinsider.com/route/country-to-coastal/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Country_to_Coastal_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Country_to_Coastal_profile.png",
+        "StravaURL": "https://www.strava.com/segments/33238095",
+        "VeloViewerURL": "https://veloviewer.com/segments/33238095"
     },
     {
         "Route": "Royal Pump Room 8",
-        "URL": "https://zwiftinsider.com/route/royal-pump-room-8/"
+        "URL": "https://zwiftinsider.com/route/royal-pump-room-8/",
+        "StravaURL": "https://www.strava.com/segments/30929222",
+        "VeloViewerURL": "https://veloviewer.com/segments/30929222"
     },
     {
         "Route": "Tair Dringfa Fechan",
         "URL": "https://zwiftinsider.com/route/tair-dringfa-fechan/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Tair_Dringfa_Fechan_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Tair_Dringfa_Fechan_profile.png",
+        "StravaURL": "https://www.strava.com/segments/38008828",
+        "VeloViewerURL": "https://veloviewer.com/segments/38008828"
     },
     {
         "Route": "Temples and Towers",
         "URL": "https://zwiftinsider.com/route/temples-and-towers/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Temples_and_Towers_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Temples_and_Towers_profile.png",
+        "StravaURL": "https://www.strava.com/segments/30408107",
+        "VeloViewerURL": "https://veloviewer.com/segments/30408107"
     },
     {
         "Route": "Chasing the Sun",
         "URL": "https://zwiftinsider.com/route/chasing-the-sun/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Chasing_the_Sun_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Chasing_the_Sun_profile.png",
+        "StravaURL": "https://www.strava.com/segments/30988311",
+        "VeloViewerURL": "https://veloviewer.com/segments/30988311"
     },
     {
         "Route": "Sugar Cookie",
         "URL": "https://zwiftinsider.com/route/sugar-cookie/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Sugar_Cookie_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Sugar_Cookie_profile.png",
+        "StravaURL": "https://www.strava.com/segments/35705425",
+        "VeloViewerURL": "https://veloviewer.com/segments/35705425"
     },
     {
         "Route": "Yorkshire Double Loops",
-        "URL": "https://zwiftinsider.com/route/yorkshire-double-loops/"
+        "URL": "https://zwiftinsider.com/route/yorkshire-double-loops/",
+        "StravaURL": "https://www.strava.com/segments/37300398",
+        "VeloViewerURL": "https://veloviewer.com/segments/37300398"
     },
     {
         "Route": "Coast Crusher",
         "URL": "https://zwiftinsider.com/route/coast-crusher/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Coast_Crusher_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Coast_Crusher_profile.png",
+        "StravaURL": "https://www.strava.com/segments/35697049",
+        "VeloViewerURL": "https://veloviewer.com/segments/35697049"
     },
     {
         "Route": "Makuri 40",
         "URL": "https://zwiftinsider.com/route/makuri-40/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Makuri_40_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Makuri_40_profile.png",
+        "StravaURL": "https://www.strava.com/segments/33237747",
+        "VeloViewerURL": "https://veloviewer.com/segments/33237747"
     },
     {
         "Route": "Mountain Route",
         "URL": "https://zwiftinsider.com/route/mountain-route/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Mountain_Route_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Mountain_Route_profile.png",
+        "StravaURL": "https://www.strava.com/segments/12118555",
+        "VeloViewerURL": "https://veloviewer.com/segments/12118555"
     },
     {
         "Route": "Everything Bagel",
         "URL": "https://zwiftinsider.com/route/everything-bagel/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/NewYork_Everything_Bagel_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/NewYork_Everything_Bagel_profile.png",
+        "StravaURL": "https://www.strava.com/segments/19141223",
+        "VeloViewerURL": "https://veloviewer.com/segments/19141223"
     },
     {
         "Route": "Three Little Sisters",
         "URL": "https://zwiftinsider.com/route/three-little-sisters/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Three_Little_Sisters_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Three_Little_Sisters_profile.png",
+        "StravaURL": "https://www.strava.com/segments/22943213",
+        "VeloViewerURL": "https://veloviewer.com/segments/22943213"
     },
     {
         "Route": "Out and Back Again",
-        "URL": "https://zwiftinsider.com/route/out-and-back-again/"
+        "URL": "https://zwiftinsider.com/route/out-and-back-again/",
+        "StravaURL": "https://www.strava.com/segments/20350104",
+        "VeloViewerURL": "https://veloviewer.com/segments/20350104"
     },
     {
         "Route": "Mountain 8",
         "URL": "https://zwiftinsider.com/route/mountain-8/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Mountain_8_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Mountain_8_profile.png",
+        "StravaURL": "https://www.strava.com/segments/12118544",
+        "VeloViewerURL": "https://veloviewer.com/segments/12118544"
     },
     {
         "Route": "Tides and Temples",
-        "URL": "https://zwiftinsider.com/route/tides-and-temples/"
+        "URL": "https://zwiftinsider.com/route/tides-and-temples/",
+        "StravaURL": "https://www.strava.com/segments/37041912",
+        "VeloViewerURL": "https://veloviewer.com/segments/37041912"
     },
     {
         "Route": "Lutscher CCW",
-        "URL": "https://zwiftinsider.com/route/lutscher-ccw/"
+        "URL": "https://zwiftinsider.com/route/lutscher-ccw/",
+        "StravaURL": "https://www.strava.com/segments/18407469",
+        "VeloViewerURL": "https://veloviewer.com/segments/18407469"
     },
     {
         "Route": "Climber's Gambit",
         "URL": "https://zwiftinsider.com/route/climbers-gambit/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Climbers_Gambit_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Climbers_Gambit_profile.png",
+        "StravaURL": "https://www.strava.com/segments/29622065",
+        "VeloViewerURL": "https://veloviewer.com/segments/29622065"
     },
     {
         "Route": "Lutscher",
-        "URL": "https://zwiftinsider.com/route/lutscher/"
+        "URL": "https://zwiftinsider.com/route/lutscher/",
+        "StravaURL": "https://www.strava.com/segments/18406508",
+        "VeloViewerURL": "https://veloviewer.com/segments/18406508"
     },
     {
         "Route": "Triple Loops",
-        "URL": "https://zwiftinsider.com/route/triple-loops/"
+        "URL": "https://zwiftinsider.com/route/triple-loops/",
+        "StravaURL": "https://www.strava.com/segments/16781219",
+        "VeloViewerURL": "https://veloviewer.com/segments/16781219"
     },
     {
         "Route": "Richmond Loop Around",
-        "URL": "https://zwiftinsider.com/route/richmond-loop-around/"
+        "URL": "https://zwiftinsider.com/route/richmond-loop-around/",
+        "StravaURL": "https://www.strava.com/segments/38009202",
+        "VeloViewerURL": "https://veloviewer.com/segments/38009202"
     },
     {
         "Route": "The Big Ring",
         "URL": "https://zwiftinsider.com/route/the-big-ring/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_The_Big_Ring_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_The_Big_Ring_profile.png",
+        "StravaURL": "https://www.strava.com/segments/35696945",
+        "VeloViewerURL": "https://veloviewer.com/segments/35696945"
     },
     {
         "Route": "Mayan Mash",
         "URL": "https://zwiftinsider.com/route/mayan-mash/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Mayan_Mash_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Mayan_Mash_profile.png",
+        "StravaURL": "https://www.strava.com/segments/37039844",
+        "VeloViewerURL": "https://veloviewer.com/segments/37039844"
     },
     {
         "Route": "Snowman",
         "URL": "https://zwiftinsider.com/route/snowman/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Snowman_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Snowman_profile.png",
+        "StravaURL": "https://www.strava.com/segments/37049460",
+        "VeloViewerURL": "https://veloviewer.com/segments/37049460"
     },
     {
         "Route": "Loop de Loop",
         "URL": "https://zwiftinsider.com/route/loop-de-loop/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Loop_de_Loop_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Loop_de_Loop_profile.png",
+        "StravaURL": "https://www.strava.com/segments/36342198",
+        "VeloViewerURL": "https://veloviewer.com/segments/36342198"
     },
     {
         "Route": "Big Loop",
         "URL": "https://zwiftinsider.com/route/big-loop/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Big_Loop_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Big_Loop_profile.png",
+        "StravaURL": "https://www.strava.com/segments/28020521",
+        "VeloViewerURL": "https://veloviewer.com/segments/28020521"
     },
-     {
+    {
         "Route": "Big Loop Reverse",
         "URL": "https://zwiftinsider.com/route/big-loop-reverse/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Big_Loop_Reverse_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Big_Loop_Reverse_profile.png",
+        "StravaURL": "https://www.strava.com/segments/16404624",
+        "VeloViewerURL": "https://veloviewer.com/segments/16404624"
     },
     {
         "Route": "Itza Party",
         "URL": "https://zwiftinsider.com/route/itza-party/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Itza_Party_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Itza_Party_profile.png",
+        "StravaURL": "https://www.strava.com/segments/37652462",
+        "VeloViewerURL": "https://veloviewer.com/segments/37652462"
     },
     {
         "Route": "Road to Sky",
         "URL": "https://zwiftinsider.com/route/road-to-sky/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Road_to_Sky_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Road_to_Sky_profile.png",
+        "StravaURL": "https://www.strava.com/segments/17264827",
+        "VeloViewerURL": "https://veloviewer.com/segments/17264827"
     },
     {
         "Route": "Eastern Eight",
         "URL": "https://zwiftinsider.com/route/eastern-eight/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Eastern_Eight_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Eastern_Eight_profile.png",
+        "StravaURL": "https://www.strava.com/segments/22914116",
+        "VeloViewerURL": "https://veloviewer.com/segments/22914116"
     },
     {
         "Route": "Deca Dash",
         "URL": "https://zwiftinsider.com/route/deca-dash/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Deca_Dash_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Deca_Dash_profile.png",
+        "StravaURL": "https://www.strava.com/segments/38146678",
+        "VeloViewerURL": "https://veloviewer.com/segments/38146678"
     },
     {
         "Route": "Spiral Into the Volcano",
         "URL": "https://zwiftinsider.com/route/spiral-into-the-volcano/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Spiral_Into_the_Volcano_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Spiral_Into_the_Volcano_profile.png",
+        "StravaURL": "https://www.strava.com/segments/20522725",
+        "VeloViewerURL": "https://veloviewer.com/segments/20522725"
     },
     {
         "Route": "Muir and the Mountain",
         "URL": "https://zwiftinsider.com/route/muir-and-the-mountain/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Muir_and_the_Mountain_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Muir_and_the_Mountain_profile.png",
+        "StravaURL": "https://www.strava.com/segments/22368918",
+        "VeloViewerURL": "https://veloviewer.com/segments/22368918"
     },
     {
         "Route": "Peak Performance",
         "URL": "https://zwiftinsider.com/route/peak-performance/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Peak_Performance_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Peak_Performance_profile.png",
+        "StravaURL": "https://www.strava.com/segments/37047817",
+        "VeloViewerURL": "https://veloviewer.com/segments/37047817"
     },
     {
         "Route": "Dust In the Wind",
         "URL": "https://zwiftinsider.com/route/dust-in-the-wind/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Dust_In_the_Wind_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Dust_In_the_Wind_profile.png",
+        "StravaURL": "https://www.strava.com/segments/22458637",
+        "VeloViewerURL": "https://veloviewer.com/segments/22458637"
     },
     {
         "Route": "The London Pretzel",
-        "URL": "https://zwiftinsider.com/route/the-london-pretzel/"
+        "URL": "https://zwiftinsider.com/route/the-london-pretzel/",
+        "StravaURL": "https://www.strava.com/segments/15155838",
+        "VeloViewerURL": "https://veloviewer.com/segments/15155838"
     },
     {
         "Route": "Shisa Shakedown",
         "URL": "https://zwiftinsider.com/route/shisa-shakedown/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Shisa_Shakedown_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Shisa_Shakedown_profile.png",
+        "StravaURL": "https://www.strava.com/segments/38179175",
+        "VeloViewerURL": "https://veloviewer.com/segments/38179175"
     },
     {
         "Route": "Bigger Loop",
         "URL": "https://zwiftinsider.com/route/bigger-loop/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Bigger_Loop_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Bigger_Loop_profile.png",
+        "StravaURL": "https://www.strava.com/segments/20425565",
+        "VeloViewerURL": "https://veloviewer.com/segments/20425565"
     },
     {
         "Route": "Shorelines and Summits",
         "URL": "https://zwiftinsider.com/route/shorelines-and-summits/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Shorelines_and_Summits_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Shorelines_and_Summits_profile.png",
+        "StravaURL": "https://www.strava.com/segments/35697595",
+        "VeloViewerURL": "https://veloviewer.com/segments/35697595"
     },
     {
         "Route": "Three Sisters",
         "URL": "https://zwiftinsider.com/route/three-sisters/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Three_Sisters_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Three_Sisters_profile.png",
+        "StravaURL": "https://www.strava.com/segments/15159137",
+        "VeloViewerURL": "https://veloviewer.com/segments/15159137"
     },
     {
         "Route": "Petit Boucle",
-        "URL": "https://zwiftinsider.com/route/petit-boucle/"
+        "URL": "https://zwiftinsider.com/route/petit-boucle/",
+        "StravaURL": "https://www.strava.com/segments/24676054",
+        "VeloViewerURL": "https://veloviewer.com/segments/24676054"
     },
     {
         "Route": "La Reine",
-        "URL": "https://zwiftinsider.com/route/la-reine/"
+        "URL": "https://zwiftinsider.com/route/la-reine/",
+        "StravaURL": "https://www.strava.com/segments/24698649",
+        "VeloViewerURL": "https://veloviewer.com/segments/24698649"
     },
     {
         "Route": "Surrey Hills",
-        "URL": "https://zwiftinsider.com/route/surrey-hills/"
+        "URL": "https://zwiftinsider.com/route/surrey-hills/",
+        "StravaURL": "https://www.strava.com/segments/24008116",
+        "VeloViewerURL": "https://veloviewer.com/segments/24008116"
     },
     {
         "Route": "Achterbahn",
-        "URL": "https://zwiftinsider.com/route/achterbahn/"
+        "URL": "https://zwiftinsider.com/route/achterbahn/",
+        "StravaURL": "https://www.strava.com/segments/18398698",
+        "VeloViewerURL": "https://veloviewer.com/segments/18398698"
     },
     {
         "Route": "Navig8",
         "URL": "https://zwiftinsider.com/route/navig8/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Navig8_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Navig8_profile.png",
+        "StravaURL": "https://www.strava.com/segments/37716261",
+        "VeloViewerURL": "https://veloviewer.com/segments/37716261"
     },
     {
         "Route": "Tour of Fire and Ice",
         "URL": "https://zwiftinsider.com/route/tour-of-fire-and-ice/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Tour_of_Fire_and_Ice_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Tour_of_Fire_and_Ice_profile.png",
+        "StravaURL": "https://www.strava.com/segments/17265057",
+        "VeloViewerURL": "https://veloviewer.com/segments/17265057"
     },
     {
         "Route": "Tire-Bouchon",
-        "URL": "https://zwiftinsider.com/route/tire-bouchon/"
+        "URL": "https://zwiftinsider.com/route/tire-bouchon/",
+        "StravaURL": "https://www.strava.com/segments/24690941",
+        "VeloViewerURL": "https://veloviewer.com/segments/24690941"
     },
     {
         "Route": "Ven-Top",
-        "URL": "https://zwiftinsider.com/route/ven-top/"
+        "URL": "https://zwiftinsider.com/route/ven-top/",
+        "StravaURL": "https://www.strava.com/segments/24682608",
+        "VeloViewerURL": "https://veloviewer.com/segments/24682608"
     },
     {
         "Route": "Big Foot Hills",
         "URL": "https://zwiftinsider.com/route/big-foot-hills/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Big_Foot_Hills_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Big_Foot_Hills_profile.png",
+        "StravaURL": "https://www.strava.com/segments/21344655",
+        "VeloViewerURL": "https://veloviewer.com/segments/21344655"
     },
     {
         "Route": "Accelerate to Elevate",
         "URL": "https://zwiftinsider.com/route/accelerate-to-elevate/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Accelerate_to_Elevate_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Accelerate_to_Elevate_profile.png",
+        "StravaURL": "https://www.strava.com/segments/35705419",
+        "VeloViewerURL": "https://veloviewer.com/segments/35705419"
     },
     {
         "Route": "Makuri Pretzel",
         "URL": "https://zwiftinsider.com/route/makuri-pretzel/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Makuri_Pretzel_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Makuri_Makuri_Pretzel_profile.png",
+        "StravaURL": "https://www.strava.com/segments/37684132",
+        "VeloViewerURL": "https://veloviewer.com/segments/37684132"
     },
     {
         "Route": "Power to the Tower",
         "URL": "https://zwiftinsider.com/route/power-to-the-tower/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Power_to_the_Tower_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Power_to_the_Tower_profile.png",
+        "StravaURL": "https://www.strava.com/segments/37731230",
+        "VeloViewerURL": "https://veloviewer.com/segments/37731230"
     },
     {
         "Route": "The PRL Half",
-        "URL": "https://zwiftinsider.com/route/the-prl-half/"
+        "URL": "https://zwiftinsider.com/route/the-prl-half/",
+        "StravaURL": "https://www.strava.com/segments/12759713",
+        "VeloViewerURL": "https://veloviewer.com/segments/12759713"
     },
     {
         "Route": "Zwift Games 2024 Epic",
         "URL": "https://zwiftinsider.com/route/zwift-games-2024-epic/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Zwift_Games_2024_Epic_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Zwift_Games_2024_Epic_profile.png",
+        "StravaURL": "https://www.strava.com/segments/36343341",
+        "VeloViewerURL": "https://veloviewer.com/segments/36343341"
     },
     {
         "Route": "The Pretzel",
-        "URL": "https://zwiftinsider.com/route/the-pretzel/"
+        "URL": "https://zwiftinsider.com/route/the-pretzel/",
+        "StravaURL": "https://www.strava.com/segments/12118762",
+        "VeloViewerURL": "https://veloviewer.com/segments/12118762"
     },
     {
         "Route": "Quatch Quest",
         "URL": "https://zwiftinsider.com/route/quatch-quest/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Quatch_Quest_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Quatch_Quest_profile.png",
+        "StravaURL": "https://www.strava.com/segments/21344377",
+        "VeloViewerURL": "https://veloviewer.com/segments/21344377"
     },
     {
         "Route": "Four Horsemen",
-        "URL": "https://zwiftinsider.com/route/four-horsemen/"
-    },
-   {
-        "Route": "The Mega Pretzel",
-        "URL": "https://zwiftinsider.com/route/the-mega-pretzel/"
+        "URL": "https://zwiftinsider.com/route/four-horsemen/",
+        "StravaURL": "https://www.strava.com/segments/28020745",
+        "VeloViewerURL": "https://veloviewer.com/segments/28020745"
     },
     {
-        "Route": "The Über Pretzel",
+        "Route": "The Mega Pretzel",
+        "URL": "https://zwiftinsider.com/route/the-mega-pretzel/",
+        "StravaURL": "https://www.strava.com/segments/16939150",
+        "VeloViewerURL": "https://veloviewer.com/segments/16939150"
+    },
+    {
+        "Route": "The \u00dcber Pretzel",
         "URL": "https://zwiftinsider.com/route/the-uber-pretzel/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_The_Uber_Pretzel_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_The_Uber_Pretzel_profile.png",
+        "StravaURL": "https://www.strava.com/segments/27313482",
+        "VeloViewerURL": "https://veloviewer.com/segments/27313482"
     },
     {
         "Route": "The PRL Full",
-        "URL": "https://zwiftinsider.com/route/the-prl-full/"
+        "URL": "https://zwiftinsider.com/route/the-prl-full/",
+        "StravaURL": "https://www.strava.com/segments/12759760",
+        "VeloViewerURL": "https://veloviewer.com/segments/12759760"
     },
     {
         "Route": "Bell Lap",
-        "URL": "https://zwiftinsider.com/route/bell-lap/"
+        "URL": "https://zwiftinsider.com/route/bell-lap/",
+        "StravaURL": "https://www.strava.com/segments/22419554",
+        "VeloViewerURL": "https://veloviewer.com/segments/22419554"
     },
-     {
+    {
         "Route": "Danger Noodle",
         "URL": "https://zwiftinsider.com/route/danger-noodle/",
-        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Danger_Noodle_profile.png"
+        "ImageURL": "https://raw.githubusercontent.com/micahreeves/zwift-route-bot/main/profiles/Watopia_Danger_Noodle_profile.png",
+        "StravaURL": "https://www.strava.com/segments/38326016",
+        "VeloViewerURL": "https://veloviewer.com/segments/38326016"
     },
     {
         "Route": "ZG25 Queen",
-        "URL": "https://zwiftinsider.com/route/zg25-queen/"
+        "URL": "https://zwiftinsider.com/route/zg25-queen/",
+        "StravaURL": "https://www.strava.com/segments/38412699",
+        "VeloViewerURL": "https://veloviewer.com/segments/38412699"
     },
     {
         "Route": "Downtown Eruption",
-        "URL": "https://zwiftinsider.com/route/downtown-eruption/"
+        "URL": "https://zwiftinsider.com/route/downtown-eruption/",
+        "StravaURL": "https://www.strava.com/segments/38413304",
+        "VeloViewerURL": "https://veloviewer.com/segments/38413304"
     },
     {
         "Route": "London Uprising",
-        "URL": "https://zwiftinsider.com/route/london-uprising/"
+        "URL": "https://zwiftinsider.com/route/london-uprising/",
+        "StravaURL": "https://www.strava.com/segments/38413079",
+        "VeloViewerURL": "https://veloviewer.com/segments/38413079"
     },
     {
         "Route": "Scotland Smash",
-        "URL": "https://zwiftinsider.com/route/scotland-smash/"
+        "URL": "https://zwiftinsider.com/route/scotland-smash/",
+        "StravaURL": "https://www.strava.com/segments/38412900",
+        "VeloViewerURL": "https://veloviewer.com/segments/38412900"
     },
     {
         "Route": "Makuri Madness",
-        "URL": "https://zwiftinsider.com/route/makuri-madness/"
+        "URL": "https://zwiftinsider.com/route/makuri-madness/",
+        "StravaURL": "https://www.strava.com/segments/38413164",
+        "VeloViewerURL": "https://veloviewer.com/segments/38413164"
     },
     {
         "Route": "Astoria Line 8",
         "URL": "https://zwiftinsider.com/route/astoria-line-8/",
-        "ImageURL": "https://zwiftinsider.com/wp-content/uploads/2020/05/astoria-line-8-zwifthub.png"
+        "ImageURL": "https://zwiftinsider.com/wp-content/uploads/2020/05/astoria-line-8-zwifthub.png",
+        "StravaURL": "https://www.strava.com/segments/19141340",
+        "VeloViewerURL": "https://veloviewer.com/segments/19141340"
     },
     {
         "Route": "Radio Rendezvous",
         "URL": "https://zwiftinsider.com/route/radio-rendezvous/"
+        "StravaURL": "https://www.strava.com/segments/37716248",
+        "VeloViewerURL": "https://veloviewer.com/segment/37716248"
     },
     {
         "Route": "Rolling Highlands",
         "URL": "https://zwiftinsider.com/route/rolling-highlands/"
+        "StravaURL": "https://www.strava.com/segments/33620176",
+        "VeloViewerURL": "https://veloviewer.com/segment/33620176"
     }
 ]

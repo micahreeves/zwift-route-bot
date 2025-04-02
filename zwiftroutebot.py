@@ -945,11 +945,18 @@ class ZwiftBot(discord.Client):
                 # Add key stats if available
                 if detailed_info:
                     if 'distance_km' in detailed_info:
+                        # With this new code
+                        distance_text = f"{detailed_info['distance_km']} km ({detailed_info.get('distance_miles', '?')} mi)"
+        
+                        # Add lead-in info if available
+                        if 'lead_in_km' in detailed_info:
+                            distance_text += f" + {detailed_info['lead_in_km']} km lead-in"
+        
                         embed.add_field(
                             name="Distance", 
-                            value=f"{detailed_info['distance_km']} km ({detailed_info.get('distance_miles', '?')} mi)", 
+                            value=distance_text, 
                             inline=True
-                        )
+                        )    
                     
                     if 'elevation_m' in detailed_info:
                         embed.add_field(
@@ -1098,6 +1105,12 @@ class ZwiftBot(discord.Client):
                 description_parts = []
                 description_parts.append(f"View full details on [ZwiftInsider]({result['URL']})")
                 
+                # Add Strava and VeloViewer links if available
+                if 'StravaURL' in result:
+                    description_parts.append(f"View on [Strava]({result['StravaURL']})")
+                if 'VeloViewerURL' in result:
+                    description_parts.append(f"View on [VeloViewer]({result['VeloViewerURL']})")
+
                 # Format route name for Cyccal URL
                 cyccal_route_name = result['Route'].lower().replace(' ', '-')
                 cyccal_url = f"https://cyccal.com/{cyccal_route_name}/"
