@@ -1104,14 +1104,78 @@
     },
     {
         "Route": "Radio Rendezvous",
-        "URL": "https://zwiftinsider.com/route/radio-rendezvous/",
+        "URL": "https://zwiftinsider.com/route/radio-rendezvous/"
         "StravaURL": "https://www.strava.com/segments/37716248",
         "VeloViewerURL": "https://veloviewer.com/segment/37716248"
     },
     {
         "Route": "Rolling Highlands",
-        "URL": "https://zwiftinsider.com/route/rolling-highlands/",
+        "URL": "https://zwiftinsider.com/route/rolling-highlands/"
         "StravaURL": "https://www.strava.com/segments/33620176",
         "VeloViewerURL": "https://veloviewer.com/segment/33620176"
+    },
+    {
+        "Route": "LaGuardia After Party",
+        "URL": "https://zwiftinsider.com/route/laguardia-after-party/"
+        "StravaURL": "https://www.strava.com/segments/38758184",
+        "VeloViewerURL": "https://veloviewer.com/segment/38758184"
+    },
+    {
+        "Route": "Neon After Party",
+        "URL": "https://zwiftinsider.com/route/neon-after-party/"
+        "StravaURL": "https://www.strava.com/segments/38754616",
+        "VeloViewerURL": "https://veloviewer.com/segment/38754616"
+    },
+    {
+        "Route": "NYC KOM After Party",
+        "URL": "https://zwiftinsider.com/route/nyc-kom-after-party/"
+        "StravaURL": "https://www.strava.com/segments/19853934",
+        "VeloViewerURL": "https://veloviewer.com/segment/19853934"
+    },
+    {
+        "Route": "Croissant",
+        "URL": "https://zwiftinsider.com/route/croissant/"
+        "StravaURL": "https://www.strava.com/segments/38831554",
+        "VeloViewerURL": "https://veloviewer.com/segment/38831554"
+    },
+    {
+        "Route": "Macaron",
+        "URL": "https://zwiftinsider.com/route/macaron/"
+        "StravaURL": "https://www.strava.com/segments/38876339",
+        "VeloViewerURL": "https://veloviewer.com/segment/38876339"
+    },
+    {
+        "Route": "Three Musketeers",
+        "URL": "https://zwiftinsider.com/route/three-musketeers/"
+        "StravaURL": "https://www.strava.com/segments/38873256",
+        "VeloViewerURL": "https://veloviewer.com/segment/38873256"
+    },
+    {
+        "Route": "Sacre Bleu",
+        "URL": "https://zwiftinsider.com/route/sacre-bleu/"
+        "StravaURL": "https://www.strava.com/segments/38873252",
+        "VeloViewerURL": "https://veloviewer.com/segment/38873252"
+    },
+    {
+        "Route": "Hell of the North",
+        "URL": "https://zwiftinsider.com/route/hell-of-the-north/"
+        "StravaURL": "https://www.strava.com/segments/38859707",
+        "VeloViewerURL": "https://veloviewer.com/segment/38859707"
+    },
+    {
+        "Route": "Gentil 8",
+        "URL": "https://zwiftinsider.com/route/gentil-8/"
+        "StravaURL": "https://www.strava.com/segments/38856602",
+        "VeloViewerURL": "https://veloviewer.com/segment/38856602"
+    },
+    {
+        "Route": "Hilltop Hustle",
+        "URL": "https://zwiftinsider.com/route/hilltop-hustle/" 
+    },
+    {
+        "Route": "Knights of the Roundabout",
+        "URL": "https://zwiftinsider.com/route/knights-of-the-roundabout/"
+        "StravaURL": "https://www.strava.com/segments/38859646",
+        "VeloViewerURL": "https://veloviewer.com/segment/38859646"
     }
 ]
