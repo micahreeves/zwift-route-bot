@@ -342,6 +342,7 @@ class RouteCache:
         
         # Initialize empty cache
         self.route_cache = {}
+        
     async def load_or_update(self):
         """
         Load existing route cache or create a new one if needed.
@@ -429,56 +430,6 @@ class RouteCache:
         
         return route_cache
     
-    async def cache_route_details(self):
-        logger.info("Starting route data cache update...")
-    
-        # Create a cache dictionary
-        route_cache = {}
-    
-        # Counter for progress tracking
-        total_routes = len(zwift_routes)
-        processed = 0
-    
-        # Use aiohttp for parallel requests
-        async with aiohttp.ClientSession() as session:
-            # Create tasks for all routes (with rate limiting)
-            tasks = []
-            for route in zwift_routes:
-                # Avoid overloading the server
-                if processed > 0 and processed % 5 == 0:
-                    await asyncio.sleep(2)  # Sleep between batches
-                
-                task = asyncio.create_task(self.fetch_route_details(session, route))
-                tasks.append(task)
-                processed += 1
-                
-                # Log progress
-                if processed % 10 == 0:
-                    logger.info(f"Created tasks for {processed}/{total_routes} routes")
-            
-            # Wait for all tasks to complete
-            results = await asyncio.gather(*tasks, return_exceptions=True)
-            
-            # Process results
-            for route_data in results:
-                if isinstance(route_data, Exception):
-                    logger.error(f"Error fetching route data: {route_data}")
-                    continue
-                    
-                if route_data and 'route_name' in route_data:
-                    route_cache[route_data['route_name']] = route_data
-        
-        # Save cache to file
-        try:
-            with open(self.CACHE_FILE, 'w', encoding='utf-8') as f:
-                json.dump(route_cache, f, indent=2)
-            logger.info(f"Successfully cached details for {len(route_cache)} routes")
-        except Exception as e:
-            logger.error(f"Error saving route cache: {e}")
-            import traceback
-            logger.error(traceback.format_exc())
-        
-        return route_cache
     async def fetch_route_details(self, session, route):
         """
         Fetch detailed information for a single route including time estimates.
@@ -518,6 +469,27 @@ class RouteCache:
                 elevation_m = None
                 elevation_ft = None
                 lead_in_km = 0
+                
+                # Check for ZwiftInsider's specific lead-in format in the entire page content
+                # This pattern matches formats like: *+7.6km (4.7 miles) lead-in with 59m (194') elevation*
+                zwift_insider_lead_in = re.search(r'\*\+\s*(\d+\.?\d*)\s*km.*?\((\d+\.?\d*)\s*miles\).*?lead-in.*?(\d+)m\s*\((\d+)[\'"]', html, re.IGNORECASE)
+                
+                if zwift_insider_lead_in:
+                    route_data['lead_in_km'] = float(zwift_insider_lead_in.group(1))
+                    route_data['lead_in_miles'] = float(zwift_insider_lead_in.group(2))
+                    route_data['lead_in_elevation_m'] = float(zwift_insider_lead_in.group(3))
+                    route_data['lead_in_elevation_ft'] = float(zwift_insider_lead_in.group(4))
+                    logger.info(f"Found ZwiftInsider lead-in format: {route_data['lead_in_km']} km with {route_data['lead_in_elevation_m']}m elevation")
+                
+                # Alternative lead-in pattern that appears in some routes
+                if 'lead_in_km' not in route_data:
+                    alt_lead_in = re.search(r'\+\s*(\d+\.?\d*)\s*km.*?(\d+)m\s*\((\d+)[\'"]', html, re.IGNORECASE)
+                    if alt_lead_in:
+                        route_data['lead_in_km'] = float(alt_lead_in.group(1))
+                        route_data['lead_in_miles'] = round(float(alt_lead_in.group(1)) * 0.621371, 1)
+                        route_data['lead_in_elevation_m'] = float(alt_lead_in.group(2))
+                        route_data['lead_in_elevation_ft'] = float(alt_lead_in.group(3))
+                        logger.info(f"Found alternative lead-in format: {route_data['lead_in_km']} km with {route_data['lead_in_elevation_m']}m elevation")
                 
                 # Process each paragraph for route data
                 for p in soup.find_all(['p', 'div', 'li']):
@@ -567,13 +539,31 @@ class RouteCache:
                             elevation_m = round(elevation_ft * 0.3048, 1)
                             logger.info(f"Calculated meters from feet: {elevation_m}")
                     
-                    # Check for lead-in information with specific pattern
-                    lead_in_match = re.search(r'(?:lead-in|lead in):\s*(\d+\.?\d*)\s*km', text, re.IGNORECASE)
-                    if lead_in_match:
-                        lead_in_km = float(lead_in_match.group(1))
-                        logger.info(f"Found lead-in: {lead_in_km} km")
-                        route_data['lead_in_km'] = lead_in_km
-    # Validate the extracted values
+                    # Check for lead-in information with improved patterns if not already found
+                    if 'lead_in_km' not in route_data:
+                        lead_in_patterns = [
+                            r'(?:lead-in|lead in):\s*(\d+\.?\d*)\s*km',  # Basic pattern
+                            r'\+\s*(\d+\.?\d*)\s*km\s*(?:lead-in|lead in)',  # Format with + sign
+                            r'\*\+(\d+\.?\d*)\s*km.*?lead-in\*',  # Markdown format 
+                            r'lead-in\s*(?:with|of)?\s*(\d+\.?\d*)\s*km'  # Descriptive format
+                        ]
+                        
+                        for pattern in lead_in_patterns:
+                            lead_in_match = re.search(pattern, text, re.IGNORECASE)
+                            if lead_in_match:
+                                lead_in_km = float(lead_in_match.group(1))
+                                logger.info(f"Found lead-in: {lead_in_km} km")
+                                route_data['lead_in_km'] = lead_in_km
+                                route_data['lead_in_miles'] = round(lead_in_km * 0.621371, 1)
+                                
+                                # Try to extract lead-in elevation if available
+                                lead_in_elev_match = re.search(r'lead-in.*?(\d+)m\s*\((\d+)(?:\'|ft)', text, re.IGNORECASE)
+                                if lead_in_elev_match:
+                                    route_data['lead_in_elevation_m'] = float(lead_in_elev_match.group(1))
+                                    route_data['lead_in_elevation_ft'] = float(lead_in_elev_match.group(2))
+                                break
+                
+                # Validate the extracted values
                 if distance_km:
                     # Check for reasonable distance range (0.1 - 150 km)
                     if 0.1 <= distance_km <= 150:
@@ -601,9 +591,6 @@ class RouteCache:
                             
                 if elevation_ft:
                     route_data['elevation_ft'] = elevation_ft
-                    
-                if lead_in_km:
-                    route_data['lead_in_km'] = lead_in_km
                 
                 # Look for time estimates
                 time_estimates = {}
@@ -703,15 +690,15 @@ class RouteCache:
     async def periodic_update(self, bot_instance):
         try:
             while True:
-            # Wait for update interval (once per day)
+                # Wait for update interval (once per day)
                 await asyncio.sleep(24 * 60 * 60)  # 24 hours
             
                 logger.info("Starting periodic cache update...")
                 try:
-                # Refresh the cache
+                    # Refresh the cache
                     updated_cache = await self.cache_route_details()
                 
-                # Update the bot's cached data
+                    # Update the bot's cached data
                     if updated_cache:
                         bot_instance.route_cache_data = updated_cache
                         logger.info(f"Successfully updated route cache with {len(updated_cache)} routes")
@@ -725,10 +712,7 @@ class RouteCache:
             logger.error(f"Unexpected error in periodic update task: {e}")
             import traceback
             logger.error(traceback.format_exc())
-# ==========================================
-# Force Cache Refresh Method
-# ==========================================
-
+            
     async def force_refresh(self):
         """
         Force a refresh of the route cache data regardless of age.
@@ -751,8 +735,6 @@ class RouteCache:
             import traceback
             logger.error(traceback.format_exc())
             return {}
-
- 
 
 
 # ==========================================
@@ -889,8 +871,12 @@ class ZwiftBot(discord.Client):
                         message=f"Bot is experiencing high traffic. Please try again in {wait_time:.1f} seconds."
                     )
 # ==========================================
+# ==========================================
 # Route Command Implementation
 # ==========================================
+# This method displays Zwift route details and images.
+# Modified to properly display lead-in information.
+# Last updated: April 18, 2025
 
     async def route(self, interaction, name):
         """
@@ -908,7 +894,7 @@ class ZwiftBot(discord.Client):
         
             # Defer the response
             await interaction.response.defer(thinking=True)
-                
+                    
             # Check rate limits
             try:
                 await self.check_rate_limit(interaction.user.id)
@@ -946,18 +932,24 @@ class ZwiftBot(discord.Client):
                 # Add key stats if available
                 if detailed_info:
                     if 'distance_km' in detailed_info:
-                        # With this new code
+                        # Improved distance text with proper lead-in display
                         distance_text = f"{detailed_info['distance_km']} km ({detailed_info.get('distance_miles', '?')} mi)"
-        
-                        # Add lead-in info if available
-                        if 'lead_in_km' in detailed_info:
-                            distance_text += f" + {detailed_info['lead_in_km']} km lead-in"
-        
+                        
+                        # Add lead-in info if available with more complete information
+                        if 'lead_in_km' in detailed_info and detailed_info['lead_in_km'] > 0:
+                            lead_in_text = f"\n+ {detailed_info['lead_in_km']} km ({detailed_info.get('lead_in_miles', '?')} mi) lead-in"
+                            
+                            # Add lead-in elevation if available
+                            if 'lead_in_elevation_m' in detailed_info:
+                                lead_in_text += f" with {detailed_info['lead_in_elevation_m']} m ({detailed_info['lead_in_elevation_ft']} ft) elevation"
+                            
+                            distance_text += lead_in_text
+                        
                         embed.add_field(
                             name="Distance", 
                             value=distance_text, 
                             inline=True
-                        )    
+                        )
                     
                     if 'elevation_m' in detailed_info:
                         embed.add_field(
@@ -1014,7 +1006,7 @@ class ZwiftBot(discord.Client):
                     "Map": "maps"
                 }
                 
-                # Find images
+                # Find images with improved validation
                 existing_images = {}
                 if valid_base:
                     for img_type, subdir in image_types.items():
@@ -1033,11 +1025,7 @@ class ZwiftBot(discord.Client):
                                 logger.info(f"Found {img_type} image: {img_path}")
                                 found = True
                                 break
-                                
-# ==========================================
-# Enhanced Image Search Logging
-# ==========================================
-
+                        
                         # If no exact match, try fuzzy matching with directory listing
                         if not found:
                             try:
@@ -1046,62 +1034,58 @@ class ZwiftBot(discord.Client):
                                 # Strip extensions for matching
                                 file_bases = [os.path.splitext(f)[0].lower() for f in files]
                                 
-                                # Try difflib for fuzzy matching
+                                # Try difflib for fuzzy matching with higher threshold
                                 for variation in route_variations:
-                                    close_matches = get_close_matches(variation, file_bases, n=1, cutoff=0.6)  # Lowered cutoff to 0.6
+                                    close_matches = get_close_matches(variation, file_bases, n=1, cutoff=0.8)  # Increased from 0.6 to 0.8
                                     
                                     if close_matches:
                                         match_index = file_bases.index(close_matches[0])
                                         matched_file = files[match_index]
                                         img_path = os.path.join(subdir_path, matched_file)
-                                        existing_images[img_type] = img_path
-                                        logger.info(f"Found fuzzy match for {img_type}: {matched_file}")
-                                        found = True
-                                        break  # Only break out of the variation loop, not the directory loop
+                                        
+                                        # Validate the match
+                                        if self.validate_route_image(img_path, route_name):
+                                            existing_images[img_type] = img_path
+                                            logger.info(f"Found and validated fuzzy match for {img_type}: {matched_file}")
+                                            found = True
+                                            break
+                                        else:
+                                            logger.info(f"Found but rejected fuzzy match for {img_type}: {matched_file} (failed validation)")
                                 
-                                # Add an additional fallback if needed - list available files
+                                # Special handling for maps directory which has different naming patterns
+                                if not found and subdir == "maps":
+                                    # For maps, try more strict keyword matching
+                                    # Use longer keywords to reduce false matches
+                                    route_keywords = [word for word in route_name_lower.split() if len(word) > 3]
+                                    
+                                    # If we don't have any long keywords, fall back to all keywords
+                                    if not route_keywords:
+                                        route_keywords = route_name_lower.split()
+                                    
+                                    # Look for files that contain at least 2 keywords (if possible)
+                                    min_keywords = min(2, len(route_keywords))
+                                    
+                                    for file in files:
+                                        file_lower = file.lower()
+                                        # Count how many keywords match
+                                        matching_keywords = sum(1 for keyword in route_keywords if keyword in file_lower)
+                                        
+                                        if matching_keywords >= min_keywords:
+                                            img_path = os.path.join(subdir_path, file)
+                                            
+                                            # Double-check with the validation function
+                                            if self.validate_route_image(img_path, route_name):
+                                                existing_images[img_type] = img_path
+                                                logger.info(f"Found strict keyword match for {img_type}: {file} ({matching_keywords} keywords)")
+                                                found = True
+                                                break
+                                
+                                # Log available files if no match found
                                 if not found:
                                     logger.info(f"No match found for {img_type}. Available files: {files[:5]}...")
                             except Exception as e:
                                 logger.error(f"Error listing directory {subdir_path}: {e}")
-# ==========================================
-# More Strict Maps Directory Search Logic
-# ==========================================
-
-                        # Special handling for maps directory which has different naming patterns
-                        if subdir == "maps" and not found:
-                            try:
-                                files = [f for f in os.listdir(subdir_path) if f.lower().endswith('.png')]
-                                
-                                # For maps, try more strict keyword matching
-                                # Use longer keywords to reduce false matches
-                                route_keywords = [word for word in route_name_lower.split() if len(word) > 3]
-                                
-                                # If we don't have any long keywords, fall back to all keywords
-                                if not route_keywords:
-                                    route_keywords = route_name_lower.split()
-                                
-                                # Look for files that contain at least 2 keywords (if possible)
-                                min_keywords = min(2, len(route_keywords))
-                                
-                                for file in files:
-                                    file_lower = file.lower()
-                                    # Count how many keywords match
-                                    matching_keywords = sum(1 for keyword in route_keywords if keyword in file_lower)
-                                    
-                                    if matching_keywords >= min_keywords:
-                                        img_path = os.path.join(subdir_path, file)
-                                        existing_images[img_type] = img_path
-                                        logger.info(f"Found strict keyword match for {img_type}: {file} ({matching_keywords} keywords)")
-                                        found = True
-                                        break
-                                        
-                                if not found:
-                                    logger.info(f"No strict keyword match found for {img_type} in maps directory. Keywords: {route_keywords}")
-                            except Exception as e:
-                                logger.error(f"Error with special maps directory handling: {e}")
-
-
+                
                 # Add a description with available resources
                 description_parts = []
                 description_parts.append(f"View full details on [ZwiftInsider]({result['URL']})")
@@ -1136,7 +1120,7 @@ class ZwiftBot(discord.Client):
                         logger.info(f"Preparing to send {image_name} image from {image_path}")
                         
                         img_embed = discord.Embed(
-                            title=f"{result['Route']}",
+                            title=f"{result['Route']} - {image_name}",
                             color=0xFC6719
                         )
                         
@@ -1190,6 +1174,34 @@ class ZwiftBot(discord.Client):
                 )
             except Exception as err:
                 logger.error(f"Failed to send error message: {err}")
+                
+    def validate_route_image(self, image_path, route_name):
+        """
+        Validates that an image is likely for the correct route
+        
+        Args:
+            image_path: Path to the image file
+            route_name: Name of the route to validate against
+            
+        Returns:
+            bool: True if image is valid for the route, False otherwise
+        """
+        # Get filename without extension and convert to lowercase
+        filename = os.path.basename(image_path).lower()
+        base_name = os.path.splitext(filename)[0]
+        
+        # Get route name keywords (words with 3+ characters)
+        route_keywords = [word.lower() for word in route_name.split() if len(word) >= 3]
+        
+        # For very short route names, use all words
+        if not route_keywords:
+            route_keywords = [word.lower() for word in route_name.split()]
+        
+        # Check if filename contains at least 50% of the keywords
+        matches = sum(1 for keyword in route_keywords if keyword in base_name)
+        return matches >= max(1, len(route_keywords) // 2)
+
+
 # ==========================================
 # Route Refresh Command
 # ==========================================
